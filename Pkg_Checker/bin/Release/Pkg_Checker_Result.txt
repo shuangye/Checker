@@ -1,0 +1,12 @@
+6/18/2014 18:44:23 PM
+Begin to check D:\Projects\Pkg_Checker\bin\Release\FMS2000_MDXX_17011_01_Review_Packet.pdf
+[Warning] Cover sheet "Producer Employer" is Shanghai (FMS); expected Shanghai (Avionics excl EDS)
+[Warning] Cover sheet "Oversight Oversight" is NOT checked.
+[Warning] "Trace Data" is chosen but no .TRT file(s) found in "Work Products Under Review", or .TRT file(s) present but "Trace Data" is not chosen.
+3 warning(s) found and 0 of which fixed.
+Author: Dun, Qing
+Moderator: jiang, guanlan
+Checking of D:\Projects\Pkg_Checker\bin\Release\FMS2000_MDXX_17011_01_Review_Packet.pdf ended.
+--------------------------------------------------------------------
+
+

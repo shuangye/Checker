@@ -1,0 +1,164 @@
+﻿using System;
+using System.Linq;
+using System.Windows.Forms;
+using System.Collections.Generic;
+using System.IO;
+using Pkg_Checker.Interfaces;
+using Pkg_Checker.Implementations;
+
+namespace Pkg_Checker
+{
+    public partial class MainWin : Form
+    {
+        public MainWin()
+        {
+            InitializeComponent();         
+        }
+
+        private bool Check(IPdfReader reader, String file)
+        {            
+            if (null != reader && !String.IsNullOrWhiteSpace(file))
+            {                
+                reader.Read(file);                
+                reader.CheckCommonFields();
+                reader.CheckWorkProductType();
+                reader.CheckCheckList();
+            }
+
+            return reader.GetDefects().Count() > 0;
+        }
+
+        private void btnCheck_Click(object sender, EventArgs e)
+        {
+            bool errorOccurred = false;
+            int CheckedFileCount = 0;
+
+            List<String> FileNames =
+                Pkg_Checker.FSWalker.Walk(this.tbLocation.Text, "*.PDF", this.checkSub.Checked, ref errorOccurred);
+
+            if (errorOccurred)
+            {
+                this.tbOutput.Text += "[Error] Error occurred while traversing the path." + Environment.NewLine;
+            }
+
+            if (FileNames != null && FileNames.Count > 0)
+            {
+                // consider the Singleton design pattern
+                // Checker goodChecker = new Checker();
+                // Aug 22, 2013. Create a instance for each file to avoid interaction effect between each files
+                foreach (String fileName in FileNames)
+                {
+                    this.lblProcessStatus.Text = "Checking " + fileName;
+                    // Checker goodChecker = new Checker();                    
+                    // goodChecker.Check(fileName, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
+                    IPdfReader reader = new iTextPdfReader();
+                    Check(reader, fileName);
+
+                    this.lblProcessStatus.Text = "Ready";
+                    this.tbOutput.AppendText("[Info] Checked " + fileName + Environment.NewLine);
+                    foreach (var item in reader.GetDefects())
+                        this.tbOutput.AppendText(item + Environment.NewLine);
+                    this.tbOutput.AppendText(@"----------------------------------" + Environment.NewLine);
+                    ++CheckedFileCount;                  
+                }
+                this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);
+            }
+
+            else
+            {
+                this.tbOutput.Text = "No .pdf file(s) found." + Environment.NewLine;
+            }
+        }
+
+        private void btnBrowse_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                tbLocation.Text = folderBrowserDialog1.SelectedPath;
+            }
+        }
+
+        private void btnClr_Click(object sender, EventArgs e)
+        {
+            this.tbOutput.Text = "";
+            System.IO.File.Delete(Pkg_Checker.Program.ResultPath);
+            this.tbOutput.Text = "The result file was deleted." + Environment.NewLine;
+        }
+        
+        private void MainWin_DragDrop(object sender, DragEventArgs e)
+        {
+            int CheckedFileCount = 0;
+            bool errorOccurred = false;
+            FileAttributes attr;
+            List<String> FileNames = new List<String>();            
+                        
+            // dropped items may contain folders
+            String[] s = (String[])e.Data.GetData(DataFormats.FileDrop, false);
+            // List<String> FileNames = s.OfType<String>().ToList<String>();            
+
+            for (int i = 0; i < s.Length; ++i)
+            {
+                attr = File.GetAttributes(s[i]);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {                    
+                    foreach (var item in Pkg_Checker.FSWalker.Walk(s[i], "*.PDF", true, ref errorOccurred))
+                        FileNames.Add(item);
+                }
+
+                // .pdf files are archives
+                if (System.IO.Path.GetExtension(s[i]).ToUpper() == ".PDF")                
+                    FileNames.Add(s[i]);                
+            }
+
+            // Process normal files
+            foreach (var item in FileNames)
+            {
+                this.lblProcessStatus.Text = "Checking " + item;
+                Checker goodChecker = new Checker();
+                goodChecker.Check(item, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
+                this.lblProcessStatus.Text = "Ready";
+
+                if (errorOccurred)
+                    this.tbOutput.Text += "[Error] Error occurred while checking " + item + Environment.NewLine;
+                else
+                {
+                    this.tbOutput.Text += "[Info] Checked " + item + Environment.NewLine;
+                    ++CheckedFileCount;
+                }
+            }
+            this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);            
+        }
+
+        private void MainWin_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ?
+                DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private void lnkResult_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            String AbsoluteResultPath =
+                    System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                    + "\\" + Pkg_Checker.Program.ResultPath;
+
+            if (File.Exists(AbsoluteResultPath))
+            {
+                try
+                {
+                    this.lnkResult.LinkVisited = true;
+                    System.Diagnostics.Process.Start(AbsoluteResultPath);
+                }
+
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+
+            else
+            {
+                this.tbOutput.Text = "[Warning] The result file " + AbsoluteResultPath + " has been deleted." + Environment.NewLine;
+            }
+        }
+    }
+}

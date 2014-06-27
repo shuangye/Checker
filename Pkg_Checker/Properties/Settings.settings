@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Pkg_Checker.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Load" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MD11_922_TST</Value>
+    </Setting>
+    <Setting Name="FAREA" Type="System.String" Scope="User">
+      <Value Profile="(Default)">TESTS</Value>
+    </Setting>
+    <Setting Name="DO178Level" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">B</Value>
+    </Setting>
+    <Setting Name="ACM_Project" Type="System.String" Scope="User">
+      <Value Profile="(Default)">FMS2000</Value>
+    </Setting>
+    <Setting Name="ACM_Subproject" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MDXX</Value>
+    </Setting>
+    <Setting Name="Produced" Type="System.String" Scope="User">
+      <Value Profile="(Default)">HTS - Shanghai</Value>
+    </Setting>
+    <Setting Name="Producer_Employer" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Shanghai (Avionics excl EDS)</Value>
+    </Setting>
+    <Setting Name="Aircraft" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MD11</Value>
+    </Setting>
+    <Setting Name="Min_Meeting_Duration" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.5</Value>
+    </Setting>
+    <Setting Name="Min_Review_Participants" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
