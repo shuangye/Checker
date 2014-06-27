@@ -47,9 +47,14 @@ namespace Pkg_Checker.Implementations
             {
                 String reviewLocation = Fields.GetField(FormFields.F_ReviewLocation);
                 if (String.IsNullOrWhiteSpace(reviewLocation) || !reviewLocation.Equals(FormFields.F_ReviewLocation_Val))                                    
-                    Defects.Add(@"Review Location is " + reviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);                
-            }
-                        
+                    Defects.Add(@"Review Location is " + reviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
+
+                String reviewStatus = Fields.GetField(FormFields.F_ReviewStatus);
+                if (String.IsNullOrWhiteSpace(reviewStatus) || 
+                    (!reviewStatus.Equals(FormFields.F_ReviewStatus_Val_Accepted)) &&
+                     !reviewStatus.Equals(FormFields.F_ReviewStatus_Val_Revised))
+                    Defects.Add(@"Review Status is not valid.");
+            }                        
         }
 
         public void CheckWorkProductType()

@@ -75,15 +75,15 @@
             // 
             // tbLocation
             // 
-            this.tbLocation.Location = new System.Drawing.Point(122, 46);
+            this.tbLocation.Location = new System.Drawing.Point(129, 46);
             this.tbLocation.Name = "tbLocation";
-            this.tbLocation.Size = new System.Drawing.Size(426, 20);
+            this.tbLocation.Size = new System.Drawing.Size(419, 20);
             this.tbLocation.TabIndex = 3;
             // 
             // checkSub
             // 
             this.checkSub.AutoSize = true;
-            this.checkSub.Location = new System.Drawing.Point(630, 50);
+            this.checkSub.Location = new System.Drawing.Point(554, 49);
             this.checkSub.Name = "checkSub";
             this.checkSub.Size = new System.Drawing.Size(115, 17);
             this.checkSub.TabIndex = 4;
@@ -103,7 +103,7 @@
             // 
             // btnBrowse
             // 
-            this.btnBrowse.Location = new System.Drawing.Point(555, 46);
+            this.btnBrowse.Location = new System.Drawing.Point(667, 45);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 23);
             this.btnBrowse.TabIndex = 6;
@@ -183,9 +183,7 @@
             this.Controls.Add(this.lblLocation);
             this.Controls.Add(this.lblProcessStatus);
             this.Controls.Add(this.btnCheck);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
             this.Name = "MainWin";
             this.Text = "Review Package Checker";
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWin_DragDrop);

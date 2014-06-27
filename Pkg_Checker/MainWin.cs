@@ -160,5 +160,18 @@ namespace Pkg_Checker
                 this.tbOutput.Text = "[Warning] The result file " + AbsoluteResultPath + " has been deleted." + Environment.NewLine;
             }
         }
+
+        protected override void WndProc(ref Message m)
+        {
+            FormWindowState previousWindowState = this.WindowState;            
+            base.WndProc(ref m);
+            FormWindowState currentWindowState = this.WindowState;
+
+            if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
+            {
+                
+            }
+        }
+
     }
 }

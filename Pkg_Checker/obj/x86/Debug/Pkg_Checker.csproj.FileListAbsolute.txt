@@ -35,3 +35,12 @@ D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Interop.AFORMAUTLib.dll
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.ResolveComReference.cache
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.exe
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.pdb
+D:\Projects\Checker\Pkg_Checker\bin\Debug\Pkg_Checker.exe
+D:\Projects\Checker\Pkg_Checker\bin\Debug\Pkg_Checker.pdb
+D:\Projects\Checker\Pkg_Checker\bin\Debug\itextsharp.xml
+D:\Projects\Checker\Pkg_Checker\bin\Debug\Interop.Acrobat.dll
+D:\Projects\Checker\Pkg_Checker\bin\Debug\Interop.AFORMAUTLib.dll
+D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyReference.cache
+D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
+D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
+D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
