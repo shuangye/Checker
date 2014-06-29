@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using Pkg_Checker.Interfaces;
 using Pkg_Checker.Implementations;
+using System.Threading;
+using System.Drawing;
 
 namespace Pkg_Checker
 {
@@ -12,19 +14,21 @@ namespace Pkg_Checker
     {
         public MainWin()
         {
-            InitializeComponent();         
+            InitializeComponent();
+            this.ActiveControl = this.tbLocation;
         }
 
-        private bool Check(IPdfReader reader, String file)
-        {            
-            if (null != reader && !String.IsNullOrWhiteSpace(file))
-            {                
-                reader.Read(file);                
-                reader.CheckCommonFields();
-                reader.CheckWorkProductType();
-                reader.CheckCheckList();
-            }
+        private bool CheckThread(IPdfReader reader, String file)
+        {
+            reader.Read(file);
+            if (!reader.IsValidReviewPackage())
+                return false;
 
+            reader.CheckCommonFields();
+            reader.CheckWorkProductType();
+            reader.CheckCheckList();
+            reader.CheckSCRReportAndPrerequisiteFiles();
+            reader.WorkWithAnnot();
             return reader.GetDefects().Count() > 0;
         }
 
@@ -32,6 +36,13 @@ namespace Pkg_Checker
         {
             bool errorOccurred = false;
             int CheckedFileCount = 0;
+
+            if (String.IsNullOrWhiteSpace(this.tbLocation.Text))
+            {
+                this.ActiveControl = this.tbLocation;
+                this.tbOutput.Text = @"Please specify a valid path.";
+                return;
+            }
 
             List<String> FileNames =
                 Pkg_Checker.FSWalker.Walk(this.tbLocation.Text, "*.PDF", this.checkSub.Checked, ref errorOccurred);
@@ -52,14 +63,17 @@ namespace Pkg_Checker
                     // Checker goodChecker = new Checker();                    
                     // goodChecker.Check(fileName, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
                     IPdfReader reader = new iTextPdfReader();
-                    Check(reader, fileName);
+                    Thread thread = new Thread(() => CheckThread(reader, fileName));
+                    thread.Start();
+                    thread.Join();
+                    reader.Close();
 
                     this.lblProcessStatus.Text = "Ready";
                     this.tbOutput.AppendText("[Info] Checked " + fileName + Environment.NewLine);
                     foreach (var item in reader.GetDefects())
                         this.tbOutput.AppendText(item + Environment.NewLine);
-                    this.tbOutput.AppendText(@"----------------------------------" + Environment.NewLine);
-                    ++CheckedFileCount;                  
+                    this.tbOutput.AppendText(@"------------------------------------------------------------" + Environment.NewLine);
+                    ++CheckedFileCount;
                 }
                 this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);
             }
@@ -84,14 +98,14 @@ namespace Pkg_Checker
             System.IO.File.Delete(Pkg_Checker.Program.ResultPath);
             this.tbOutput.Text = "The result file was deleted." + Environment.NewLine;
         }
-        
+
         private void MainWin_DragDrop(object sender, DragEventArgs e)
         {
             int CheckedFileCount = 0;
             bool errorOccurred = false;
             FileAttributes attr;
-            List<String> FileNames = new List<String>();            
-                        
+            List<String> FileNames = new List<String>();
+
             // dropped items may contain folders
             String[] s = (String[])e.Data.GetData(DataFormats.FileDrop, false);
             // List<String> FileNames = s.OfType<String>().ToList<String>();            
@@ -100,22 +114,22 @@ namespace Pkg_Checker
             {
                 attr = File.GetAttributes(s[i]);
                 if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
-                {                    
+                {
                     foreach (var item in Pkg_Checker.FSWalker.Walk(s[i], "*.PDF", true, ref errorOccurred))
                         FileNames.Add(item);
                 }
 
                 // .pdf files are archives
-                if (System.IO.Path.GetExtension(s[i]).ToUpper() == ".PDF")                
-                    FileNames.Add(s[i]);                
+                if (System.IO.Path.GetExtension(s[i]).ToUpper() == ".PDF")
+                    FileNames.Add(s[i]);
             }
 
             // Process normal files
             foreach (var item in FileNames)
             {
                 this.lblProcessStatus.Text = "Checking " + item;
-                Checker goodChecker = new Checker();
-                goodChecker.Check(item, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
+                // Checker goodChecker = new Checker();
+                // goodChecker.Check(item, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
                 this.lblProcessStatus.Text = "Ready";
 
                 if (errorOccurred)
@@ -126,7 +140,7 @@ namespace Pkg_Checker
                     ++CheckedFileCount;
                 }
             }
-            this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);            
+            this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);
         }
 
         private void MainWin_DragEnter(object sender, DragEventArgs e)
@@ -163,14 +177,32 @@ namespace Pkg_Checker
 
         protected override void WndProc(ref Message m)
         {
-            FormWindowState previousWindowState = this.WindowState;            
+            FormWindowState previousWindowState = this.WindowState;
             base.WndProc(ref m);
             FormWindowState currentWindowState = this.WindowState;
 
             if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
             {
-                
+
             }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.tbOutput.Text += @"This tool checks the potential defects in a review package." + Environment.NewLine +
+                @"Bug report: mingyang.liu@honeywell.com" + Environment.NewLine +
+                @"Powered by iTextSharp." + Environment.NewLine;
+        }
+
+        private void supportedChecksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.tbOutput.Text += @"Currently, this tool can check the following items:" + Environment.NewLine;
+            this.tbOutput.Text += @"To be filled..." + Environment.NewLine;
+        }
+
+        private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.tbOutput.Text += @"How to detect lock status." + Environment.NewLine;
         }
 
     }

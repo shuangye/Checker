@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("eReview Package Checker")]
-[assembly: AssemblyDescription("Checking eReview Package without opening it")]
+[assembly: AssemblyDescription("Checking eReview Package Validity")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Honeywell")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("eReview Package Checker")]
 [assembly: AssemblyCopyright("Copyright © Liu Mingyang 2014")]
 [assembly: AssemblyTrademark("Liu Mingyang")]

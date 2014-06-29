@@ -44,3 +44,12 @@ D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyR
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyReference.cache
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
+E:\Programming\Projects\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.exe.config
+E:\Programming\Projects\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.exe
+E:\Programming\Projects\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.pdb
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.exe
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.pdb
