@@ -8,6 +8,7 @@ using iTextSharp.text.pdf.parser;
 using Pkg_Checker.Interfaces;
 using Pkg_Checker.Entities;
 using Pkg_Checker.Helpers;
+using System.Text.RegularExpressions;
 
 namespace Pkg_Checker.Implementations
 {
@@ -57,16 +58,16 @@ namespace Pkg_Checker.Implementations
             if (null != Fields)
             {
                 const int maxFileCount = 40;
-                String val = "";                
+                String val = "";
 
                 ReviewPackageName = Path.GetFileName(pdfPath).ToUpper();
 
                 val = ReviewPackageName.Strip(@"_REVIEW_PACKET.PDF").Strip(@"FMS2000_A350_A380_")
                     .Strip(@"FMS2000_A3XX_").Strip(@"FMS2000_MDXX_").Strip(@"B7E7_B7E7FMS_");
                 MasterSCR = float.Parse(val.Replace('_', '.'));
-                                
+
                 F_FuncArea = Fields.GetField(FormFields.F_FuncArea);
-                val = Fields.GetField(FormFields.F_RevParticipants);                
+                val = Fields.GetField(FormFields.F_RevParticipants);
                 F_RevParticipants = String.IsNullOrWhiteSpace(val) ? 0 : int.Parse(val);
                 F_ModStamp = Fields.GetField(FormFields.F_ModStamp);
                 F_ReviewLocation = Fields.GetField(FormFields.F_ReviewLocation);
@@ -78,6 +79,7 @@ namespace Pkg_Checker.Implementations
                 CheckedInFiles = new List<CheckedInFile>();
                 ExtFileNames = new List<string>();
                 BaseFileNames = new List<string>();
+                SCRs = new List<float>();
                 String scr, fileName, checkedInVer, approvedVer;
                 for (int i = 1; i <= maxFileCount; ++i)
                 {
@@ -101,7 +103,7 @@ namespace Pkg_Checker.Implementations
                             CheckedInVer = int.Parse(checkedInVer),
                             ApprovedVer = int.Parse(approvedVer)
                         };
-                        CheckedInFiles.Add(checkedInFile);                        
+                        CheckedInFiles.Add(checkedInFile);
                         String ext = Path.GetExtension(checkedInFile.FileName);
                         ExtFileNames.Add(ext);
                         BaseFileNames.Add(checkedInFile.FileName.Substring(0, checkedInFile.FileName.LastIndexOf(ext)));
@@ -133,7 +135,7 @@ namespace Pkg_Checker.Implementations
             if (null == Fields)
                 return;
 
-            const int maxRevParticipants = 38;            
+            const int maxRevParticipants = 38;
             String val = "";
 
             AcroFields.Item f = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
@@ -169,7 +171,7 @@ namespace Pkg_Checker.Implementations
         }
 
         public void CheckWorkProductType()
-        {            
+        {
             List<String> workProductTypes;
 
             if (null == Fields)
@@ -181,7 +183,7 @@ namespace Pkg_Checker.Implementations
             {
                 char[] sep = { ',' };
                 workProductTypes = F_WorkProductType.Split(sep, StringSplitOptions.RemoveEmptyEntries).ToList<String>();
-                
+
                 // CTP. CTP 没必要一定有 TDF, 也可能只更新了 ZIP
                 if ("Low-Level Test Procedures".Equals(F_Lifecycle))
                 {
@@ -216,7 +218,8 @@ namespace Pkg_Checker.Implementations
         {
             const int checkListItemCount = 45;
             List<int> itemsNotChecked = new List<int>();
-            List<int> itemsNoOrNA = new List<int>();
+            List<KeyValuePair<int, bool>> itemsNoOrNA = new List<KeyValuePair<int, bool>>();  // <item, isDisposed>
+            // Dictionary<int, bool> itemsNoOrNA = new Dictionary<int, bool>();            
 
             if (null == Fields)
                 return;
@@ -228,7 +231,8 @@ namespace Pkg_Checker.Implementations
                 if (String.IsNullOrWhiteSpace(fieldVal))
                     itemsNotChecked.Add(i);
                 else if (fieldVal.Contains('N'))
-                    itemsNoOrNA.Add(i);
+                    // itemsNoOrNA.Add(i, false);
+                    itemsNoOrNA.Add(new KeyValuePair<int, bool>(i, false));                    
             }
 
             if (itemsNotChecked.Count() > 0)
@@ -239,25 +243,70 @@ namespace Pkg_Checker.Implementations
                 Defects.Add(temp + "is/are not checked.");
             }
 
-            // Justification
+            // Justifications
             if (itemsNoOrNA.Count() > 0)
             {
                 String justifications = Fields.GetField(FormFields.F_Justifications_1);
                 if (String.IsNullOrWhiteSpace(justifications))
                     justifications = Fields.GetField(FormFields.F_Justifications_2);
                 if (String.IsNullOrWhiteSpace(justifications))
-                    Defects.Add(@"No justifications for No/NA items.");
-
-                String temp = "";
-                foreach (var item in itemsNoOrNA)
                 {
-                    // 如果写成 for items 41 - 43 这样的形式，就不能如此检查了
-                    if (!justifications.Contains(item.ToString()))
-                        temp += item + " ";
+                    Defects.Add(@"No justifications for NO/NA items.");
+                    return;
                 }
 
-                if (!String.IsNullOrWhiteSpace(temp))
-                    Defects.Add(@"Potentially no justification for item " + temp + ".");
+                List<int> notDisposedItems = new List<int>();
+                foreach (var item in itemsNoOrNA)
+                    notDisposedItems.Add(item.Key);
+
+                Match match;
+                foreach (var item in itemsNoOrNA)
+                {
+                    foreach (var line in justifications.Split("\r\n".ToCharArray()))
+                    {
+                        String[] itemNumbers;
+
+                        // For item(s) 1
+                        // For item 12, 13...
+                        match = Regex.Match(line, @"For items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                                .Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var itemNumber in itemNumbers)
+                                if (item.Key == int.Parse(itemNumber))
+                                    notDisposedItems.Remove(item.Key);
+                                    // itemsNoOrNA[item.Key] = true;  // disposed
+                                    // the Value property is readonly, so set it to a new KeyValuePair
+                                    // itemsNoOrNA[item.Key] = new KeyValuePair<int, bool>(item.Key, true);
+                                    // itemsNoOrNA.Remove(item);
+
+                            // 一行只可能匹配 Form item(s) 1, 2, 3... 和 For item(s) 1 - 3 之一，故不必再判断是否匹配另一种形式了
+                            continue;
+                        }
+
+                        // For item(s) 12 - 15
+                        match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                                .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (null != itemNumbers && itemNumbers.Length > 1)
+                                if (item.Key >= int.Parse(itemNumbers[0]) &&
+                                    item.Key <= int.Parse(itemNumbers[1]))
+                                    // itemsNoOrNA.Remove(item);
+                                    notDisposedItems.Remove(item.Key);
+                        }
+                    }
+                }
+
+                if (notDisposedItems.Count > 0)
+                {
+                    String temp = "";
+                    foreach (var item in notDisposedItems)
+                        temp += item + " ";
+                    Defects.Add(@"No justification for NO or N/A item " + temp + ".");
+                }
             }
         }
 
@@ -272,7 +321,7 @@ namespace Pkg_Checker.Implementations
 
             bool reportFound = false;  // is SCR report found?
             bool trtFound = false; // is the .TRT file found?
-            
+
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
             {
                 ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
@@ -317,7 +366,7 @@ namespace Pkg_Checker.Implementations
                 #region Check Prerequisite Files
                 // 如果 TRT 被更新了，则它至少应出现2次；否则至少应出现1次。
                 // 若一个 review package 里包含了多个 CTP 呢？
-               
+
                 #endregion Check Prerequisite Files
             }
 

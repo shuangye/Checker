@@ -7,6 +7,7 @@ using Pkg_Checker.Interfaces;
 using Pkg_Checker.Implementations;
 using System.Threading;
 using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace Pkg_Checker
 {
@@ -207,19 +208,19 @@ namespace Pkg_Checker
                 + @"Defect count" + Environment.NewLine
                 + @"Check .TRT existance" + Environment.NewLine
                 + @"Justifications (Regular Expression)" + Environment.NewLine;
-//"TO DO:
-//2. Produced by
-//3. DO-178B
-//4. ACM proj/subproj
-//5. review status together with defect
-//6. defect number
-//7. approved version
-//8. review stamps
-//9. checklist acm info
-//10. justification box check
-//11. SCR report version info same as coversheet
-//12. TRT existance
-//13. trace checklist justification box"
+            //"TO DO:
+            //2. Produced by
+            //3. DO-178B
+            //4. ACM proj/subproj
+            //5. review status together with defect
+            //6. defect number
+            //7. approved version
+            //8. review stamps
+            //9. checklist acm info
+            //10. justification box check
+            //11. SCR report version info same as coversheet
+            //12. TRT existance
+            //13. trace checklist justification box"
 
         }
 
