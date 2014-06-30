@@ -183,7 +183,7 @@ namespace Pkg_Checker
 
             if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
             {
-
+                // Update UI here...
             }
         }
 
@@ -202,7 +202,25 @@ namespace Pkg_Checker
 
         private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.tbOutput.Text += @"How to detect lock status." + Environment.NewLine;
+            this.tbOutput.Text += @"Multiple CTPs, multiple SCRs." + Environment.NewLine
+                + @"Approved version vs. CM21 version." + Environment.NewLine
+                + @"Defect count" + Environment.NewLine
+                + @"Check .TRT existance" + Environment.NewLine
+                + @"Justifications (Regular Expression)" + Environment.NewLine;
+//"TO DO:
+//2. Produced by
+//3. DO-178B
+//4. ACM proj/subproj
+//5. review status together with defect
+//6. defect number
+//7. approved version
+//8. review stamps
+//9. checklist acm info
+//10. justification box check
+//11. SCR report version info same as coversheet
+//12. TRT existance
+//13. trace checklist justification box"
+
         }
 
     }

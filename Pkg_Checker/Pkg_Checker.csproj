@@ -57,7 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Entities\CheckedInFile.cs" />
     <Compile Include="FSWalker.cs" />
+    <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />
     <Compile Include="Interfaces\FormFields.cs" />
     <Compile Include="Interfaces\IPdfReader.cs" />

@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using iTextSharp.text.pdf;
-using Pkg_Checker.Interfaces;
 using System.IO;
+using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
+using Pkg_Checker.Interfaces;
+using Pkg_Checker.Entities;
+using Pkg_Checker.Helpers;
 
 namespace Pkg_Checker.Implementations
 {
     public class iTextPdfReader : IPdfReader
     {
         #region Properties
+        public String ReviewPackageName { get; set; }
+        public float MasterSCR { get; set; }
         public PdfReader Reader { get; set; }
         public AcroFields Fields { get; set; }
         public String F_FuncArea { get; set; }
@@ -22,13 +26,16 @@ namespace Pkg_Checker.Implementations
         public String F_Lifecycle { get; set; }
         public String F_ReviewStatus { get; set; }
 
-        public List<String> FullFileNames { get; set; }
+        public List<CheckedInFile> CheckedInFiles { get; set; }
+        public List<float> SCRs { get; set; }
         public List<String> BaseFileNames { get; set; }
+        public List<String> ExtFileNames { get; set; }
+
         public List<String> Defects { get; set; }
         #endregion Properties
 
         /// <summary>
-        /// Call this method before any checking methods to prepare data
+        /// Call this method before any checking methods to populate necessary data
         /// </summary>
         /// <param name="pdfPath"></param>
         public void Read(string pdfPath)
@@ -49,8 +56,15 @@ namespace Pkg_Checker.Implementations
 
             if (null != Fields)
             {
-                String val;
+                const int maxFileCount = 40;
+                String val = "";                
 
+                ReviewPackageName = Path.GetFileName(pdfPath).ToUpper();
+
+                val = ReviewPackageName.Strip(@"_REVIEW_PACKET.PDF").Strip(@"FMS2000_A350_A380_")
+                    .Strip(@"FMS2000_A3XX_").Strip(@"FMS2000_MDXX_").Strip(@"B7E7_B7E7FMS_");
+                MasterSCR = float.Parse(val.Replace('_', '.'));
+                                
                 F_FuncArea = Fields.GetField(FormFields.F_FuncArea);
                 val = Fields.GetField(FormFields.F_RevParticipants);                
                 F_RevParticipants = String.IsNullOrWhiteSpace(val) ? 0 : int.Parse(val);
@@ -59,6 +73,45 @@ namespace Pkg_Checker.Implementations
                 F_WorkProductType = Fields.GetField(FormFields.F_WorkProductType);
                 F_Lifecycle = Fields.GetField(FormFields.F_Lifecycle);
                 F_ReviewStatus = Fields.GetField(FormFields.F_ReviewStatus);
+
+                #region checked in files
+                CheckedInFiles = new List<CheckedInFile>();
+                ExtFileNames = new List<string>();
+                BaseFileNames = new List<string>();
+                String scr, fileName, checkedInVer, approvedVer;
+                for (int i = 1; i <= maxFileCount; ++i)
+                {
+                    scr = Fields.GetField("F" + i + ".SCR");
+                    fileName = Fields.GetField("F" + i + ".Name");
+                    checkedInVer = Fields.GetField("F" + i + ".Ver");
+                    approvedVer = Fields.GetField("F" + i + ".ApprovedVer");
+                    if (!String.IsNullOrWhiteSpace(scr))
+                    {
+                        if (String.IsNullOrWhiteSpace(fileName) || String.IsNullOrWhiteSpace(checkedInVer)
+                            || String.IsNullOrWhiteSpace(approvedVer))
+                        {
+                            Defects.Add(@"Incomplete info for checked in file " + i);
+                            continue;
+                        }
+
+                        CheckedInFile checkedInFile = new CheckedInFile
+                        {
+                            SCR = float.Parse(scr),
+                            FileName = fileName.ToUpper(),
+                            CheckedInVer = int.Parse(checkedInVer),
+                            ApprovedVer = int.Parse(approvedVer)
+                        };
+                        CheckedInFiles.Add(checkedInFile);                        
+                        String ext = Path.GetExtension(checkedInFile.FileName);
+                        ExtFileNames.Add(ext);
+                        BaseFileNames.Add(checkedInFile.FileName.Substring(0, checkedInFile.FileName.LastIndexOf(ext)));
+                        SCRs.Add(checkedInFile.SCR);
+                    }
+                }
+                ExtFileNames = ExtFileNames.Distinct().ToList();
+                BaseFileNames = BaseFileNames.Distinct().ToList();
+                SCRs = SCRs.Distinct().ToList();
+                #endregion checked in files
             }
         }
 
@@ -80,7 +133,17 @@ namespace Pkg_Checker.Implementations
             if (null == Fields)
                 return;
 
-            const int maxRevParticipants = 38;
+            const int maxRevParticipants = 38;            
+            String val = "";
+
+            AcroFields.Item f = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
+            var n = f.GetMerged(0).GetAsNumber(PdfName.FF);
+            if (!(null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0))
+                Defects.Add(@"Package is not locked.");
+
+            val = Fields.GetField(FormFields.F_ReviewID);
+            if (String.IsNullOrWhiteSpace(val) || Math.Abs(float.Parse(val) - MasterSCR) > 0.001)
+                Defects.Add(@"Review ID does not match the review package name.");
 
             if (String.IsNullOrWhiteSpace(F_ReviewLocation) || !F_ReviewLocation.Equals(FormFields.F_ReviewLocation_Val))
                 Defects.Add(@"Review Location is " + F_ReviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
@@ -101,11 +164,12 @@ namespace Pkg_Checker.Implementations
             }
             if (F_RevParticipants != revParticipants)
                 Defects.Add(@"Number of review participants is " + F_RevParticipants + ", but there is/are " + revParticipants + " stamp(s).");
+            if (3 > revParticipants)
+                Defects.Add(@"Review participants shoud be at least three.");
         }
 
         public void CheckWorkProductType()
-        {
-            const int maxFileCount = 40;
+        {            
             List<String> workProductTypes;
 
             if (null == Fields)
@@ -115,42 +179,9 @@ namespace Pkg_Checker.Implementations
                 Defects.Add(@"Work Product Type is empty.");
             else
             {
-                FullFileNames = new List<string>();
-                BaseFileNames = new List<String>();
-                List<String> extensions = new List<String>();
-
                 char[] sep = { ',' };
                 workProductTypes = F_WorkProductType.Split(sep, StringSplitOptions.RemoveEmptyEntries).ToList<String>();
-
-                for (int i = 1; i < maxFileCount; ++i)
-                {
-                    if (11 == i)
-                        continue; // 因为第11个总是点位符
-
-                    String fileName = Fields.GetField("F" + i + ".Name");
-                    if (!String.IsNullOrWhiteSpace(fileName))
-                    {
-                        String ext = Path.GetExtension(fileName);
-                        BaseFileNames.Add(fileName.Substring(0, fileName.IndexOf(ext)).ToUpper());
-                        extensions.Add(ext.ToUpper());
-                        FullFileNames.Add(fileName.ToUpper());
-                    }
-
-                    // 顺带着检查版本
-                    String fileVer = Fields.GetField("F" + i + ".Ver");
-                    String approvedVer = Fields.GetField("F" + i + ".ApprovedVer");
-                    if (String.IsNullOrWhiteSpace(fileVer) ^ String.IsNullOrWhiteSpace(approvedVer))
-                        Defects.Add(@"File version or Approved version for file " + i + "is empty.");
-                    else if (!String.IsNullOrWhiteSpace(fileVer) && !String.IsNullOrWhiteSpace(approvedVer) &&
-                        int.Parse(fileVer) > int.Parse(approvedVer))
-                    {
-                        Defects.Add(@"File version or Approved version for file " + i + "is not valid.");
-                    }
-                }
-
-                BaseFileNames = BaseFileNames.Distinct().ToList();
-                extensions = extensions.Distinct().ToList();
-
+                
                 // CTP. CTP 没必要一定有 TDF, 也可能只更新了 ZIP
                 if ("Low-Level Test Procedures".Equals(F_Lifecycle))
                 {
@@ -158,25 +189,25 @@ namespace Pkg_Checker.Implementations
                         Defects.Add(@"Work Product Type does not match Low-Level Test Procedure");
 
                     // CTP review package 不能包含 SLTP 相关的内容
-                    if (F_WorkProductType.Contains("Software Test") || extensions.Contains(@".TST"))
+                    if (F_WorkProductType.Contains("Software Test") || ExtFileNames.Contains(@".TST"))
                         Defects.Add(@"Low-Level Test Procedure should not contain SLTP related files or Work Product Types");
                 }
 
                 // SLTP
                 if ("High-Level Test Procedures".Equals(F_Lifecycle))
                 {
-                    if (!F_WorkProductType.Contains(@"Software Test") || !extensions.Contains(@".TST"))
+                    if (!F_WorkProductType.Contains(@"Software Test") || !ExtFileNames.Contains(@".TST"))
                         Defects.Add(@"Work Product Type does not match High-Level Test Procedure");
 
                     // SLTP review package 不能包含 CTP 相关的内容
-                    if (F_WorkProductType.Contains("Component Test") || extensions.Contains(@".TDF"))
+                    if (F_WorkProductType.Contains("Component Test") || ExtFileNames.Contains(@".TDF"))
                         Defects.Add(@"High-Level Test Procedure should not contain CTP related files or Work Product Types");
                 }
 
                 // Trace
-                if (F_WorkProductType.Contains(@"Trace Data") ^ extensions.Contains(".TRT"))
+                if (F_WorkProductType.Contains(@"Trace Data") ^ ExtFileNames.Contains(".TRT"))
                     Defects.Add(@"Tracing: Work Product Type and Checked in files do not match");
-                if (extensions.Contains(".TRT") && String.IsNullOrWhiteSpace(Fields.GetField(FormFields.F_TraceCheckList)))
+                if (ExtFileNames.Contains(".TRT") && String.IsNullOrWhiteSpace(Fields.GetField(FormFields.F_TraceCheckList)))
                     Defects.Add(@"Missing Trace Check List");
             }
         }
@@ -301,6 +332,8 @@ namespace Pkg_Checker.Implementations
             if (null == Reader)
                 return;
 
+            int acceptedDefectCount = 0;
+
             // 如果只是检查签章，则不必把整个文件读完，只为签章只出现在前几页
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
             {
@@ -317,11 +350,14 @@ namespace Pkg_Checker.Implementations
                             PdfName annotSubtype = (PdfName)curAnnot.Get(PdfName.SUBTYPE);
                             PdfString annotState = (PdfString)curAnnot.Get(PdfName.STATE);
                             PdfString annotStateType = (PdfString)curAnnot.Get(new PdfName("StateModel"));
+
+                            // PdfName.STATE: ND, ST, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
+                            // StateModel: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
+
                             if (PdfName.WIDGET != annotSubtype)
                             {
                                 Defects.Add(null == annotSubtype ? "<null>" : "PdfName.SUBTYPE: " + annotSubtype.ToString() +
                                 "; PdfName.STATE: " + annotState + "; StateModel: " + annotStateType);
-
                             }
 
                             if (PdfName.STAMP == annotSubtype)
@@ -333,8 +369,10 @@ namespace Pkg_Checker.Implementations
 
                             if (PdfName.TEXT == annotSubtype)
                             {
-                                // PdfName.STATE: ND, ST, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
-                                // StateModel: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
+                                // PdfName.SUBTYPE: /Text; PdfName.STATE: Accepted; StateModel: Is Defect State
+                                if (null != annotStateType && annotStateType.ToString().IndexOf("Is Defect State") >= 0 &&
+                                    null != annotState && annotState.ToString().IndexOf("Accepted") >= 0)
+                                    ++acceptedDefectCount;
                             }
                         }
                     }
