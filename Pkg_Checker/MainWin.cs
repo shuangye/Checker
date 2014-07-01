@@ -28,7 +28,7 @@ namespace Pkg_Checker
             reader.CheckCommonFields();
             reader.CheckWorkProductType();
             reader.CheckCheckList();
-            reader.CheckSCRReportAndPrerequisiteFiles();
+            reader.TraverseWholeFile();
             reader.WorkWithAnnot();
             return reader.GetDefects().Count() > 0;
         }

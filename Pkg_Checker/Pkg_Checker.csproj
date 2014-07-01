@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="Entities\CheckedInFile.cs" />
+    <Compile Include="Entities\SCRReport.cs" />
     <Compile Include="FSWalker.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />

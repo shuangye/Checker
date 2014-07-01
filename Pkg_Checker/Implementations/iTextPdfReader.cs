@@ -391,36 +391,117 @@ namespace Pkg_Checker.Implementations
             List<KeyValuePair<String, bool>> TRTFileFound = new List<KeyValuePair<string, bool>>();
 
             Match match;
+            String KEYWORKDS;
 
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
             {                
-                String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, new SimpleTextExtractionStrategy());
+                SimpleTextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, strategy);
                 if (String.IsNullOrWhiteSpace(pageText))
                     continue;
 
-                #region Check SCR Report
-                // 根据特征字符串定位到 SCR Report, 之后从中提取信息
+                #region Parse SCR Report
                 // SCR report 可能被打印成了多页，而它自身的 page # of # 和最终打印的 PDF 又不严格对应
+                // 故只能根据特征字符串定位 SCR Report, 之后从中提取信息
+                // Begin: SYSTEM CHANGE REQUEST Page # of #
+                // End: Closed in Config.: ***                
                 match = Regex.Match(pageText, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+");
                 if (match.Success)
                 {
-                    String KEY;                                        
-                    KEY = @"SCR Status:";                    
-                    int startIndex = pageText.IndexOf(KEY) + KEY.Length;
-                    int endIndex = pageText.IndexOf("SCR Status Date:", startIndex);
-                    String status = pageText.Substring(startIndex, endIndex - startIndex);                    
-                    
-                    #region Function Area
-                    KEY = @"Affected Area:";
-                    startIndex = pageText.IndexOf(KEY) + KEY.Length;
-                    endIndex = pageText.IndexOf("Customer No.:", startIndex);
-                    String funcArea = pageText.Substring(startIndex, endIndex - startIndex);
-                    if (!String.IsNullOrWhiteSpace(funcArea) && !String.IsNullOrWhiteSpace(F_FuncArea) &&
-                        !funcArea.Trim().ToUpper().Equals(F_FuncArea.Trim().ToUpper()))
-                        Defects.Add(@"Affected area is " + funcArea.Trim() + " in SCR report, but in coversheet is " + F_FuncArea);
-                    #endregion Function Area                                        
+                    SCRReport report = new SCRReport();
+                    report.BeginPageInPackage = page;
+                    String SCRPageContent = "";
+                    for (report.EndPageInPackage = page; report.EndPageInPackage <= Reader.NumberOfPages; ++report.EndPageInPackage)
+                    {
+                        SCRPageContent = PdfTextExtractor.GetTextFromPage(Reader, report.EndPageInPackage, strategy);
+                        
+                        // Change Category: PROBLEM SCR No.: P 17011.01
+                        match = Regex.Match(SCRPageContent, @"Change Category:\s*PROBLEM\s*SCR No.:\s*[A-Z]\s*\d{3,}\.\d{2}");
+                        if (match.Success)
+                            report.SCRNumber = float.Parse(
+                                Regex.Match(match.Value.Strip(@"Change Category:").Strip("PROBLEM").Strip("SCR No.:").Trim(),
+                                @"\d{3,}\.\d{2}").Value);
+
+                        // SCR Status: SEC
+                        match = Regex.Match(SCRPageContent, @"SCR Status:\s*[A-Z]{3}");
+                        if (match.Success)
+                            report.Status = match.Value.Strip("SCR Status:").Trim();
+
+                        // Affected Area: VGUIDE
+                        match = Regex.Match(SCRPageContent, @"Affected Area:\s*\S{2,}");
+                        if (match.Success)
+                            report.AffectedArea = match.Value.Strip("Affected Area:").Trim();
+
+                        // Target Configuration: A350_CERT1_TST_X04
+                        match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\S{2,}");
+                        if (match.Success)
+                            report.TargetConfig = match.Value.Strip("Target Configuration:").Trim();
+
+                        // Elements Affected
+                        #region Elements Affected
+                        // Begin: Elements Affected:
+                        // End: Closure Category:
+                        // 考虑了这一区域位于 PDF 多个页面中的情况
+                        String elementsAffectedArea = "";
+                        KEYWORKDS = @"Elements Affected:";                        
+                        int elementsAffectedBeginLocation = -1;
+                        int elementsAffectedEndLocation = -1;
+                        if (SCRPageContent.IndexOf(KEYWORKDS) >= 0)
+                        {
+                            elementsAffectedBeginLocation = SCRPageContent.IndexOf(KEYWORKDS) + KEYWORKDS.Length;
+                            KEYWORKDS = @"Closure Category:";
+                            if (SCRPageContent.IndexOf(KEYWORKDS) >= 0)
+                            {
+                                // Elements Affected 在一页内显示完整
+                                elementsAffectedEndLocation = SCRPageContent.IndexOf(KEYWORKDS);
+                                elementsAffectedArea += SCRPageContent.Substring(elementsAffectedBeginLocation,
+                                    elementsAffectedEndLocation - elementsAffectedBeginLocation);
+                            }
+                            else
+                                elementsAffectedArea += SCRPageContent.Substring(elementsAffectedBeginLocation);
+                        }
+                        else
+                        {
+                            KEYWORKDS = @"Closure Category:";
+                            if (SCRPageContent.IndexOf(KEYWORKDS) >= 0)
+                                elementsAffectedArea += SCRPageContent.Substring(0, SCRPageContent.IndexOf(KEYWORKDS));
+                        }
+
+                        // 定位出了 Affected Elements 这一区域，下面解析其中的信息
+                        if (!String.IsNullOrWhiteSpace(elementsAffectedArea))
+                        {
+                            report.AffectedElements = new List<CheckedInFile>();
+                            CheckedInFile checkedInFile = null;
+                            foreach (String line in elementsAffectedArea.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+                            {                                
+                                match = Regex.Match(line, @"\S{1,}\.\S{1,}");
+                                if (match.Success)
+                                {
+                                    checkedInFile = new CheckedInFile();
+                                    checkedInFile.SCR = report.SCRNumber;
+                                    checkedInFile.FileName = match.Value;
+
+                                    // 把文件名与版本合在一起匹配是因为文件名中也可能含有数字，如 A350, MD11
+                                    match = Regex.Match(line, checkedInFile.FileName + @"\s*\d{1,}");
+                                    if (match.Success)
+                                        checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
+
+                                    report.AffectedElements.Add(checkedInFile);
+                                }                                    
+                            }                            
+                        }
+                        #endregion Elements Affected
+
+                        // Closed in Config.: MD11_922_TST
+                        match = Regex.Match(SCRPageContent, @"Closed in Config.:\s*\S{2,}");
+                        if (match.Success)
+                        {
+                            report.ClosedConfig = match.Value.Strip("Closed in Config.:").Trim();
+                            break;  // reach the end of the SCR report
+                        }
+                    }                                       
                 }
-                #endregion Check SCR Report
+                #endregion Parse SCR Report
 
                 #region Check Prerequisite Files
                 // 如果 TRT 被更新了，则它至少应出现2次；否则至少应出现1次。

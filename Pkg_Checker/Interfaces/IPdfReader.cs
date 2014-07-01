@@ -15,7 +15,7 @@ namespace Pkg_Checker.Interfaces
         void CheckWorkProductType();
         void CheckCheckList();
 
-        void CheckSCRReportAndPrerequisiteFiles();
+        void TraverseWholeFile();
 
         void WorkWithAnnot();
 
