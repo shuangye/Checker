@@ -10,6 +10,9 @@ namespace Pkg_Checker.Interfaces
         #region Coversheet fields
         public const string F_ReviewID = @"R.Ref_ID";
         public const string F_FuncArea = @"R.Farea";
+        public const string F_DO178Level = @"R.DOLevel";
+        public const string F_ACMProject = @"R.Project";
+        public const string F_ACMSubProject = @"R.SubProject";
         public const string F_RevParticipants = @"M.Number";
         public const string F_ModStamp = @"R.modChk";
         public const string F_ReviewStatus = @"R.Status";

@@ -209,9 +209,7 @@ namespace Pkg_Checker
                 + @"Check .TRT existance" + Environment.NewLine
                 + @"Justifications (Regular Expression)" + Environment.NewLine;
             //"TO DO:
-            //2. Produced by
-            //3. DO-178B
-            //4. ACM proj/subproj
+            //2. Produced by                        
             //5. review status together with defect
             //6. defect number
             //7. approved version

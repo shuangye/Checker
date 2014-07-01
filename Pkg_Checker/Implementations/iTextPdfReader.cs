@@ -15,10 +15,16 @@ namespace Pkg_Checker.Implementations
     public class iTextPdfReader : IPdfReader
     {
         #region Properties
-        public String ReviewPackageName { get; set; }
-        public float MasterSCR { get; set; }
         public PdfReader Reader { get; set; }
         public AcroFields Fields { get; set; }
+
+        public String ReviewPackageName { get; set; }
+        public bool PackageIsLocked { get; set; }
+        public String Aircraft { get; set; }
+        public float MasterSCR { get; set; }
+        public char F_DO178Level { get; set; }
+        public String F_ACMProject { get; set; }
+        public String F_ACMSubProject { get; set; }
         public String F_FuncArea { get; set; }
         public int F_RevParticipants { get; set; }
         public String F_ModStamp { get; set; }
@@ -64,9 +70,32 @@ namespace Pkg_Checker.Implementations
 
                 val = ReviewPackageName.Strip(@"_REVIEW_PACKET.PDF").Strip(@"FMS2000_A350_A380_")
                     .Strip(@"FMS2000_A3XX_").Strip(@"FMS2000_MDXX_").Strip(@"B7E7_B7E7FMS_");
-                MasterSCR = float.Parse(val.Replace('_', '.'));
+                try
+                { MasterSCR = float.Parse(val.Replace('_', '.')); }
+                catch
+                { MasterSCR = 0.0F; }
+
+                if (ReviewPackageName.Contains(@"A350"))
+                    Aircraft = @"A350";  // A350
+                else if (ReviewPackageName.Contains(@"A3XX"))
+                    Aircraft = @"A3XX";  // A380, A340, A320
+                else if (ReviewPackageName.Contains(@"B7E7"))
+                    Aircraft = @"B7E7";  // B787
+                else if (ReviewPackageName.Contains(@"MD"))
+                    Aircraft = @"MDXX";  // MD11
+
+                AcroFields.Item f = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
+                if (null != f)
+                {
+                    var n = f.GetMerged(0).GetAsNumber(PdfName.FF);
+                    PackageIsLocked = null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0;
+                }                
 
                 F_FuncArea = Fields.GetField(FormFields.F_FuncArea);
+                val = Fields.GetField(FormFields.F_DO178Level);
+                F_DO178Level = String.IsNullOrEmpty(val) ? ' ' : char.Parse(val);
+                F_ACMProject = Fields.GetField(FormFields.F_ACMProject);
+                F_ACMSubProject = Fields.GetField(FormFields.F_ACMSubProject);
                 val = Fields.GetField(FormFields.F_RevParticipants);
                 F_RevParticipants = String.IsNullOrWhiteSpace(val) ? 0 : int.Parse(val);
                 F_ModStamp = Fields.GetField(FormFields.F_ModStamp);
@@ -137,27 +166,40 @@ namespace Pkg_Checker.Implementations
 
             const int maxRevParticipants = 38;
             String val = "";
-
-            AcroFields.Item f = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
-            var n = f.GetMerged(0).GetAsNumber(PdfName.FF);
-            if (!(null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0))
-                Defects.Add(@"Package is not locked.");
-
+            
             val = Fields.GetField(FormFields.F_ReviewID);
             if (String.IsNullOrWhiteSpace(val) || Math.Abs(float.Parse(val) - MasterSCR) > 0.001)
                 Defects.Add(@"Review ID does not match the review package name.");
+            
+            // DO-178 level
+            if (("A350".Equals(Aircraft) || "B7E7".Equals(Aircraft) || "MDXX".Equals(Aircraft))
+                && F_DO178Level != 'B')
+                Defects.Add(@"DO-178 Level is " + F_DO178Level + "; expected B.");
+            #warning "A380 也是 A3XX, 但是 DO178 level B"
+            else if ("A3XX".Equals(Aircraft) && F_DO178Level != 'C')
+                Defects.Add(@"DO-178 Level is " + F_DO178Level + "; expected C.");
 
+            // ACM project and subproject
+            if (@"A350".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"A350_A380".Equals(F_ACMSubProject)))
+                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject 
+                    + "; expected FMS2000 and A350_A380, respectively.");
+            if (@"A3XX".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"A3XX".Equals(F_ACMSubProject)))
+                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
+                    + "; expected FMS2000 and A3XX, respectively.");
+            if (@"B7E7".Equals(Aircraft) && (!@"B7E7".Equals(F_ACMProject) || !@"B7E7FMS".Equals(F_ACMSubProject)))
+                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
+                    + "; expected B7E7 and B7E7FMS, respectively.");
+            if (@"MDXX".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"MDXX".Equals(F_ACMSubProject)))
+                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
+                    + "; expected FMS2000 and MDXX, respectively.");
+            
+            // Review location
             if (String.IsNullOrWhiteSpace(F_ReviewLocation) || !F_ReviewLocation.Equals(FormFields.F_ReviewLocation_Val))
                 Defects.Add(@"Review Location is " + F_ReviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
 
             if (String.IsNullOrWhiteSpace(F_ModStamp) || !"Yes".Equals(F_ModStamp))
                 Defects.Add(@"Moderator did not stamp on the package.");
-
-            if (String.IsNullOrWhiteSpace(F_ReviewStatus) ||
-                (!F_ReviewStatus.Equals(FormFields.F_ReviewStatus_Val_Accepted)) &&
-                 !F_ReviewStatus.Equals(FormFields.F_ReviewStatus_Val_Revised))
-                Defects.Add(@"Review Status is not valid.");
-
+            
             int revParticipants = 0;
             for (int i = 1; i <= maxRevParticipants; ++i)
             {
@@ -168,6 +210,31 @@ namespace Pkg_Checker.Implementations
                 Defects.Add(@"Number of review participants is " + F_RevParticipants + ", but there is/are " + revParticipants + " stamp(s).");
             if (3 > revParticipants)
                 Defects.Add(@"Review participants shoud be at least three.");
+        }
+
+        public void CheckReviewStatus()
+        {
+            // 检查 Review status, 所填写的 defects 个数，以及实际有多少个 comments
+            if (PackageIsLocked)
+            {
+                // Accepted as is: no defects
+                if (FormFields.F_ReviewStatus_Val_Accepted.Equals(F_ReviewStatus))
+                {
+
+                }
+
+                // Revise (no further review): at least 1 defect
+                else if (FormFields.F_ReviewStatus_Val_Revised.Equals(F_ReviewStatus))
+                { 
+
+                }
+
+                else
+                    Defects.Add(@"Review status is not valid.");
+            }
+
+            else
+                Defects.Add(@"Review package is not locked.");
         }
 
         public void CheckWorkProductType()
@@ -266,6 +333,22 @@ namespace Pkg_Checker.Implementations
                     {
                         String[] itemNumbers;
 
+                        // For item(s) 12 - 15
+                        // 匹配这种形式的，也会匹配下面一种形式。故把这种形式放在前面。
+                        match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                                .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (null != itemNumbers && itemNumbers.Length > 1)
+                                if (item.Key >= int.Parse(itemNumbers[0]) &&
+                                    item.Key <= int.Parse(itemNumbers[1]))
+                                    // itemsNoOrNA.Remove(item);                                    
+                                    notDisposedItems.Remove(item.Key);
+                            // 匹配了 For item(s) 1 - 3 就不能再匹配 Form item(s) 1, 2, 3... 了
+                            continue;
+                        }
+
                         // For item(s) 1
                         // For item 12, 13...
                         match = Regex.Match(line, @"For items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
@@ -279,24 +362,8 @@ namespace Pkg_Checker.Implementations
                                     // itemsNoOrNA[item.Key] = true;  // disposed
                                     // the Value property is readonly, so set it to a new KeyValuePair
                                     // itemsNoOrNA[item.Key] = new KeyValuePair<int, bool>(item.Key, true);
-                                    // itemsNoOrNA.Remove(item);
-
-                            // 一行只可能匹配 Form item(s) 1, 2, 3... 和 For item(s) 1 - 3 之一，故不必再判断是否匹配另一种形式了
-                            continue;
-                        }
-
-                        // For item(s) 12 - 15
-                        match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
-                        if (match.Success)
-                        {
-                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
-                                .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
-                            if (null != itemNumbers && itemNumbers.Length > 1)
-                                if (item.Key >= int.Parse(itemNumbers[0]) &&
-                                    item.Key <= int.Parse(itemNumbers[1]))
-                                    // itemsNoOrNA.Remove(item);
-                                    notDisposedItems.Remove(item.Key);
-                        }
+                                    // itemsNoOrNA.Remove(item);                           
+                        }                        
                     }
                 }
 
@@ -310,56 +377,48 @@ namespace Pkg_Checker.Implementations
             }
         }
 
-        /// <summary>
-        /// Call CheckWorkProductType() prior to this method, because the FullFileNames and 
-        /// BaseFileNames properties are populated there.
+        /// <summary>        
+        /// 为了只遍历一次，把检查 SCR report, 是否存在 .TRT 文件，以及有多少 comments 放在了一个函数里
         /// </summary>
-        public void CheckSCRReportAndPrerequisiteFiles()
+        public void TraverseWholeFile()
         {
             if (null == Reader)
                 return;
 
-            bool reportFound = false;  // is SCR report found?
-            bool trtFound = false; // is the .TRT file found?
+            // is SCR report found for one specific SCR? (consider checking in / inserting more than one SCRs)
+            List<KeyValuePair<float, bool>> SCRReportFound = new List<KeyValuePair<float, bool>>();
+            // is the TRT file present for one specific CTP? (consider more than one CTPs in one review package)
+            List<KeyValuePair<String, bool>> TRTFileFound = new List<KeyValuePair<string, bool>>();
+
+            Match match;
 
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
-            {
-                ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
-                String text = PdfTextExtractor.GetTextFromPage(Reader, page, strategy);
-                if (String.IsNullOrWhiteSpace(text))
+            {                
+                String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, new SimpleTextExtractionStrategy());
+                if (String.IsNullOrWhiteSpace(pageText))
                     continue;
 
                 #region Check SCR Report
                 // 根据特征字符串定位到 SCR Report, 之后从中提取信息
-                // 若 check in / insert 到了多个 SCR 呢？
-                if (!reportFound &&
-                    text.Contains(@"SYSTEM CHANGE REQUEST") &&
-                    text.Contains(@"Change Category"))
+                // SCR report 可能被打印成了多页，而它自身的 page # of # 和最终打印的 PDF 又不严格对应
+                match = Regex.Match(pageText, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+");
+                if (match.Success)
                 {
-                    String KEY;
-                    String EXPECTEDVALUE;
-
-                    #region extract SCR Status
-                    KEY = @"SCR Status:";
-                    EXPECTEDVALUE = @"SEC";
-                    int startIndex = text.IndexOf(KEY) + KEY.Length;
-                    int endIndex = text.IndexOf("SCR Status Date:", startIndex);
-                    String status = text.Substring(startIndex, endIndex - startIndex);
-                    if (!String.IsNullOrWhiteSpace(status) && !status.Trim().ToUpper().Equals(EXPECTEDVALUE))
-                        Defects.Add(@"SCR status is " + status.Trim() + " in SCR Report; expected" + EXPECTEDVALUE);
-                    #endregion extract SCR Status
-
+                    String KEY;                                        
+                    KEY = @"SCR Status:";                    
+                    int startIndex = pageText.IndexOf(KEY) + KEY.Length;
+                    int endIndex = pageText.IndexOf("SCR Status Date:", startIndex);
+                    String status = pageText.Substring(startIndex, endIndex - startIndex);                    
+                    
                     #region Function Area
                     KEY = @"Affected Area:";
-                    startIndex = text.IndexOf(KEY) + KEY.Length;
-                    endIndex = text.IndexOf("Customer No.:", startIndex);
-                    String funcArea = text.Substring(startIndex, endIndex - startIndex);
+                    startIndex = pageText.IndexOf(KEY) + KEY.Length;
+                    endIndex = pageText.IndexOf("Customer No.:", startIndex);
+                    String funcArea = pageText.Substring(startIndex, endIndex - startIndex);
                     if (!String.IsNullOrWhiteSpace(funcArea) && !String.IsNullOrWhiteSpace(F_FuncArea) &&
                         !funcArea.Trim().ToUpper().Equals(F_FuncArea.Trim().ToUpper()))
                         Defects.Add(@"Affected area is " + funcArea.Trim() + " in SCR report, but in coversheet is " + F_FuncArea);
-                    #endregion Function Area
-
-                    reportFound = true;
+                    #endregion Function Area                                        
                 }
                 #endregion Check SCR Report
 
@@ -369,11 +428,6 @@ namespace Pkg_Checker.Implementations
 
                 #endregion Check Prerequisite Files
             }
-
-            if (!reportFound)
-                Defects.Add("Missing SCR Report.");
-            if (!trtFound)
-                Defects.Add("Missing TRT file.");
         }
 
         public void WorkWithAnnot()
