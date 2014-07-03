@@ -27,10 +27,10 @@ namespace Pkg_Checker
 
             reader.TraverseWholeFile();
             reader.CheckCommonFields();
-            reader.CheckWorkProductType();
+            reader.CheckReviewStatus();
+            reader.CheckWorkProducts();
             reader.CheckCheckList();
-            reader.CheckWholeFileWide();
-            reader.WorkWithAnnot();
+            reader.CheckWholeFileWide();            
             return reader.GetDefects().Count() > 0;
         }
 
@@ -211,13 +211,10 @@ namespace Pkg_Checker
                 + @"Justifications (Regular Expression)" + Environment.NewLine;
             //"TO DO:
             // Progress bar for checking progress
-            //2. Produced by                        
-            //5. review status together with defect
-            //6. defect number
-            //7. approved version
-            //8. review stamps
-            //9. checklist acm info            
-            //11. SCR report version info same as coversheet            
+            //6. collect comments            
+            //2. Produced by            
+            //9. checklist acm info
+            //8. review stamps                        
         }
 
     }

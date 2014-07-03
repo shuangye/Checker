@@ -12,13 +12,13 @@ namespace Pkg_Checker.Interfaces
         void TraverseWholeFile();        
 
         void CheckCommonFields();
-        void CheckWorkProductType();
+
+        void CheckReviewStatus();
+        void CheckWorkProducts();
         void CheckCheckList();
 
         void CheckWholeFileWide();
-
-        void WorkWithAnnot();
-
+                
         List<String> GetDefects();
 
         void Close();

@@ -18,6 +18,9 @@ namespace Pkg_Checker.Interfaces
         public const string F_ReviewStatus = @"R.Status";
         public const string F_LockStatus = @"lockStatus";
         public const string F_ReviewLocation = @"M.Location";
+        public const string F_ProducerTechDefectCount = @"DT.Supplier";
+        public const string F_ProducerNontechDefectCount = @"DNT.Supplier";
+        public const string F_ProducerProcessDefectCount = @"DP.Supplier";
         public const string F_WorkProductType = @"WP.Artifacts";
         public const string F_Lifecycle = @"R.Lifecycle";
         public const string F_TraceCheckList = @"TRC_CHK.ID";        
