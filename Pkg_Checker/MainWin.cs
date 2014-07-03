@@ -25,10 +25,11 @@ namespace Pkg_Checker
             if (!reader.IsValidReviewPackage())
                 return false;
 
+            reader.TraverseWholeFile();
             reader.CheckCommonFields();
             reader.CheckWorkProductType();
             reader.CheckCheckList();
-            reader.TraverseWholeFile();
+            reader.CheckWholeFileWide();
             reader.WorkWithAnnot();
             return reader.GetDefects().Count() > 0;
         }
@@ -209,17 +210,14 @@ namespace Pkg_Checker
                 + @"Check .TRT existance" + Environment.NewLine
                 + @"Justifications (Regular Expression)" + Environment.NewLine;
             //"TO DO:
+            // Progress bar for checking progress
             //2. Produced by                        
             //5. review status together with defect
             //6. defect number
             //7. approved version
             //8. review stamps
-            //9. checklist acm info
-            //10. justification box check
-            //11. SCR report version info same as coversheet
-            //12. TRT existance
-            //13. trace checklist justification box"
-
+            //9. checklist acm info            
+            //11. SCR report version info same as coversheet            
         }
 
     }

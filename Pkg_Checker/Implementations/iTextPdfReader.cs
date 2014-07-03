@@ -20,6 +20,7 @@ namespace Pkg_Checker.Implementations
 
         public String ReviewPackageName { get; set; }
         public bool PackageIsLocked { get; set; }
+        public bool HasTraceChecklist { get; set; }
         public String Aircraft { get; set; }
         public float MasterSCR { get; set; }
         public char F_DO178Level { get; set; }
@@ -32,11 +33,15 @@ namespace Pkg_Checker.Implementations
         public String F_WorkProductType { get; set; }
         public String F_Lifecycle { get; set; }
         public String F_ReviewStatus { get; set; }
-
+        public String F_CTP_Justification { get; set; }
+        public String F_Trace_Justification { get; set; }
+        
+        public List<SCRReport> SCRReports { get; set; }
         public List<CheckedInFile> CheckedInFiles { get; set; }
-        public List<float> SCRs { get; set; }
+        public List<float> SCRs { get; set; }   // SCRs of "Work products under review"
         public List<String> BaseFileNames { get; set; }
         public List<String> ExtFileNames { get; set; }
+        public List<String> PrintedTraceFiles { get; set; }
 
         public List<String> Defects { get; set; }
         #endregion Properties
@@ -89,7 +94,9 @@ namespace Pkg_Checker.Implementations
                 {
                     var n = f.GetMerged(0).GetAsNumber(PdfName.FF);
                     PackageIsLocked = null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0;
-                }                
+                }
+
+                HasTraceChecklist = null != Reader.AcroFields.GetFieldItem(FormFields.F_TraceCheckList);
 
                 F_FuncArea = Fields.GetField(FormFields.F_FuncArea);
                 val = Fields.GetField(FormFields.F_DO178Level);
@@ -103,6 +110,10 @@ namespace Pkg_Checker.Implementations
                 F_WorkProductType = Fields.GetField(FormFields.F_WorkProductType);
                 F_Lifecycle = Fields.GetField(FormFields.F_Lifecycle);
                 F_ReviewStatus = Fields.GetField(FormFields.F_ReviewStatus);
+                F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_1);
+                if (String.IsNullOrWhiteSpace(F_CTP_Justification))
+                    F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_2);
+                F_Trace_Justification = Fields.GetField(FormFields.F_Trace_Justification);
 
                 #region checked in files
                 CheckedInFiles = new List<CheckedInFile>();
@@ -150,7 +161,7 @@ namespace Pkg_Checker.Implementations
         {
             // 通过判断 Coversheet 的 Review ID 字段是否存在来判断是否为有效的 Review Package            
             if (null == Reader || null == Fields ||
-                String.IsNullOrWhiteSpace(Fields.GetField(FormFields.F_ReviewID)))
+                null != Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID))
             {
                 Defects.Add(@"Unable to open the file or it is not a valid review package");
                 return false;
@@ -276,22 +287,87 @@ namespace Pkg_Checker.Implementations
                 // Trace
                 if (F_WorkProductType.Contains(@"Trace Data") ^ ExtFileNames.Contains(".TRT"))
                     Defects.Add(@"Tracing: Work Product Type and Checked in files do not match");
-                if (ExtFileNames.Contains(".TRT") && String.IsNullOrWhiteSpace(Fields.GetField(FormFields.F_TraceCheckList)))
+                if (ExtFileNames.Contains(".TRT") && HasTraceChecklist)
                     Defects.Add(@"Missing Trace Check List");
             }
         }
 
+        /// <summary>
+        /// Parse the justifications to find the not disposed items
+        /// </summary>
+        /// <param name="justifications"></param>
+        /// <param name="itemsNoOrNA"></param>
+        /// <returns>A list of not disposed items</returns>
+        private List<int> ParseJustifications(String justifications, List<int> itemsNoOrNA)
+        {
+            if (String.IsNullOrWhiteSpace(justifications) || itemsNoOrNA.Count < 1)
+                return itemsNoOrNA;
+
+            List<int> notDisposedItems = new List<int>(itemsNoOrNA);            
+
+            Match match;
+            foreach (var item in itemsNoOrNA)
+            {
+                foreach (var line in justifications.Split("\r\n".ToCharArray()))
+                {
+                    String[] parsedItems;
+
+                    // For item(s) 12 - 15
+                    // 匹配下一种形式的，也会匹配这一种形式。这种形式更 specific, 故把它放在前面。
+                    match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        parsedItems = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                            .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                        if (null != parsedItems && parsedItems.Length > 1)
+                            if (item >= int.Parse(parsedItems[0]) &&
+                                item <= int.Parse(parsedItems[1]))
+                                // itemsNoOrNA.Remove(item);                                    
+                                notDisposedItems.Remove(item);
+                        // 匹配了 For item(s) 1 - 3 就不能再匹配 Form item(s) 1, 2, 3... 了
+                        continue;
+                    }
+
+                    // For item(s) 1
+                    // For item 12, 13...
+                    match = Regex.Match(line, @"For items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        parsedItems = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                            .Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var itemNumber in parsedItems)
+                            if (item == int.Parse(itemNumber))
+                                notDisposedItems.Remove(item);
+                        // itemsNoOrNA[item.Key] = true;  // disposed
+                        // the Value property is readonly, so set it to a new KeyValuePair
+                        // itemsNoOrNA[item.Key] = new KeyValuePair<int, bool>(item.Key, true);
+                        // itemsNoOrNA.Remove(item);                           
+                    }
+                }
+            }
+
+            return notDisposedItems;
+        }
+
+        /// <summary>
+        /// Check CTP check list and trace check list.
+        /// </summary>
         public void CheckCheckList()
         {
-            const int checkListItemCount = 45;
+            const int CTPCheckListItemCount = 45;
+            const int traceCheckListItemCount = 8;
             List<int> itemsNotChecked = new List<int>();
-            List<KeyValuePair<int, bool>> itemsNoOrNA = new List<KeyValuePair<int, bool>>();  // <item, isDisposed>
+            List<int> itemsNoOrNA = new List<int>();
+            List<int> notDisposedItems;
+            // List<KeyValuePair<int, bool>> itemsNoOrNA = new List<KeyValuePair<int, bool>>();  // <item, isDisposed>
             // Dictionary<int, bool> itemsNoOrNA = new Dictionary<int, bool>();            
 
             if (null == Fields)
                 return;
 
-            for (int i = 1; i <= checkListItemCount; ++i)
+            #region CTP Check List
+
+            for (int i = 1; i <= CTPCheckListItemCount; ++i)
             {
                 // "Yes", "No", "NA", ""
                 String fieldVal = Fields.GetField("CTP." + i);
@@ -299,7 +375,7 @@ namespace Pkg_Checker.Implementations
                     itemsNotChecked.Add(i);
                 else if (fieldVal.Contains('N'))
                     // itemsNoOrNA.Add(i, false);
-                    itemsNoOrNA.Add(new KeyValuePair<int, bool>(i, false));                    
+                    itemsNoOrNA.Add(i);                    
             }
 
             if (itemsNotChecked.Count() > 0)
@@ -307,74 +383,57 @@ namespace Pkg_Checker.Implementations
                 string temp = @"Item(s) ";
                 foreach (int i in itemsNotChecked)
                     temp += i + " ";
-                Defects.Add(temp + "is/are not checked.");
+                Defects.Add(temp + "is/are not checked in CTP check list.");
             }
 
-            // Justifications
-            if (itemsNoOrNA.Count() > 0)
+            notDisposedItems = ParseJustifications(F_CTP_Justification, itemsNoOrNA);
+            if (null != notDisposedItems && notDisposedItems.Count > 0)
             {
-                String justifications = Fields.GetField(FormFields.F_Justifications_1);
-                if (String.IsNullOrWhiteSpace(justifications))
-                    justifications = Fields.GetField(FormFields.F_Justifications_2);
-                if (String.IsNullOrWhiteSpace(justifications))
+                String temp = "";
+                foreach (var item in notDisposedItems)
+                    temp += item + " ";
+                Defects.Add(@"No justification for NO or N/A item " + temp + " in CTP check list.");
+            }
+
+            #endregion CTP Check List
+
+            itemsNotChecked.Clear();
+            itemsNoOrNA.Clear();            
+
+            #region Trace Check List
+
+            if (HasTraceChecklist)
+            {
+                for (int i = 1; i <= traceCheckListItemCount; ++i)
                 {
-                    Defects.Add(@"No justifications for NO/NA items.");
-                    return;
+                    // "Yes", "No", "NA", ""
+                    String fieldVal = Fields.GetField("CkList." + i);
+                    if (String.IsNullOrWhiteSpace(fieldVal))
+                        itemsNotChecked.Add(i);
+                    else if (fieldVal.Contains('N'))
+                        // itemsNoOrNA.Add(i, false);
+                        itemsNoOrNA.Add(i);
                 }
 
-                List<int> notDisposedItems = new List<int>();
-                foreach (var item in itemsNoOrNA)
-                    notDisposedItems.Add(item.Key);
-
-                Match match;
-                foreach (var item in itemsNoOrNA)
+                if (itemsNotChecked.Count() > 0)
                 {
-                    foreach (var line in justifications.Split("\r\n".ToCharArray()))
-                    {
-                        String[] itemNumbers;
-
-                        // For item(s) 12 - 15
-                        // 匹配这种形式的，也会匹配下面一种形式。故把这种形式放在前面。
-                        match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
-                        if (match.Success)
-                        {
-                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
-                                .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
-                            if (null != itemNumbers && itemNumbers.Length > 1)
-                                if (item.Key >= int.Parse(itemNumbers[0]) &&
-                                    item.Key <= int.Parse(itemNumbers[1]))
-                                    // itemsNoOrNA.Remove(item);                                    
-                                    notDisposedItems.Remove(item.Key);
-                            // 匹配了 For item(s) 1 - 3 就不能再匹配 Form item(s) 1, 2, 3... 了
-                            continue;
-                        }
-
-                        // For item(s) 1
-                        // For item 12, 13...
-                        match = Regex.Match(line, @"For items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
-                        if (match.Success)
-                        {
-                            itemNumbers = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
-                                .Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var itemNumber in itemNumbers)
-                                if (item.Key == int.Parse(itemNumber))
-                                    notDisposedItems.Remove(item.Key);
-                                    // itemsNoOrNA[item.Key] = true;  // disposed
-                                    // the Value property is readonly, so set it to a new KeyValuePair
-                                    // itemsNoOrNA[item.Key] = new KeyValuePair<int, bool>(item.Key, true);
-                                    // itemsNoOrNA.Remove(item);                           
-                        }                        
-                    }
+                    string temp = @"Item(s) ";
+                    foreach (int i in itemsNotChecked)
+                        temp += i + " ";
+                    Defects.Add(temp + "is/are not checked in Trace check list.");
                 }
 
-                if (notDisposedItems.Count > 0)
+                notDisposedItems = ParseJustifications(F_Trace_Justification, itemsNoOrNA);
+                if (null != notDisposedItems && notDisposedItems.Count > 0)
                 {
                     String temp = "";
                     foreach (var item in notDisposedItems)
                         temp += item + " ";
-                    Defects.Add(@"No justification for NO or N/A item " + temp + ".");
+                    Defects.Add(@"No justification for NO or N/A item " + temp + " in Trace check list.");
                 }
             }
+
+            #endregion Trace Check List
         }
 
         /// <summary>        
@@ -390,6 +449,8 @@ namespace Pkg_Checker.Implementations
             // is the TRT file present for one specific CTP? (consider more than one CTPs in one review package)
             List<KeyValuePair<String, bool>> TRTFileFound = new List<KeyValuePair<string, bool>>();
 
+            SCRReports = new List<SCRReport>();
+            PrintedTraceFiles = new List<string>();
             Match match;
             String KEYWORKDS;
 
@@ -401,8 +462,9 @@ namespace Pkg_Checker.Implementations
                     continue;
 
                 #region Parse SCR Report
-                // SCR report 可能被打印成了多页，而它自身的 page # of # 和最终打印的 PDF 又不严格对应
-                // 故只能根据特征字符串定位 SCR Report, 之后从中提取信息
+                // SCR report and "Affected Elements" therein may span multiple pages,
+                // and the page number of SCR report is not one-to-one mapping with the PDF page.
+                // So locate the SCR report by keywords.
                 // Begin: SYSTEM CHANGE REQUEST Page # of #
                 // End: Closed in Config.: ***                
                 match = Regex.Match(pageText, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+");
@@ -436,8 +498,7 @@ namespace Pkg_Checker.Implementations
                         match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\S{2,}");
                         if (match.Success)
                             report.TargetConfig = match.Value.Strip("Target Configuration:").Trim();
-
-                        // Elements Affected
+                                               
                         #region Elements Affected
                         // Begin: Elements Affected:
                         // End: Closure Category:
@@ -465,23 +526,31 @@ namespace Pkg_Checker.Implementations
                             KEYWORKDS = @"Closure Category:";
                             if (SCRPageContent.IndexOf(KEYWORKDS) >= 0)
                                 elementsAffectedArea += SCRPageContent.Substring(0, SCRPageContent.IndexOf(KEYWORKDS));
+                            else
+                                elementsAffectedArea += SCRPageContent;
                         }
-
-                        // 定位出了 Affected Elements 这一区域，下面解析其中的信息
+                                                
+                        // Having located the "Affected Elements" area, it is time now to parse info therein
                         if (!String.IsNullOrWhiteSpace(elementsAffectedArea))
                         {
                             report.AffectedElements = new List<CheckedInFile>();
                             CheckedInFile checkedInFile = null;
                             foreach (String line in elementsAffectedArea.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
-                            {                                
-                                match = Regex.Match(line, @"\S{1,}\.\S{1,}");
+                            {
+                                // C:\A350_TEST\9311_00.LIS 3/28/2014, 8:35:25 PM
+                                // to filter the file name like 9311_00.LIS in printed SCR report header
+                                if (line.IndexOfAny(@":\/,".ToCharArray()) >= 0)
+                                    continue;
+
+                                // match a file name. min base name is 3
+                                match = Regex.Match(line, @"\w{3,}\.\w{3}");  
                                 if (match.Success)
                                 {
                                     checkedInFile = new CheckedInFile();
                                     checkedInFile.SCR = report.SCRNumber;
                                     checkedInFile.FileName = match.Value;
 
-                                    // 把文件名与版本合在一起匹配是因为文件名中也可能含有数字，如 A350, MD11
+                                    // File name may also contain digits, e.g., A350, MD11
                                     match = Regex.Match(line, checkedInFile.FileName + @"\s*\d{1,}");
                                     if (match.Success)
                                         checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
@@ -499,16 +568,32 @@ namespace Pkg_Checker.Implementations
                             report.ClosedConfig = match.Value.Strip("Closed in Config.:").Trim();
                             break;  // reach the end of the SCR report
                         }
-                    }                                       
+                    }
+                    SCRReports.Add(report);
+                    // page += report.EndPageInPackage - report.EndPageInPackage;  // skip this SCR report
+                    continue;
                 }
                 #endregion Parse SCR Report
 
-                #region Check Prerequisite Files
-                // 如果 TRT 被更新了，则它至少应出现2次；否则至少应出现1次。
-                // 若一个 review package 里包含了多个 CTP 呢？
-
-                #endregion Check Prerequisite Files
+                #region collect prerequisite files
+                // .TRT files                
+                match = Regex.Match(pageText, @"TRACE FILENAME\s*:\s*\S{1,}\.TRT", RegexOptions.IgnoreCase);
+                if (match.Success)
+                    PrintedTraceFiles.Add(match.Value.ToUpper().Strip(@"TRACE FILENAME").Trim().Strip(@":").Trim());
+                #endregion collect prerequisite files                
             }
+        }
+
+        public void CheckWholeFileWide()
+        {
+            #region prerequisite files
+            // .TRT files
+            foreach (var item in BaseFileNames)
+            {
+                if (!PrintedTraceFiles.Contains(item + @".TRT"))
+                    Defects.Add(item + @".TRT is not printed to the review package.");
+            }
+            #endregion prerequisite files
         }
 
         public void WorkWithAnnot()
