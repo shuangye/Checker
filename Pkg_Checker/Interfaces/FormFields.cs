@@ -23,7 +23,7 @@ namespace Pkg_Checker.Interfaces
         public const string F_ProducerProcessDefectCount = @"DP.Supplier";
         public const string F_WorkProductType = @"WP.Artifacts";
         public const string F_Lifecycle = @"R.Lifecycle";
-        public const string F_TraceCheckList = @"TRC_CHK.ID";        
+        public const string F_TraceCheckList = @"CkList.1";        
         public const string F_CTP_Justification_1 = @"1.Text1"; // 有些 coversheet 中是这个名字
         public const string F_CTP_Justification_2 = @"Text1"; // 有些 coversheet 中却是这个名字
         public const string F_Trace_Justification = @"Text_N_NA_Justification_12";        
@@ -35,6 +35,7 @@ namespace Pkg_Checker.Interfaces
         public const string F_Lifecycle_Val_SLTP = @"R.Lifecycle";
         public const string F_ReviewStatus_Val_Accepted = "Accepted";
         public const string F_ReviewStatus_Val_Revised = "Revise";
+        public const string F_ReviewStatus_Val_Rereview = "ReReview";
         #endregion Coversheet fields values
     }
 }

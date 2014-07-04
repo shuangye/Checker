@@ -23,6 +23,7 @@ namespace Pkg_Checker.Implementations
         public bool PackageIsLocked { get; set; }
         public bool HasTraceChecklist { get; set; }
         public String Aircraft { get; set; }
+        public float F_ReviewID { get; set; }
         public float MasterSCR { get; set; }
         public char F_DO178Level { get; set; }
         public String F_ACMProject { get; set; }
@@ -39,14 +40,15 @@ namespace Pkg_Checker.Implementations
         public String F_ReviewStatus { get; set; }
         public String F_CTP_Justification { get; set; }
         public String F_Trace_Justification { get; set; }
-        
+
+        public int TotalAcceptedDefectCount { get; set; }
+
         public List<SCRReport> SCRReports { get; set; }
         public List<CheckedInFile> CheckedInFiles { get; set; }
         public List<float> SCRs { get; set; }   // SCRs of "Work products under review"
         public List<String> BaseFileNames { get; set; }
         public List<String> ExtFileNames { get; set; }
-        public List<String> PrintedTraceFiles { get; set; }
-
+        public List<String> PrintedFiles { get; set; }
         public List<String> Defects { get; set; }
         #endregion Properties
 
@@ -73,14 +75,19 @@ namespace Pkg_Checker.Implementations
             if (null != Fields)
             {
                 const int maxFileCount = 40;
+                Match match;
                 String val = "";
 
                 ReviewPackageName = Path.GetFileName(pdfPath).ToUpper();
 
-                val = ReviewPackageName.Strip(@"_REVIEW_PACKET.PDF").Strip(@"FMS2000_A350_A380_")
-                    .Strip(@"FMS2000_A3XX_").Strip(@"FMS2000_MDXX_").Strip(@"B7E7_B7E7FMS_");
+                val = ReviewPackageName.Strip(@"FMS2000_A350_A380_")
+                    .Strip(@"FMS2000_A3XX_").Strip(@"FMS2000_MDXX_").Strip(@"B7E7_B7E7FMS_");                
                 try
-                { MasterSCR = float.Parse(val.Replace('_', '.')); }
+                { 
+                    match = Regex.Match(val, @"\d{1,}_\d{2}");
+                    if (match.Success)
+                        MasterSCR = float.Parse(match.Value.Replace('_', '.')); 
+                }
                 catch
                 { MasterSCR = 0.0F; }
 
@@ -107,8 +114,6 @@ namespace Pkg_Checker.Implementations
                 F_DO178Level = String.IsNullOrEmpty(val) ? ' ' : char.Parse(val);
                 F_ACMProject = Fields.GetField(FormFields.F_ACMProject);
                 F_ACMSubProject = Fields.GetField(FormFields.F_ACMSubProject);
-                val = Fields.GetField(FormFields.F_RevParticipants);
-                F_RevParticipants = String.IsNullOrWhiteSpace(val) ? 0 : int.Parse(val);
                 F_ModStamp = Fields.GetField(FormFields.F_ModStamp);
                 F_ReviewLocation = Fields.GetField(FormFields.F_ReviewLocation);
                 F_WorkProductType = Fields.GetField(FormFields.F_WorkProductType);
@@ -119,6 +124,18 @@ namespace Pkg_Checker.Implementations
                     F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_2);
                 F_Trace_Justification = Fields.GetField(FormFields.F_Trace_Justification);
 
+                // Review participants field may be filled as 3.0
+                match = Regex.Match(Fields.GetField(FormFields.F_RevParticipants), @"\d{1,}");
+                if (match.Success)
+                    F_RevParticipants = int.Parse(match.Value);
+
+                // Review ID fields may be filled as 3912.02;4080.02
+                try
+                {
+                    F_ReviewID = float.Parse(Fields.GetField(FormFields.F_ReviewID)
+                       .Split(",;".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).FirstOrDefault());
+                }
+                catch { F_ReviewID = 0.0F; }
                 try { F_ProducerTechDefectCount = int.Parse(Fields.GetField(FormFields.F_ProducerTechDefectCount)); }
                 catch { F_ProducerTechDefectCount = 0; }
                 try { F_ProducerNontechDefectCount = int.Parse(Fields.GetField(FormFields.F_ProducerNontechDefectCount)); }
@@ -148,7 +165,7 @@ namespace Pkg_Checker.Implementations
                             continue;
                         }
 
-                        CheckedInFile checkedInFile = new CheckedInFile { FileName = fileName.ToUpper() };
+                        CheckedInFile checkedInFile = new CheckedInFile { FileName = fileName.Trim().ToUpper() };
                         try { checkedInFile.SCR = float.Parse(scr); }
                         catch { checkedInFile.SCR = 0.0F; }
                         try { checkedInFile.CheckedInVer = int.Parse(checkedInVer); }
@@ -158,7 +175,7 @@ namespace Pkg_Checker.Implementations
 
                         if (checkedInFile.ApprovedVer < checkedInFile.CheckedInVer)
                             Defects.Add(@"Approved ver is less than checked in ver for file " + checkedInFile.FileName);
-                        
+
                         CheckedInFiles.Add(checkedInFile);
                         String ext = Path.GetExtension(checkedInFile.FileName);
                         ExtFileNames.Add(ext);
@@ -193,23 +210,21 @@ namespace Pkg_Checker.Implementations
                 return;
 
             const int maxRevParticipants = 38;
-            String val = "";
-            
-            val = Fields.GetField(FormFields.F_ReviewID);
-            if (String.IsNullOrWhiteSpace(val) || Math.Abs(float.Parse(val) - MasterSCR) > SCRTolerance)
+
+            if (Math.Abs(F_ReviewID - MasterSCR) > SCRTolerance)
                 Defects.Add(@"Review ID does not match the review package name.");
-            
+
             // DO-178 level
             if (("A350".Equals(Aircraft) || "B7E7".Equals(Aircraft) || "MDXX".Equals(Aircraft))
                 && F_DO178Level != 'B')
                 Defects.Add(@"DO-178 Level is " + F_DO178Level + "; expected B.");
-            #warning "A380 也是 A3XX, 但是 DO178 level B"
+#warning "A380 也是 A3XX, 但是 DO178 level B"
             else if ("A3XX".Equals(Aircraft) && F_DO178Level != 'C')
                 Defects.Add(@"DO-178 Level is " + F_DO178Level + "; expected C.");
 
             // ACM project and subproject
             if (@"A350".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"A350_A380".Equals(F_ACMSubProject)))
-                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject 
+                Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
                     + "; expected FMS2000 and A350_A380, respectively.");
             if (@"A3XX".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"A3XX".Equals(F_ACMSubProject)))
                 Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
@@ -220,14 +235,14 @@ namespace Pkg_Checker.Implementations
             if (@"MDXX".Equals(Aircraft) && (!@"FMS2000".Equals(F_ACMProject) || !@"MDXX".Equals(F_ACMSubProject)))
                 Defects.Add(@"ACM project is " + F_ACMProject + ", subproject is " + F_ACMSubProject
                     + "; expected FMS2000 and MDXX, respectively.");
-            
+
             // Review location
             if (String.IsNullOrWhiteSpace(F_ReviewLocation) || !F_ReviewLocation.Equals(FormFields.F_ReviewLocation_Val))
                 Defects.Add(@"Review Location is " + F_ReviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
 
             if (String.IsNullOrWhiteSpace(F_ModStamp) || !"Yes".Equals(F_ModStamp))
                 Defects.Add(@"Moderator did not stamp on the package.");
-            
+
             int revParticipants = 0;
             for (int i = 1; i <= maxRevParticipants; ++i)
             {
@@ -242,40 +257,61 @@ namespace Pkg_Checker.Implementations
 
         public void CheckReviewStatus()
         {
-            // 检查 Review status, 所填写的 defects 个数，以及实际有多少个 comments
-            if (PackageIsLocked)
+            if (!PackageIsLocked)
             {
-                int result = F_ProducerTechDefectCount | F_ProducerNontechDefectCount | F_ProducerProcessDefectCount;
+                Defects.Add(@"Review package is not locked.");
+                return;
+            }
 
-                // Accepted as is: no defects
-                if (FormFields.F_ReviewStatus_Val_Accepted.Equals(F_ReviewStatus))
+            int filledDefect = F_ProducerTechDefectCount | F_ProducerNontechDefectCount | F_ProducerProcessDefectCount;
+
+            // Accepted as is
+            if (FormFields.F_ReviewStatus_Val_Accepted.Equals(F_ReviewStatus))
+            {
+                if (0 != filledDefect)
+                    Defects.Add(@"According to the coversheet fillings, there is at least one defect, but the package is closed as "
+                        + F_ReviewStatus);
+
+                foreach (var checkedInFile in CheckedInFiles)
                 {
-                    if (0 != result)
-                        Defects.Add(@"According to the coversheet fillings, there is at least one defect, but the package is closed as "
-                            + FormFields.F_ReviewStatus_Val_Accepted);
+                    if (checkedInFile.CheckedInVer != checkedInFile.ApprovedVer)
+                        Defects.Add(@"Review status is " + F_ReviewStatus
+                            + @", but the approved ver is not equal to the checked in ver of file "
+                            + checkedInFile.FileName);
                 }
+            }
 
-                // Revise (no further review): at least 1 defect
-                else if (FormFields.F_ReviewStatus_Val_Revised.Equals(F_ReviewStatus))
+            // Revise (no further review): at least 1 defect
+            else if (FormFields.F_ReviewStatus_Val_Revised.Equals(F_ReviewStatus) ||
+                FormFields.F_ReviewStatus_Val_Rereview.Equals(F_ReviewStatus))
+            {
+                if (0 == filledDefect)
+                    Defects.Add(@"According to the coversheet fillings, there are no defects, but the package is closed as"
+                        + F_ReviewStatus);
+
+                if (TotalAcceptedDefectCount != F_ProducerNontechDefectCount + F_ProducerTechDefectCount
+                    + F_ProducerProcessDefectCount)
+                    Defects.Add(@"Total defects count is not equal to actual accepted comments count.");
+
+                bool reworkFound = false;
+                foreach (var checkedInFile in CheckedInFiles)
                 {
-                    if (0 == result)
-                        Defects.Add(@"According to the coversheet fillings, there is no defects, but the package is closed as"
-                            + FormFields.F_ReviewStatus_Val_Revised);
+                    if (checkedInFile.CheckedInVer < checkedInFile.ApprovedVer)
+                    {
+                        reworkFound = true;
+                        break;
+                    }
                 }
-
-                else
-                    Defects.Add(@"Review status should be " + FormFields.F_ReviewStatus_Val_Accepted
-                        + @" or " + FormFields.F_ReviewStatus_Val_Revised + ".");                        
+                if (!reworkFound)
+                    Defects.Add(@"Review status is " + F_ReviewStatus + @", but there seems to be no rework.");
             }
 
             else
-                Defects.Add(@"Review package is not locked.");
+                Defects.Add(@"Review status is not valid.");
         }
 
         public void CheckWorkProducts()
         {
-            List<String> workProductTypes;
-
             if (null == Fields)
                 return;
 
@@ -285,9 +321,6 @@ namespace Pkg_Checker.Implementations
                 Defects.Add(@"Work Product Type is empty.");
             else
             {
-                char[] sep = { ',' };
-                workProductTypes = F_WorkProductType.Split(sep, StringSplitOptions.RemoveEmptyEntries).ToList<String>();
-
                 // CTP. A CTP update may only contain .ZIP updates, and not .TDF updates.
                 if ("Low-Level Test Procedures".Equals(F_Lifecycle))
                 {
@@ -326,24 +359,28 @@ namespace Pkg_Checker.Implementations
             #region ACM Info vs. Coversheet Info
 
             // Approved ver >= checked in ver has been checked inside Read() method
-            // Now check Approved ver == max ver in ACM, and take the files in coversheet as a standard.
+            // Now check Checked in ver == max ver in ACM, and take the files in coversheet as a standard.
             foreach (var checkedInFile in CheckedInFiles)
             {
-                int maxACMver = 0;
-                SCRReport matchingSCRReport = SCRReports.Single(x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
-                IEnumerable<CheckedInFile> matchingFiles = 
-                    matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
-                if (null != matchingFiles)
+                SCRReport matchingSCRReport = SCRReports.FirstOrDefault(
+                    x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
+                if (null != matchingSCRReport)
                 {
-                    maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;
-                    if (maxACMver != checkedInFile.ApprovedVer)
-                        Defects.Add(@"Approved ver of file " + checkedInFile.FileName
-                        + " is " + checkedInFile.ApprovedVer + ", but the max ver checked into ACM is " + maxACMver
-                        + ". SCR: " + checkedInFile.SCR);
+                    IEnumerable<CheckedInFile> matchingFiles =
+                        matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
+                    if (null != matchingFiles && matchingFiles.Count() > 0)
+                    {
+                        int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;
+                        if (maxACMver != checkedInFile.CheckedInVer)
+                            Defects.Add(@"The coversheet indicates that the checked in ver of file "
+                                + checkedInFile.FileName + " is " + checkedInFile.CheckedInVer
+                                + ", but the max ver in SCR report is " + maxACMver
+                                + ". SCR: " + checkedInFile.SCR);
+                    }
+                    else
+                        Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
+                            + " is not checked into SCR " + checkedInFile.SCR);
                 }
-                else
-                    Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
-                        + " is not checked into SCR " + checkedInFile.SCR);
             }
 
             #endregion ACM Info vs. Coversheet Info
@@ -360,7 +397,7 @@ namespace Pkg_Checker.Implementations
             if (String.IsNullOrWhiteSpace(justifications) || itemsNoOrNA.Count < 1)
                 return itemsNoOrNA;
 
-            List<int> notDisposedItems = new List<int>(itemsNoOrNA);            
+            List<int> notDisposedItems = new List<int>(itemsNoOrNA);
 
             Match match;
             foreach (var item in itemsNoOrNA)
@@ -371,10 +408,10 @@ namespace Pkg_Checker.Implementations
 
                     // For item(s) 12 - 15
                     // 匹配下一种形式的，也会匹配这一种形式。这种形式更 specific, 故把它放在前面。
-                    match = Regex.Match(line, @"For items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                    match = Regex.Match(line, @"items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
                             .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
                         if (null != parsedItems && parsedItems.Length > 1)
                             if (item >= int.Parse(parsedItems[0]) &&
@@ -387,10 +424,10 @@ namespace Pkg_Checker.Implementations
 
                     // For item(s) 1
                     // For item 12, 13...
-                    match = Regex.Match(line, @"For items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
+                    match = Regex.Match(line, @"items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("FOR ITEMS").Strip("FOR ITEM").Trim()
+                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
                             .Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                         foreach (var itemNumber in parsedItems)
                             if (item == int.Parse(itemNumber))
@@ -432,7 +469,7 @@ namespace Pkg_Checker.Implementations
                     itemsNotChecked.Add(i);
                 else if (fieldVal.Contains('N'))
                     // itemsNoOrNA.Add(i, false);
-                    itemsNoOrNA.Add(i);                    
+                    itemsNoOrNA.Add(i);
             }
 
             if (itemsNotChecked.Count() > 0)
@@ -449,13 +486,14 @@ namespace Pkg_Checker.Implementations
                 String temp = "";
                 foreach (var item in notDisposedItems)
                     temp += item + " ";
-                Defects.Add(@"No justification for NO or N/A item " + temp + " in CTP check list.");
+                Defects.Add(@"No justification for NO or N/A item " + temp 
+                    + " in CTP check list, or they are not written in proper form.");
             }
 
             #endregion CTP Check List
 
             itemsNotChecked.Clear();
-            itemsNoOrNA.Clear();            
+            itemsNoOrNA.Clear();
 
             #region Trace Check List
 
@@ -486,7 +524,8 @@ namespace Pkg_Checker.Implementations
                     String temp = "";
                     foreach (var item in notDisposedItems)
                         temp += item + " ";
-                    Defects.Add(@"No justification for NO or N/A item " + temp + " in Trace check list.");
+                    Defects.Add(@"No justification for NO or N/A item " + temp
+                        + " in Trace check list, or they are not written in proper form.");
                 }
             }
 
@@ -508,12 +547,12 @@ namespace Pkg_Checker.Implementations
             List<KeyValuePair<String, bool>> TRTFileFound = new List<KeyValuePair<string, bool>>();
 
             SCRReports = new List<SCRReport>();
-            PrintedTraceFiles = new List<string>();
+            PrintedFiles = new List<string>();
             Match match;
             String KEYWORKDS;
 
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
-            {                
+            {
                 SimpleTextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
                 String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, strategy);
                 if (String.IsNullOrWhiteSpace(pageText))
@@ -534,9 +573,10 @@ namespace Pkg_Checker.Implementations
                     for (report.EndPageInPackage = page; report.EndPageInPackage <= Reader.NumberOfPages; ++report.EndPageInPackage)
                     {
                         SCRPageContent = PdfTextExtractor.GetTextFromPage(Reader, report.EndPageInPackage, strategy);
-                        
-                        // Change Category: PROBLEM SCR No.: P 17011.01
-                        match = Regex.Match(SCRPageContent, @"Change Category:\s*PROBLEM\s*SCR No.:\s*[A-Z]\s*\d{3,}\.\d{2}");
+
+                        // Change Category: PROBLEM SCR No.: P 17011.01                        
+                        // Change Category: INITIAL DEVELOPMENT SCR No.:  08982.04                        
+                        match = Regex.Match(SCRPageContent, @"Change Category:\s*\w{1,}\s*SCR No.:\s*[A-Z]*\s*\d{3,}\.\d{2}");
                         if (match.Success)
                             report.SCRNumber = float.Parse(
                                 Regex.Match(match.Value.Strip(@"Change Category:").Strip("PROBLEM").Strip("SCR No.:").Trim(),
@@ -556,13 +596,13 @@ namespace Pkg_Checker.Implementations
                         match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\S{2,}");
                         if (match.Success)
                             report.TargetConfig = match.Value.Strip("Target Configuration:").Trim();
-                                               
+
                         #region Elements Affected
                         // Begin: Elements Affected:
                         // End: Closure Category:
-                        // 考虑了这一区域位于 PDF 多个页面中的情况
+                        // Note: The Elements Affected area may span multiple pages
                         String elementsAffectedArea = "";
-                        KEYWORKDS = @"Elements Affected:";                        
+                        KEYWORKDS = @"Elements Affected:";
                         int elementsAffectedBeginLocation = -1;
                         int elementsAffectedEndLocation = -1;
                         if (SCRPageContent.IndexOf(KEYWORKDS) >= 0)
@@ -587,35 +627,41 @@ namespace Pkg_Checker.Implementations
                             else
                                 elementsAffectedArea += SCRPageContent;
                         }
-                                                
+
                         // Having located the "Affected Elements" area, it is time now to parse info therein
                         if (!String.IsNullOrWhiteSpace(elementsAffectedArea))
                         {
                             report.AffectedElements = new List<CheckedInFile>();
                             CheckedInFile checkedInFile = null;
-                            foreach (String line in elementsAffectedArea.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+                            foreach (String line in elementsAffectedArea.ToUpper().Split("\r\n".ToCharArray(),
+                                StringSplitOptions.RemoveEmptyEntries))
                             {
                                 // C:\A350_TEST\9311_00.LIS 3/28/2014, 8:35:25 PM
-                                // to filter the file name like 9311_00.LIS in printed SCR report header
+                                // Filter the file name like 9311_00.LIS in printed SCR report header
                                 if (line.IndexOfAny(@":\/,".ToCharArray()) >= 0)
                                     continue;
 
-                                // match a file name. min base name is 3
-                                match = Regex.Match(line, @"\w{3,}\.\w{3}");  
+                                // match a line like "TEST CTP_A350_FMCI_EVENT_HANDLER.ZIP 4"
+                                match = Regex.Match(line, @"\w{1,}\s*\w{5,}\.\w{3}\s*\d{1,}");
                                 if (match.Success)
                                 {
-                                    checkedInFile = new CheckedInFile();
-                                    checkedInFile.SCR = report.SCRNumber;
-                                    checkedInFile.FileName = match.Value;
-
-                                    // File name may also contain digits, e.g., A350, MD11
-                                    match = Regex.Match(line, checkedInFile.FileName + @"\s*\d{1,}");
+                                    // match a file name like TEST CTP_A350_FMCI_EVENT_HANDLER.ZIP
+                                    match = Regex.Match(line, @"\w{3,}\.\w{3}");
                                     if (match.Success)
-                                        checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
+                                    {
+                                        checkedInFile = new CheckedInFile();
+                                        checkedInFile.SCR = report.SCRNumber;
+                                        checkedInFile.FileName = match.Value;
 
-                                    report.AffectedElements.Add(checkedInFile);
-                                }                                    
-                            }                            
+                                        // File name may also contain digits, e.g., A350, MD11
+                                        match = Regex.Match(line, checkedInFile.FileName + @"\s*\d{1,}");
+                                        if (match.Success)
+                                            checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
+
+                                        report.AffectedElements.Add(checkedInFile);
+                                    }
+                                }
+                            }
                         }
                         #endregion Elements Affected
 
@@ -635,14 +681,87 @@ namespace Pkg_Checker.Implementations
 
                 #region Collect Prerequisite Files
                 // .TRT files                
-                match = Regex.Match(pageText, @"TRACE FILENAME\s*:\s*\S{1,}\.TRT", RegexOptions.IgnoreCase);
-                if (match.Success)
-                    PrintedTraceFiles.Add(match.Value.ToUpper().Strip(@"TRACE FILENAME").Trim().Strip(@":").Trim());
+                foreach (Match matchItem in Regex.Matches(pageText, @"TRACE FILENAME\s*:\s*\S{1,}\.TRT", RegexOptions.IgnoreCase))
+                    PrintedFiles.Add(matchItem.Value.ToUpper().Strip(@"TRACE FILENAME").Trim().Strip(@":").Trim());
                 #endregion Collect Prerequisite Files
 
                 #region Collect Comments
 
-                int acceptedDefectCount = 0;
+                #region Annotation state model
+
+//// Standard Defect State Model setup - 
+//// This code defines the Annotation state models in support of Review Defect Statusing.
+//// It defines Two models:
+//// 1. Defect Review State.  This provides a state of defect acceptance.
+//// 2. Defect Status.  This provides a status of the defect resolution.
+//// 3. Defect Status (default Adobe Review state is deleted)
+
+//// First, delete any old state models,
+
+//// Defect type model
+//try { Collab.removeStateModel("DefectType");    } catch (e) {}
+//// Qualifier model
+//try { Collab.removeStateModel("QualifierType"); } catch (e) {}
+//// Impact model
+//try { Collab.removeStateModel("Impact");        } catch (e) {}
+//// Delete Adobe default state model - don't need it anymore
+//try { Collab.removeStateModel("Review");        } catch (e) {}
+
+//// Create the new state models
+
+//// Defect Review State model
+//var myIsDefectType = new Object;
+//myIsDefectType["None"] = {cUIName: "None"};
+//myIsDefectType["Accepted"] = {cUIName: "Accepted"};
+//myIsDefectType["Nondefect"] = {cUIName: "Not a Defect"};
+//myIsDefectType["Duplicate"] = {cUIName: "Duplicate"};
+//Collab.addStateModel({cName: "Is Defect State", cUIName: "IsDefectState",oStates: myIsDefectType, Default: "Accepted"});
+
+//// Defect Status model
+//var myResolutionStatusType = new Object;
+//myResolutionStatusType["None"] = {cUIName: "None"};
+//myResolutionStatusType["In Work"] = {cUIName: "In Work"};
+//myResolutionStatusType["Work Completed"] = {cUIName: "Work Completed"};
+//myResolutionStatusType["Need Additional Rework"] = {cUIName: "Need Additional Rework"};
+//myResolutionStatusType["Verified Complete"] = {cUIName: "Verified Complete"};
+//Collab.addStateModel({cName: "Resolution Status", cUIName: "ResolutionStatus",oStates: myResolutionStatusType, Default: "In Work"});
+
+//// Defect Classification state model
+//var myDefectType = new Object;
+//myDefectType["DR"] = {cUIName: "Driving Requirement"};
+//myDefectType["FN"] = {cUIName: "Functionality"};
+//myDefectType["IF"] = {cUIName: "Interface"};
+//myDefectType["LA"] = {cUIName: "Language"};
+//myDefectType["LO"] = {cUIName: "Logic"};
+//myDefectType["MN"] = {cUIName: "Maintainability"};
+//myDefectType["PF"] = {cUIName: "Performance"};
+//myDefectType["ST"] = {cUIName: "Standards"};
+//myDefectType["OT"] = {cUIName: "Other"};
+//myDefectType["ND"] = {cUIName: "Documentation:NT"};
+//myDefectType["PD"] = {cUIName: "Documentation:P"};
+//myDefectType["TE"] = {cUIName: "Incomplete Test Execution:T"};
+//myDefectType["TI"] = {cUIName: "Incorrect Stubbing:T"};
+//myDefectType["PR"] = {cUIName: "Review Packet Deficiency:P"};
+//myDefectType["TS"] = {cUIName: "Structural Coverage:T"};
+//myDefectType["NS"] = {cUIName: "Structural Coverage:NT"};
+//myDefectType["TC"] = {cUIName: "Test case:T"};
+//myDefectType["NC"] = {cUIName: "Test case:NT"};
+//myDefectType["PG"] = {cUIName: "Test Generation System warnings:P"};
+//myDefectType["TT"] = {cUIName: "Trace:T"};
+//myDefectType["NT"] = {cUIName: "Trace:NT"};
+//myDefectType["PT"] = {cUIName: "Trace:P"};
+//Collab.addStateModel({cName: "DefectType", cUIName: "Defect Type",oStates: myDefectType});
+
+//// Defect Classification state model
+//var myDefectSeverity = new Object;
+//myDefectSeverity["Minor"] = {cUIName: "Minor"};
+//myDefectSeverity["Major"] = {cUIName: "Major"};
+//Collab.addStateModel({cName: "DefectSeverity", cUIName: "Defect Severity",oStates: myDefectSeverity});
+
+                #endregion Annotation state model
+                
+                // How to collect all state models that belong to one sticky note?
+                #warning One comment may be accepted by multiple people
                 PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once
                 if (null != pdfDict)
                 {
@@ -652,25 +771,20 @@ namespace Pkg_Checker.Implementations
                         for (int i = 0; i < annotArray.Size; ++i)
                         {
                             PdfDictionary curAnnot = annotArray.GetAsDict(i);
-                            // SUBTYPE: /Widget, /Text, /Popup, /StrikeOut, /Stamp
+
+                            // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
                             PdfName annotSubtype = (PdfName)curAnnot.Get(PdfName.SUBTYPE);
-                            // PdfName.STATE: ND, ST, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
-                            PdfString annotState = (PdfString)curAnnot.Get(PdfName.STATE);
-                            // StateModel: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
+
+                            // StateModel values: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
                             PdfString annotStateType = (PdfString)curAnnot.Get(new PdfName("StateModel"));
 
-                            if (PdfName.WIDGET != annotSubtype)
-                            {
-                                Defects.Add(null == annotSubtype ? "<null>" : "PdfName.SUBTYPE: " + annotSubtype.ToString() +
-                                "; PdfName.STATE: " + annotState + "; StateModel: " + annotStateType);
-                            }
+                            // PdfName.STATE values: ND, ST, NC, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
+                            PdfString annotState = (PdfString)curAnnot.Get(PdfName.STATE); 
 
                             if (PdfName.TEXT == annotSubtype)
-                            {
-                                // PdfName.SUBTYPE: /Text; PdfName.STATE: Accepted; StateModel: Is Defect State
-                                if (null != annotStateType && annotStateType.ToString().IndexOf("Is Defect State") >= 0 &&
-                                    null != annotState && annotState.ToString().IndexOf("Accepted") >= 0)
-                                    ++acceptedDefectCount;
+                            {                                
+                                if (null != annotState && annotState.ToString().IndexOf("Accepted") >= 0)
+                                    ++TotalAcceptedDefectCount;
                             }
                         }
                     }
@@ -686,7 +800,7 @@ namespace Pkg_Checker.Implementations
             // .TRT files
             foreach (var item in BaseFileNames)
             {
-                if (!PrintedTraceFiles.Contains(item + @".TRT"))
+                if (!PrintedFiles.Contains(item + @".TRT"))
                     Defects.Add(item + @".TRT is not printed to the review package.");
             }
             #endregion prerequisite files

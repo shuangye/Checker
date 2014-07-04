@@ -204,16 +204,16 @@ namespace Pkg_Checker
 
         private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.tbOutput.Text += @"Multiple CTPs, multiple SCRs." + Environment.NewLine
-                + @"Approved version vs. CM21 version." + Environment.NewLine
-                + @"Defect count" + Environment.NewLine
-                + @"Check .TRT existance" + Environment.NewLine
+            this.tbOutput.Text += 
+                @"Approved version vs. CM21 version." + Environment.NewLine
+                + @"Defect count" + Environment.NewLine                
                 + @"Justifications (Regular Expression)" + Environment.NewLine;
             //"TO DO:
             // Progress bar for checking progress
-            //6. collect comments            
+            // How to collect all state models that belong to one sticky note?        
+            // Approved ver vs. max ver in CM21            
+            // Justification: point #: blah blah.
             //2. Produced by            
-            //9. checklist acm info
             //8. review stamps                        
         }
 
