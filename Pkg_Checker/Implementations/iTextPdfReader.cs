@@ -38,6 +38,7 @@ namespace Pkg_Checker.Implementations
         public String F_WorkProductType { get; set; }
         public String F_Lifecycle { get; set; }
         public String F_ReviewStatus { get; set; }
+        public String F_ProducerLocation { get; set; }
         public String F_CTP_Justification { get; set; }
         public String F_Trace_Justification { get; set; }
 
@@ -119,6 +120,7 @@ namespace Pkg_Checker.Implementations
                 F_WorkProductType = Fields.GetField(FormFields.F_WorkProductType);
                 F_Lifecycle = Fields.GetField(FormFields.F_Lifecycle);
                 F_ReviewStatus = Fields.GetField(FormFields.F_ReviewStatus);
+                F_ProducerLocation = Fields.GetField(FormFields.F_ProducerLocation);
                 F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_1);
                 if (String.IsNullOrWhiteSpace(F_CTP_Justification))
                     F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_2);
@@ -240,9 +242,11 @@ namespace Pkg_Checker.Implementations
             if (String.IsNullOrWhiteSpace(F_ReviewLocation) || !F_ReviewLocation.Equals(FormFields.F_ReviewLocation_Val))
                 Defects.Add(@"Review Location is " + F_ReviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
 
+            // Moderator stamp
             if (String.IsNullOrWhiteSpace(F_ModStamp) || !"Yes".Equals(F_ModStamp))
                 Defects.Add(@"Moderator did not stamp on the package.");
 
+            // Review participants
             int revParticipants = 0;
             for (int i = 1; i <= maxRevParticipants; ++i)
             {
@@ -406,9 +410,9 @@ namespace Pkg_Checker.Implementations
                 {
                     String[] parsedItems;
 
-                    // For item(s) 12 - 15
+                    // For item(s) 12 - 15 or For point(s) 12-15
                     // 匹配下一种形式的，也会匹配这一种形式。这种形式更 specific, 故把它放在前面。
-                    match = Regex.Match(line, @"items*\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                    match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
                         parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
@@ -424,7 +428,7 @@ namespace Pkg_Checker.Implementations
 
                     // For item(s) 1
                     // For item 12, 13...
-                    match = Regex.Match(line, @"items*\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
+                    match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
                         parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
@@ -486,8 +490,8 @@ namespace Pkg_Checker.Implementations
                 String temp = "";
                 foreach (var item in notDisposedItems)
                     temp += item + " ";
-                Defects.Add(@"No justification for NO or N/A item " + temp 
-                    + " in CTP check list, or they are not written in proper form.");
+                Defects.Add(@"No justification for NO or N/A item(s) " + temp 
+                    + " in CTP check list, or the justification is not in proper form.");
             }
 
             #endregion CTP Check List
@@ -524,8 +528,8 @@ namespace Pkg_Checker.Implementations
                     String temp = "";
                     foreach (var item in notDisposedItems)
                         temp += item + " ";
-                    Defects.Add(@"No justification for NO or N/A item " + temp
-                        + " in Trace check list, or they are not written in proper form.");
+                    Defects.Add(@"No justification for NO or N/A item(s) " + temp
+                        + " in Trace check list, or the justification is not in proper form.");
                 }
             }
 
@@ -588,12 +592,12 @@ namespace Pkg_Checker.Implementations
                             report.Status = match.Value.Strip("SCR Status:").Trim();
 
                         // Affected Area: VGUIDE
-                        match = Regex.Match(SCRPageContent, @"Affected Area:\s*\S{2,}");
+                        match = Regex.Match(SCRPageContent, @"Affected Area:\s*\w{2,}");
                         if (match.Success)
                             report.AffectedArea = match.Value.Strip("Affected Area:").Trim();
 
                         // Target Configuration: A350_CERT1_TST_X04
-                        match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\S{2,}");
+                        match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\w{2,}");
                         if (match.Success)
                             report.TargetConfig = match.Value.Strip("Target Configuration:").Trim();
 
@@ -666,7 +670,7 @@ namespace Pkg_Checker.Implementations
                         #endregion Elements Affected
 
                         // Closed in Config.: MD11_922_TST
-                        match = Regex.Match(SCRPageContent, @"Closed in Config.:\s*\S{2,}");
+                        match = Regex.Match(SCRPageContent, @"Closed in Config.:\s*\w{2,}");
                         if (match.Success)
                         {
                             report.ClosedConfig = match.Value.Strip("Closed in Config.:").Trim();

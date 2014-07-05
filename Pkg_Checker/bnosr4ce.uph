@@ -34,24 +34,29 @@ namespace Pkg_Checker
 
         private void DoWork(object sender, DoWorkEventArgs e)
         {            
-            WorkProgress progress = new WorkProgress();            
-            // int TotalTasks = (int)e.Argument;
+            WorkProgress progress = new WorkProgress();
+            // int TotalTasks = FilesToCheck.Count();
+            int TotalTasks = (int)e.Argument;
 
-            // do work...
+            // do work...c
             foreach (var file in FilesToCheck)
             {
                 progress.WorkName = file;
                 progress.Type = WorkType.Start;
 
                 // update UI
-                worker.ReportProgress(CheckedFileCount, progress);
+                worker.ReportProgress(CheckedFileCount / TotalTasks, progress);
 
                 #warning creating a new object each time may increase memory footprint
                 // consider the Singleton design pattern
                 IPdfReader reader = new iTextPdfReader();
                 reader.Read(file);
-                if (reader.IsValidReviewPackage())
-                {                    
+                if (!reader.IsValidReviewPackage())
+                {
+                    progress.Type = WorkType.ErrorOccurred;
+                }
+                else
+                {
                     reader.TraverseWholeFile();
                     reader.CheckCommonFields();
                     reader.CheckReviewStatus();
@@ -61,12 +66,10 @@ namespace Pkg_Checker
                     ++CheckedFileCount;
                     progress.Type = WorkType.End;
                     progress.WorkResult = reader.GetDefects();
-                }    
-                else
-                    progress.Type = WorkType.ErrorOccurred;
+                }
 
                 // output check result                
-                worker.ReportProgress(CheckedFileCount, progress);
+                worker.ReportProgress(CheckedFileCount / TotalTasks, progress);
             }
         }
 
@@ -78,17 +81,14 @@ namespace Pkg_Checker
             switch (progress.Type)
             {
                 case WorkType.Start:
-                    tbOutput.Text += @"Begin to check " + progress.WorkName + Environment.NewLine;
-                    lblProcessStatus.Text = String.Format(@"Checking {0} ... {1} of {2}.", 
-                        progress.WorkName, e.ProgressPercentage + 1, FilesToCheck.Count);
+                    lblProcessStatus.Text = String.Format(@"Checking {0} ...", progress.WorkName);
                     break;
                 case WorkType.End:
                     if (null != progress.WorkResult)
                         foreach (var defect in progress.WorkResult)
                             tbOutput.Text += defect + Environment.NewLine;
                     tbOutput.Text += @"Checked " + progress.WorkName + Environment.NewLine
-                                     + @"---------------------------------------------------------------------------"
-                                     + Environment.NewLine;
+                                     + @"--------------------------------------------------------------";
                     break;
                 case WorkType.ErrorOccurred:
                     tbOutput.Text += String.Format(@"Failed to check" + progress.WorkName +
@@ -102,7 +102,7 @@ namespace Pkg_Checker
         private void WorkDone(object sender, RunWorkerCompletedEventArgs e)
         {
             lblProcessStatus.Text = String.Format(@"Done! Checked {0} of {1} files.", CheckedFileCount, FilesToCheck.Count);
-            btnCheck.Enabled = true;
+            btnCheck.Enabled = false;
             FilesToCheck.Clear();
         }
 
@@ -127,7 +127,7 @@ namespace Pkg_Checker
 
             if (FilesToCheck.Count > 0)
             {
-                totalProgress.Maximum = FilesToCheck.Count;
+                totalProgress.Value = FilesToCheck.Count;
                 worker.RunWorkerAsync(FilesToCheck.Count);
             }
             else
@@ -174,7 +174,7 @@ namespace Pkg_Checker
 
             if (FilesToCheck.Count > 0)
             {
-                totalProgress.Maximum = FilesToCheck.Count;
+                totalProgress.Value = FilesToCheck.Count;
                 worker.RunWorkerAsync(FilesToCheck.Count);
             }
             else
@@ -213,17 +213,17 @@ namespace Pkg_Checker
             }
         }
 
-        //protected override void WndProc(ref Message m)
-        //{
-        //    FormWindowState previousWindowState = this.WindowState;
-        //    base.WndProc(ref m);
-        //    FormWindowState currentWindowState = this.WindowState;
+        protected override void WndProc(ref Message m)
+        {
+            FormWindowState previousWindowState = this.WindowState;
+            base.WndProc(ref m);
+            FormWindowState currentWindowState = this.WindowState;
 
-        //    if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
-        //    {
-        //        // Update UI here...
-        //    }
-        //}
+            if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
+            {
+                // Update UI here...
+            }
+        }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -24,7 +24,6 @@ namespace Pkg_Checker
             this.ActiveControl = this.tbLocation;
             totalProgress.Value = 0;
             FilesToCheck = new List<String>();
-
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
             worker.DoWork += new DoWorkEventHandler(DoWork);
@@ -33,9 +32,9 @@ namespace Pkg_Checker
         }
 
         private void DoWork(object sender, DoWorkEventArgs e)
-        {            
-            WorkProgress progress = new WorkProgress();            
-            // int TotalTasks = (int)e.Argument;
+        {
+            totalProgress.Maximum = FilesToCheck.Count;
+            WorkProgress progress = new WorkProgress();
 
             // do work...
             foreach (var file in FilesToCheck)
@@ -44,14 +43,18 @@ namespace Pkg_Checker
                 progress.Type = WorkType.Start;
 
                 // update UI
-                worker.ReportProgress(CheckedFileCount, progress);
+                worker.ReportProgress(CheckedFileCount / FilesToCheck.Count, progress);
 
                 #warning creating a new object each time may increase memory footprint
                 // consider the Singleton design pattern
                 IPdfReader reader = new iTextPdfReader();
                 reader.Read(file);
-                if (reader.IsValidReviewPackage())
-                {                    
+                if (!reader.IsValidReviewPackage())
+                {
+                    progress.Type = WorkType.ErrorOccurred;
+                }
+                else
+                {
                     reader.TraverseWholeFile();
                     reader.CheckCommonFields();
                     reader.CheckReviewStatus();
@@ -61,12 +64,10 @@ namespace Pkg_Checker
                     ++CheckedFileCount;
                     progress.Type = WorkType.End;
                     progress.WorkResult = reader.GetDefects();
-                }    
-                else
-                    progress.Type = WorkType.ErrorOccurred;
+                }
 
                 // output check result                
-                worker.ReportProgress(CheckedFileCount, progress);
+                worker.ReportProgress(CheckedFileCount / FilesToCheck.Count, progress);
             }
         }
 
@@ -78,17 +79,13 @@ namespace Pkg_Checker
             switch (progress.Type)
             {
                 case WorkType.Start:
-                    tbOutput.Text += @"Begin to check " + progress.WorkName + Environment.NewLine;
-                    lblProcessStatus.Text = String.Format(@"Checking {0} ... {1} of {2}.", 
-                        progress.WorkName, e.ProgressPercentage + 1, FilesToCheck.Count);
+                    lblProcessStatus.Text = String.Format(@"Checking {0} ...", progress.WorkName);
                     break;
                 case WorkType.End:
                     if (null != progress.WorkResult)
                         foreach (var defect in progress.WorkResult)
                             tbOutput.Text += defect + Environment.NewLine;
-                    tbOutput.Text += @"Checked " + progress.WorkName + Environment.NewLine
-                                     + @"---------------------------------------------------------------------------"
-                                     + Environment.NewLine;
+                    tbOutput.Text += @"Checked " + progress.WorkResult + Environment.NewLine;
                     break;
                 case WorkType.ErrorOccurred:
                     tbOutput.Text += String.Format(@"Failed to check" + progress.WorkName +
@@ -102,14 +99,12 @@ namespace Pkg_Checker
         private void WorkDone(object sender, RunWorkerCompletedEventArgs e)
         {
             lblProcessStatus.Text = String.Format(@"Done! Checked {0} of {1} files.", CheckedFileCount, FilesToCheck.Count);
-            btnCheck.Enabled = true;
+            btnCheck.Enabled = false;
             FilesToCheck.Clear();
         }
 
         private void btnCheck_Click(object sender, EventArgs e)
         {
-            btnCheck.Enabled = false;
-
             if (String.IsNullOrWhiteSpace(this.tbLocation.Text))
             {
                 this.ActiveControl = this.tbLocation;
@@ -126,18 +121,17 @@ namespace Pkg_Checker
             }
 
             if (FilesToCheck.Count > 0)
-            {
-                totalProgress.Maximum = FilesToCheck.Count;
-                worker.RunWorkerAsync(FilesToCheck.Count);
-            }
+                worker.RunWorkerAsync();
             else
                 tbOutput.Text = "No .pdf files found." + Environment.NewLine;
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)            
-                tbLocation.Text = folderBrowserDialog1.SelectedPath;            
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                tbLocation.Text = folderBrowserDialog1.SelectedPath;
+            }
         }
 
         private void btnClr_Click(object sender, EventArgs e)
@@ -149,36 +143,46 @@ namespace Pkg_Checker
 
         private void MainWin_DragDrop(object sender, DragEventArgs e)
         {
-            btnCheck.Enabled = false;
+            int CheckedFileCount = 0;
             bool errorOccurred = false;
+            FileAttributes attr;
+            List<String> FileNames = new List<String>();
 
             // dropped items may contain folders
             String[] s = (String[])e.Data.GetData(DataFormats.FileDrop, false);
+            // List<String> FileNames = s.OfType<String>().ToList<String>();            
+
             for (int i = 0; i < s.Length; ++i)
             {
-                FileAttributes attr = File.GetAttributes(s[i]);
-                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)                
+                attr = File.GetAttributes(s[i]);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
                     foreach (var item in Pkg_Checker.FSWalker.Walk(s[i], "*.PDF", true, ref errorOccurred))
-                        FilesToCheck.Add(item);                
+                        FileNames.Add(item);
+                }
 
                 // .pdf files are archives
                 if (System.IO.Path.GetExtension(s[i]).ToUpper() == ".PDF")
-                    FilesToCheck.Add(s[i]);
+                    FileNames.Add(s[i]);
             }
 
-            if (errorOccurred)
+            // Process normal files
+            foreach (var item in FileNames)
             {
-                this.tbOutput.Text += "[Error] Error occurred while traversing the path." + Environment.NewLine;
-                return;
-            }
+                this.lblProcessStatus.Text = "Checking " + item;
+                // Checker goodChecker = new Checker();
+                // goodChecker.Check(item, this.cbFix.Checked, ref errorOccurred, Pkg_Checker.Program.ResultPath);
+                this.lblProcessStatus.Text = "Ready";
 
-            if (FilesToCheck.Count > 0)
-            {
-                totalProgress.Maximum = FilesToCheck.Count;
-                worker.RunWorkerAsync(FilesToCheck.Count);
+                if (errorOccurred)
+                    this.tbOutput.Text += "[Error] Error occurred while checking " + item + Environment.NewLine;
+                else
+                {
+                    this.tbOutput.Text += "[Info] Checked " + item + Environment.NewLine;
+                    ++CheckedFileCount;
+                }
             }
-            else
-                tbOutput.Text = "No .pdf files found." + Environment.NewLine;
+            this.tbOutput.AppendText("Checked " + CheckedFileCount + " of " + FileNames.Count + " file(s)." + Environment.NewLine);
         }
 
         private void MainWin_DragEnter(object sender, DragEventArgs e)
@@ -213,17 +217,17 @@ namespace Pkg_Checker
             }
         }
 
-        //protected override void WndProc(ref Message m)
-        //{
-        //    FormWindowState previousWindowState = this.WindowState;
-        //    base.WndProc(ref m);
-        //    FormWindowState currentWindowState = this.WindowState;
+        protected override void WndProc(ref Message m)
+        {
+            FormWindowState previousWindowState = this.WindowState;
+            base.WndProc(ref m);
+            FormWindowState currentWindowState = this.WindowState;
 
-        //    if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
-        //    {
-        //        // Update UI here...
-        //    }
-        //}
+            if (previousWindowState != currentWindowState && currentWindowState == FormWindowState.Maximized)
+            {
+                // Update UI here...
+            }
+        }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -241,10 +245,15 @@ namespace Pkg_Checker
         private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.tbOutput.Text +=
-                @"Approved version vs. CM21 version." + Environment.NewLine;         
+                @"Approved version vs. CM21 version." + Environment.NewLine
+                + @"Defect count" + Environment.NewLine
+                + @"Justifications (Regular Expression)" + Environment.NewLine;
             //"TO DO:            
             // How to collect all state models that belong to one sticky note?        
-            // Approved ver vs. max ver in CM21                   
+            // Approved ver vs. max ver in CM21                        
+            //2. Produced by            
+            //8. review stamps                        
         }
+
     }
 }

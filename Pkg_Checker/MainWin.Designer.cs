@@ -46,8 +46,9 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.supportedChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toDoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.totalProgress = new System.Windows.Forms.ProgressBar();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,18 +60,17 @@
             this.btnCheck.Name = "btnCheck";
             this.btnCheck.Size = new System.Drawing.Size(177, 28);
             this.btnCheck.TabIndex = 0;
-            this.btnCheck.Text = "Check (Press ENTER)";
+            this.btnCheck.Text = "Check";
             this.btnCheck.UseVisualStyleBackColor = true;
             this.btnCheck.Click += new System.EventHandler(this.btnCheck_Click);
             // 
             // lblProcessStatus
             // 
-            this.lblProcessStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblProcessStatus.AutoSize = true;
-            this.lblProcessStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblProcessStatus.Location = new System.Drawing.Point(2, 541);
+            this.lblProcessStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblProcessStatus.Location = new System.Drawing.Point(58, 173);
             this.lblProcessStatus.Name = "lblProcessStatus";
-            this.lblProcessStatus.Size = new System.Drawing.Size(55, 20);
+            this.lblProcessStatus.Size = new System.Drawing.Size(42, 15);
             this.lblProcessStatus.TabIndex = 1;
             this.lblProcessStatus.Text = "Ready";
             // 
@@ -112,13 +112,13 @@
             this.tbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbOutput.Location = new System.Drawing.Point(5, 178);
+            this.tbOutput.Location = new System.Drawing.Point(5, 224);
             this.tbOutput.MaxLength = 655360;
             this.tbOutput.Multiline = true;
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbOutput.Size = new System.Drawing.Size(776, 360);
+            this.tbOutput.Size = new System.Drawing.Size(776, 332);
             this.tbOutput.TabIndex = 5;
             // 
             // btnBrowse
@@ -137,7 +137,7 @@
             // 
             this.btnClr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClr.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnClr.Location = new System.Drawing.Point(668, 147);
+            this.btnClr.Location = new System.Drawing.Point(672, 197);
             this.btnClr.Name = "btnClr";
             this.btnClr.Size = new System.Drawing.Size(109, 28);
             this.btnClr.TabIndex = 5;
@@ -155,7 +155,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lblOutput.AutoSize = true;
             this.lblOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblOutput.Location = new System.Drawing.Point(5, 155);
+            this.lblOutput.Location = new System.Drawing.Point(2, 201);
             this.lblOutput.Name = "lblOutput";
             this.lblOutput.Size = new System.Drawing.Size(62, 20);
             this.lblOutput.TabIndex = 9;
@@ -167,19 +167,19 @@
             this.lblDrag.AutoSize = true;
             this.lblDrag.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDrag.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.lblDrag.Location = new System.Drawing.Point(114, 121);
+            this.lblDrag.Location = new System.Drawing.Point(114, 117);
             this.lblDrag.Name = "lblDrag";
             this.lblDrag.Size = new System.Drawing.Size(554, 20);
             this.lblDrag.TabIndex = 10;
-            this.lblDrag.Text = "You can also simply drag one or more files/folders to this window for checking.";
+            this.lblDrag.Text = "You can also simply drop one or more files/folders to this window for checking.";
             this.lblDrag.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lnkResult
             // 
-            this.lnkResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lnkResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkResult.AutoSize = true;
             this.lnkResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lnkResult.Location = new System.Drawing.Point(654, 541);
+            this.lnkResult.Location = new System.Drawing.Point(539, 201);
             this.lnkResult.Name = "lnkResult";
             this.lnkResult.Size = new System.Drawing.Size(127, 20);
             this.lnkResult.TabIndex = 11;
@@ -226,6 +226,13 @@
             this.supportedChecksToolStripMenuItem.Text = "Supported Checks";
             this.supportedChecksToolStripMenuItem.Click += new System.EventHandler(this.supportedChecksToolStripMenuItem_Click);
             // 
+            // toDoToolStripMenuItem
+            // 
+            this.toDoToolStripMenuItem.Name = "toDoToolStripMenuItem";
+            this.toDoToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.toDoToolStripMenuItem.Text = "To Do";
+            this.toDoToolStripMenuItem.Click += new System.EventHandler(this.toDoToolStripMenuItem_Click);
+            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
@@ -233,12 +240,14 @@
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
-            // toDoToolStripMenuItem
+            // totalProgress
             // 
-            this.toDoToolStripMenuItem.Name = "toDoToolStripMenuItem";
-            this.toDoToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
-            this.toDoToolStripMenuItem.Text = "To Do";
-            this.toDoToolStripMenuItem.Click += new System.EventHandler(this.toDoToolStripMenuItem_Click);
+            this.totalProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.totalProgress.Location = new System.Drawing.Point(61, 147);
+            this.totalProgress.Name = "totalProgress";
+            this.totalProgress.Size = new System.Drawing.Size(661, 23);
+            this.totalProgress.TabIndex = 13;
             // 
             // MainWin
             // 
@@ -247,6 +256,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
+            this.Controls.Add(this.totalProgress);
             this.Controls.Add(this.cbFix);
             this.Controls.Add(this.lnkResult);
             this.Controls.Add(this.lblDrag);
@@ -295,6 +305,7 @@
         private System.Windows.Forms.ToolStripMenuItem supportedChecksToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toDoToolStripMenuItem;
+        private System.Windows.Forms.ProgressBar totalProgress;
     }
 }
 
