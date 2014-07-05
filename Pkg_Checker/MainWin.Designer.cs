@@ -49,6 +49,7 @@
             this.toDoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.totalProgress = new System.Windows.Forms.ProgressBar();
+            this.chkAppendOutput = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -249,6 +250,19 @@
             this.totalProgress.Size = new System.Drawing.Size(661, 23);
             this.totalProgress.TabIndex = 13;
             // 
+            // chkAppendOutput
+            // 
+            this.chkAppendOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.chkAppendOutput.AutoSize = true;
+            this.chkAppendOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.chkAppendOutput.Location = new System.Drawing.Point(61, 200);
+            this.chkAppendOutput.Name = "chkAppendOutput";
+            this.chkAppendOutput.Size = new System.Drawing.Size(137, 24);
+            this.chkAppendOutput.TabIndex = 14;
+            this.chkAppendOutput.Text = "Append Output";
+            this.chkAppendOutput.UseVisualStyleBackColor = true;
+            // 
             // MainWin
             // 
             this.AcceptButton = this.btnCheck;
@@ -256,6 +270,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
+            this.Controls.Add(this.chkAppendOutput);
             this.Controls.Add(this.totalProgress);
             this.Controls.Add(this.cbFix);
             this.Controls.Add(this.lnkResult);
@@ -306,6 +321,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toDoToolStripMenuItem;
         private System.Windows.Forms.ProgressBar totalProgress;
+        private System.Windows.Forms.CheckBox chkAppendOutput;
     }
 }
 

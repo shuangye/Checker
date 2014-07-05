@@ -7,10 +7,6 @@ namespace Pkg_Checker
 {
     static class Program
     {
-        // Global static variables
-        public static String ResultPath = @"Pkg_Checker_Result.txt";
-        // public static String CfgPath = @"Pkg_Checker.ini";
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -19,7 +15,7 @@ namespace Pkg_Checker
         {
             // read configuration at session start to avoid reading configuration mutiple times
             // consider the Singleton design pattern
-            Pkg_Checker.Configuration.ReadCfg();
+            // Pkg_Checker.Configuration.ReadCfg();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

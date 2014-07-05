@@ -7,9 +7,9 @@ namespace Pkg_Checker.Entities
 {
     public enum WorkType
     {
-        Start = 0,
-        End = 1,
-        ErrorOccurred = 2
+        Start = 1,
+        End = 2,
+        ErrorOccurred = 3
     }
 
     public class WorkProgress

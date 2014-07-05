@@ -6,15 +6,22 @@ using System.IO;
 
 namespace Pkg_Checker
 {
-    static class Output
+    static class FileWritter
     {
         static public String OutputFilePath { get; set; }
         static public StreamWriter SW { get; set; }
 
-         static void Initizlize (String outputFilePath = @".\Check_Result.txt")
+        static void Initizlize(String outputFilePath = @".\Check_Result.txt")
         {
             OutputFilePath = outputFilePath;
-            SW = new StreamWriter(OutputFilePath, true, Encoding.Default);
+            try
+            {
+                SW = new StreamWriter(OutputFilePath, true, Encoding.Default);
+            }
+            catch
+            {
+                SW = null;
+            }
         }
     }
 }

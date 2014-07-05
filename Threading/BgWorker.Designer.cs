@@ -46,9 +46,9 @@
             // 
             // txtOut
             // 
-            this.txtOut.Location = new System.Drawing.Point(325, 88);
+            this.txtOut.Location = new System.Drawing.Point(99, 88);
             this.txtOut.Name = "txtOut";
-            this.txtOut.Size = new System.Drawing.Size(100, 20);
+            this.txtOut.Size = new System.Drawing.Size(546, 20);
             this.txtOut.TabIndex = 1;
             // 
             // progressBar1

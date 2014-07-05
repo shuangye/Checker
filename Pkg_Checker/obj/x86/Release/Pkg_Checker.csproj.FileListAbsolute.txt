@@ -32,6 +32,5 @@ E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.Properti
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csproj.GenerateResource.Cache
 E:\Programming\Projects\Checker\Pkg_Checker\bin\Release\ReviewPackageChecker.exe
 E:\Programming\Projects\Checker\Pkg_Checker\bin\Release\ReviewPackageChecker.pdb
-E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csprojResolveAssemblyReference.cache
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\ReviewPackageChecker.exe
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\ReviewPackageChecker.pdb

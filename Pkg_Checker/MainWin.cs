@@ -8,12 +8,15 @@ using Pkg_Checker.Implementations;
 using System.Threading;
 using System.ComponentModel;
 using Pkg_Checker.Entities;
+using System.Text;
 
 namespace Pkg_Checker
 {
     public partial class MainWin : Form
     {
         private BackgroundWorker worker;
+        private String outputFilePath = @"Check_Result.txt";
+        String lineSeperator = @"----------------------------------------------------------------------" + Environment.NewLine;
         public List<String> FilesToCheck { get; set; }
         public int CheckedFileCount { get; set; }
 
@@ -27,19 +30,25 @@ namespace Pkg_Checker
 
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
+            worker.WorkerSupportsCancellation = true;
             worker.DoWork += new DoWorkEventHandler(DoWork);
             worker.ProgressChanged += new ProgressChangedEventHandler(UpdateUI);
             worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(WorkDone);
         }
 
         private void DoWork(object sender, DoWorkEventArgs e)
-        {            
-            WorkProgress progress = new WorkProgress();            
-            // int TotalTasks = (int)e.Argument;
+        {
+            bool appendOutput = (bool)e.Argument;
+            BackgroundWorker worker = sender as BackgroundWorker;
+            StreamWriter SW = null;
+
+            try { SW = new StreamWriter(outputFilePath, appendOutput, Encoding.Default); }
+            catch { MessageBox.Show(@"Cannot open result file for writting."); }
 
             // do work...
             foreach (var file in FilesToCheck)
             {
+                WorkProgress progress = new WorkProgress();
                 progress.WorkName = file;
                 progress.Type = WorkType.Start;
 
@@ -49,18 +58,26 @@ namespace Pkg_Checker
                 #warning creating a new object each time may increase memory footprint
                 // consider the Singleton design pattern
                 IPdfReader reader = new iTextPdfReader();
-                reader.Read(file);
+                reader.Init(file);
                 if (reader.IsValidReviewPackage())
-                {                    
-                    reader.TraverseWholeFile();
+                {
+                    reader.ReadWholeFile();
                     reader.CheckCommonFields();
                     reader.CheckReviewStatus();
                     reader.CheckWorkProducts();
                     reader.CheckCheckList();
-                    reader.CheckWholeFileWide();
+                    
                     ++CheckedFileCount;
                     progress.Type = WorkType.End;
                     progress.WorkResult = reader.GetDefects();
+
+                    if (null != SW)
+                    {
+                        foreach (var line in progress.WorkResult)
+                            SW.WriteLine(line);
+                        SW.WriteLine(@"Done checking " + file);
+                        SW.WriteLine(lineSeperator);
+                    }
                 }    
                 else
                     progress.Type = WorkType.ErrorOccurred;
@@ -68,6 +85,9 @@ namespace Pkg_Checker
                 // output check result                
                 worker.ReportProgress(CheckedFileCount, progress);
             }
+
+            if (null != SW)
+                SW.Close();
         }
 
         private void UpdateUI(object sender, ProgressChangedEventArgs e)
@@ -86,13 +106,10 @@ namespace Pkg_Checker
                     if (null != progress.WorkResult)
                         foreach (var defect in progress.WorkResult)
                             tbOutput.Text += defect + Environment.NewLine;
-                    tbOutput.Text += @"Checked " + progress.WorkName + Environment.NewLine
-                                     + @"---------------------------------------------------------------------------"
-                                     + Environment.NewLine;
+                    tbOutput.Text += @"Done checking " + progress.WorkName + Environment.NewLine + lineSeperator;
                     break;
                 case WorkType.ErrorOccurred:
-                    tbOutput.Text += String.Format(@"Failed to check" + progress.WorkName +
-                        ", or it is not a valid review package." + Environment.NewLine);
+                    tbOutput.Text += String.Format(progress.WorkName + " is not a valid review package." + Environment.NewLine);
                     break;
                 default:
                     break;
@@ -103,6 +120,7 @@ namespace Pkg_Checker
         {
             lblProcessStatus.Text = String.Format(@"Done! Checked {0} of {1} files.", CheckedFileCount, FilesToCheck.Count);
             btnCheck.Enabled = true;
+            CheckedFileCount = 0;
             FilesToCheck.Clear();
         }
 
@@ -110,10 +128,14 @@ namespace Pkg_Checker
         {
             btnCheck.Enabled = false;
 
+            if (!this.chkAppendOutput.Checked)
+                this.tbOutput.Text = @"";
+
             if (String.IsNullOrWhiteSpace(this.tbLocation.Text))
             {
                 this.ActiveControl = this.tbLocation;
                 this.tbOutput.Text = @"Please specify a valid path.";
+                btnCheck.Enabled = true;
                 return;
             }
 
@@ -121,17 +143,21 @@ namespace Pkg_Checker
             FilesToCheck.AddRange(Pkg_Checker.FSWalker.Walk(this.tbLocation.Text, "*.PDF", this.checkSub.Checked, ref errorOccurred));
             if (errorOccurred)
             {
-                this.tbOutput.Text += "[Error] Error occurred while traversing the path." + Environment.NewLine;
+                this.tbOutput.Text += "[Error] Cannot travere the specified path." + Environment.NewLine;
+                btnCheck.Enabled = true;
                 return;
             }
 
             if (FilesToCheck.Count > 0)
             {
                 totalProgress.Maximum = FilesToCheck.Count;
-                worker.RunWorkerAsync(FilesToCheck.Count);
+                worker.RunWorkerAsync(this.chkAppendOutput.Checked);
             }
             else
+            {
                 tbOutput.Text = "No .pdf files found." + Environment.NewLine;
+                btnCheck.Enabled = true;
+            }
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -143,14 +169,17 @@ namespace Pkg_Checker
         private void btnClr_Click(object sender, EventArgs e)
         {
             this.tbOutput.Text = "";
-            System.IO.File.Delete(Pkg_Checker.Program.ResultPath);
-            this.tbOutput.Text = "The result file was deleted." + Environment.NewLine;
+            System.IO.File.Delete(outputFilePath);
+            this.tbOutput.Text = "The result file has been deleted." + Environment.NewLine;
         }
 
         private void MainWin_DragDrop(object sender, DragEventArgs e)
         {
             btnCheck.Enabled = false;
             bool errorOccurred = false;
+
+            if (!this.chkAppendOutput.Checked)
+                this.tbOutput.Text = @"";
 
             // dropped items may contain folders
             String[] s = (String[])e.Data.GetData(DataFormats.FileDrop, false);
@@ -168,17 +197,21 @@ namespace Pkg_Checker
 
             if (errorOccurred)
             {
-                this.tbOutput.Text += "[Error] Error occurred while traversing the path." + Environment.NewLine;
+                this.tbOutput.Text += "[Error] Cannot traverse the path." + Environment.NewLine;
+                btnCheck.Enabled = true;
                 return;
             }
 
             if (FilesToCheck.Count > 0)
             {
                 totalProgress.Maximum = FilesToCheck.Count;
-                worker.RunWorkerAsync(FilesToCheck.Count);
+                worker.RunWorkerAsync(this.chkAppendOutput.Checked);
             }
             else
+            {
+                btnCheck.Enabled = true;
                 tbOutput.Text = "No .pdf files found." + Environment.NewLine;
+            }
         }
 
         private void MainWin_DragEnter(object sender, DragEventArgs e)
@@ -189,16 +222,16 @@ namespace Pkg_Checker
 
         private void lnkResult_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            String AbsoluteResultPath =
+            String absoluteResultPath =
                     System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                    + "\\" + Pkg_Checker.Program.ResultPath;
+                    + "\\" + outputFilePath;
 
-            if (File.Exists(AbsoluteResultPath))
+            if (File.Exists(absoluteResultPath))
             {
                 try
                 {
                     this.lnkResult.LinkVisited = true;
-                    System.Diagnostics.Process.Start(AbsoluteResultPath);
+                    System.Diagnostics.Process.Start(absoluteResultPath);
                 }
 
                 catch (Exception ex)
@@ -209,7 +242,7 @@ namespace Pkg_Checker
 
             else
             {
-                this.tbOutput.Text = "[Warning] The result file " + AbsoluteResultPath + " has been deleted." + Environment.NewLine;
+                this.tbOutput.Text = "[Warning] Result file " + absoluteResultPath + " has been deleted." + Environment.NewLine;
             }
         }
 

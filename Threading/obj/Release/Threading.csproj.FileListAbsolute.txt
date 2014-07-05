@@ -1,0 +1,10 @@
+E:\Programming\Projects\Checker\Threading\bin\Release\Threading.exe.config
+E:\Programming\Projects\Checker\Threading\bin\Release\Threading.exe
+E:\Programming\Projects\Checker\Threading\bin\Release\Threading.pdb
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.csprojResolveAssemblyReference.cache
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.BgWorker.resources
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.MainForm.resources
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.Properties.Resources.resources
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.csproj.GenerateResource.Cache
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.exe
+E:\Programming\Projects\Checker\Threading\obj\Release\Threading.pdb
