@@ -3,7 +3,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace Pkg_Checker
+namespace Pkg_Checker.Helpers
 {
     static class Configuration
     {

@@ -8,3 +8,13 @@ E:\Programming\Projects\Checker\Threading\obj\Release\Threading.Properties.Resou
 E:\Programming\Projects\Checker\Threading\obj\Release\Threading.csproj.GenerateResource.Cache
 E:\Programming\Projects\Checker\Threading\obj\Release\Threading.exe
 E:\Programming\Projects\Checker\Threading\obj\Release\Threading.pdb
+D:\Projects\Checker\Threading\bin\Release\Threading.exe.config
+D:\Projects\Checker\Threading\bin\Release\Threading.exe
+D:\Projects\Checker\Threading\bin\Release\Threading.pdb
+D:\Projects\Checker\Threading\obj\Release\Threading.csprojResolveAssemblyReference.cache
+D:\Projects\Checker\Threading\obj\Release\Threading.BgWorker.resources
+D:\Projects\Checker\Threading\obj\Release\Threading.MainForm.resources
+D:\Projects\Checker\Threading\obj\Release\Threading.Properties.Resources.resources
+D:\Projects\Checker\Threading\obj\Release\Threading.csproj.GenerateResource.Cache
+D:\Projects\Checker\Threading\obj\Release\Threading.exe
+D:\Projects\Checker\Threading\obj\Release\Threading.pdb

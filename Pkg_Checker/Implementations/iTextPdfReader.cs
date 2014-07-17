@@ -682,8 +682,8 @@ namespace Pkg_Checker.Implementations
                     match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
-                            .Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Strip("POINTS").Strip("POINT")
+                            .Trim().Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
                         if (null != parsedItems && parsedItems.Length > 1)
                             if (item >= int.Parse(parsedItems[0]) &&
                                 item <= int.Parse(parsedItems[1]))
@@ -698,8 +698,8 @@ namespace Pkg_Checker.Implementations
                     match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Trim()
-                            .Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Strip("POINTS").Strip("POINT")
+                            .Trim().Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                         foreach (var itemNumber in parsedItems)
                             if (item == int.Parse(itemNumber))
                                 notDisposedItems.Remove(item);

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Pkg_Checker
+namespace Pkg_Checker.Helpers
 {
     static class FSWalker
     {

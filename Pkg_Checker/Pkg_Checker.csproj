@@ -56,13 +56,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
+    <Compile Include="Helpers\ConsoleWorker.cs" />
+    <Compile Include="Helpers\Configuration.cs" />
     <Compile Include="Entities\CheckedInFile.cs" />
     <Compile Include="Entities\SCRReport.cs" />
     <Compile Include="Entities\WorkProgress.cs" />
-    <Compile Include="FSWalker.cs" />
+    <Compile Include="Helpers\FSWalker.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />
+    <Compile Include="Interfaces\CommonResource.cs" />
     <Compile Include="Interfaces\FormFields.cs" />
     <Compile Include="Interfaces\IPdfReader.cs" />
     <Compile Include="MainWin.cs">
@@ -71,10 +73,8 @@
     <Compile Include="MainWin.Designer.cs">
       <DependentUpon>MainWin.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileWritter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings.cs" />
     <EmbeddedResource Include="MainWin.resx">
       <DependentUpon>MainWin.cs</DependentUpon>
     </EmbeddedResource>

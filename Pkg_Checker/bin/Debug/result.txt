@@ -1,0 +1,19 @@
+No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in Trace check list, or the justification is not in proper form.
+Checked D:\Projects\Checker\Pkg_Checker\bin\release\B7E7_B7E7FMS_15655_04_Review_Packet.pdf
+----------------------------------------------------------------------------
+Review Location is  Author's Cube; expected Moderator Cubicle
+Checked D:\Projects\Checker\Pkg_Checker\bin\release\FMS2000_A350_A380_8073_01_Review_Packet.PDF
+----------------------------------------------------------------------------
+Review Location is  Author's Cube; expected Moderator Cubicle
+Checked D:\Projects\Checker\Pkg_Checker\bin\release\FMS2000_A350_A380_9499_00_Review_Packet.PDF
+----------------------------------------------------------------------------
+Incomplete info for checked in file 3
+According to the coversheet fillings, there are no defects, but the package is closed asReReview
+Total defects count is not equal to actual accepted comments count.
+Work Product Type does not match High-Level Test Procedure
+High-Level Test Procedure should not contain CTP related files or Work Product Types.
+Tracing: Work Product Type and checked in files do not match.
+Item(s) 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 is/are not checked in CTP check list.
+No justification for NO or N/A item(s) 2 3  in CTP check list, or the justification is not in proper form.
+Checked D:\Projects\Checker\Pkg_Checker\bin\release\FMS2000_MDXX_17011_01_Review_Packet.pdf
+----------------------------------------------------------------------------

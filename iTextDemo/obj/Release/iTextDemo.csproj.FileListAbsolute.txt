@@ -6,3 +6,11 @@ E:\Programming\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.Properties.Re
 E:\Programming\Projects\Checker\iTextDemo\obj\Release\iTextDemo.csproj.GenerateResource.Cache
 E:\Programming\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.exe
 E:\Programming\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.pdb
+D:\Projects\Checker\iTextDemo\bin\Release\demo_readpdf.exe
+D:\Projects\Checker\iTextDemo\bin\Release\demo_readpdf.pdb
+D:\Projects\Checker\iTextDemo\obj\Release\iTextDemo.csprojResolveAssemblyReference.cache
+D:\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.Form1.resources
+D:\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.Properties.Resources.resources
+D:\Projects\Checker\iTextDemo\obj\Release\iTextDemo.csproj.GenerateResource.Cache
+D:\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.exe
+D:\Projects\Checker\iTextDemo\obj\Release\demo_readpdf.pdb

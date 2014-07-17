@@ -16,7 +16,6 @@ namespace Pkg_Checker
     {
         private BackgroundWorker worker;
         private String outputFilePath = @"Check_Result.txt";
-        String lineSeperator = @"----------------------------------------------------------------------" + Environment.NewLine;
         public List<String> FilesToCheck { get; set; }
         public int CheckedFileCount { get; set; }
 
@@ -74,9 +73,9 @@ namespace Pkg_Checker
                     if (null != SW)
                     {
                         foreach (var line in progress.WorkResult)
-                            SW.WriteLine(line);
-                        SW.WriteLine(@"Done checking " + file);
-                        SW.WriteLine(lineSeperator);
+                            SW.WriteLine(CommonResource.DefectPrefix + line);
+                        SW.WriteLine(@"Checked " + file);
+                        SW.WriteLine(CommonResource.LineSeperator);
                     }
                 }    
                 else
@@ -98,18 +97,19 @@ namespace Pkg_Checker
             switch (progress.Type)
             {
                 case WorkType.Start:
-                    tbOutput.Text += @"Begin to check " + progress.WorkName + Environment.NewLine;
+                    tbOutput.AppendText(@"Begin to check " + progress.WorkName + Environment.NewLine);
                     lblProcessStatus.Text = String.Format(@"Checking {0} ... {1} of {2}.", 
                         progress.WorkName, e.ProgressPercentage + 1, FilesToCheck.Count);
                     break;
                 case WorkType.End:
                     if (null != progress.WorkResult)
                         foreach (var defect in progress.WorkResult)
-                            tbOutput.Text += defect + Environment.NewLine;
-                    tbOutput.Text += @"Done checking " + progress.WorkName + Environment.NewLine + lineSeperator;
+                            tbOutput.AppendText(CommonResource.DefectPrefix + defect + Environment.NewLine);
+                    tbOutput.AppendText(@"Done checking " + progress.WorkName + Environment.NewLine
+                        + CommonResource.LineSeperator + Environment.NewLine);
                     break;
                 case WorkType.ErrorOccurred:
-                    tbOutput.Text += String.Format(progress.WorkName + " is not a valid review package." + Environment.NewLine);
+                    tbOutput.AppendText(String.Format(progress.WorkName + " is not a valid review package." + Environment.NewLine));
                     break;
                 default:
                     break;
@@ -140,10 +140,10 @@ namespace Pkg_Checker
             }
 
             bool errorOccurred = false;
-            FilesToCheck.AddRange(Pkg_Checker.FSWalker.Walk(this.tbLocation.Text, "*.PDF", this.checkSub.Checked, ref errorOccurred));
+            FilesToCheck.AddRange(Pkg_Checker.Helpers.FSWalker.Walk(this.tbLocation.Text, "*.PDF", this.checkSub.Checked, ref errorOccurred));
             if (errorOccurred)
             {
-                this.tbOutput.Text += "[Error] Cannot travere the specified path." + Environment.NewLine;
+                tbOutput.AppendText("[Error] Cannot travere the specified path." + Environment.NewLine);
                 btnCheck.Enabled = true;
                 return;
             }
@@ -187,7 +187,7 @@ namespace Pkg_Checker
             {
                 FileAttributes attr = File.GetAttributes(s[i]);
                 if ((attr & FileAttributes.Directory) == FileAttributes.Directory)                
-                    foreach (var item in Pkg_Checker.FSWalker.Walk(s[i], "*.PDF", true, ref errorOccurred))
+                    foreach (var item in Pkg_Checker.Helpers.FSWalker.Walk(s[i], "*.PDF", true, ref errorOccurred))
                         FilesToCheck.Add(item);                
 
                 // .pdf files are archives
@@ -197,7 +197,7 @@ namespace Pkg_Checker
 
             if (errorOccurred)
             {
-                this.tbOutput.Text += "[Error] Cannot traverse the path." + Environment.NewLine;
+                tbOutput.AppendText("[Error] Cannot traverse the path." + Environment.NewLine);
                 btnCheck.Enabled = true;
                 return;
             }
@@ -260,21 +260,21 @@ namespace Pkg_Checker
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.tbOutput.Text += @"This tool checks the potential defects in a review package." + Environment.NewLine +
+            tbOutput.AppendText(@"This tool checks the potential defects in a review package." + Environment.NewLine +
                 @"Bug report: mingyang.liu@honeywell.com" + Environment.NewLine +
-                @"Powered by iTextSharp." + Environment.NewLine;
+                @"Powered by iTextSharp." + Environment.NewLine);
         }
 
         private void supportedChecksToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.tbOutput.Text += @"Currently, this tool can check the following items:" + Environment.NewLine;
-            this.tbOutput.Text += @"To be filled..." + Environment.NewLine;
+            tbOutput.AppendText(@"Currently, this tool can check the following items:" + Environment.NewLine);
+            tbOutput.AppendText(@"To be filled..." + Environment.NewLine);
         }
 
         private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.tbOutput.Text +=
-                @"Approved version vs. CM21 version." + Environment.NewLine;         
+            
+            tbOutput.AppendText(@"Approved version vs. CM21 version." + Environment.NewLine);
             //"TO DO:            
             // How to collect all state models that belong to one sticky note?        
             // Approved ver vs. max ver in CM21                   
