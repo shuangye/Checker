@@ -18,3 +18,13 @@ D:\Projects\Checker\Threading\obj\Debug\Threading.Properties.Resources.resources
 D:\Projects\Checker\Threading\obj\Debug\Threading.csproj.GenerateResource.Cache
 D:\Projects\Checker\Threading\obj\Debug\Threading.exe
 D:\Projects\Checker\Threading\obj\Debug\Threading.pdb
+D:\GitHub\Checker\Threading\bin\Debug\Threading.exe.config
+D:\GitHub\Checker\Threading\bin\Debug\Threading.exe
+D:\GitHub\Checker\Threading\bin\Debug\Threading.pdb
+D:\GitHub\Checker\Threading\obj\Debug\Threading.csprojResolveAssemblyReference.cache
+D:\GitHub\Checker\Threading\obj\Debug\Threading.BgWorker.resources
+D:\GitHub\Checker\Threading\obj\Debug\Threading.MainForm.resources
+D:\GitHub\Checker\Threading\obj\Debug\Threading.Properties.Resources.resources
+D:\GitHub\Checker\Threading\obj\Debug\Threading.csproj.GenerateResource.Cache
+D:\GitHub\Checker\Threading\obj\Debug\Threading.exe
+D:\GitHub\Checker\Threading\obj\Debug\Threading.pdb

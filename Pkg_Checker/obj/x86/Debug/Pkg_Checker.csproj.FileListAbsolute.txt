@@ -47,3 +47,12 @@ D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.exe
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.pdb
 D:\Projects\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.exe
 D:\Projects\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.pdb
+D:\GitHub\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.exe.config
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.exe
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\ReviewPackageChecker.pdb
+D:\GitHub\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.exe
+D:\GitHub\Checker\Pkg_Checker\bin\Debug\ReviewPackageChecker.pdb
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyReference.cache
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache

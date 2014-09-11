@@ -133,7 +133,9 @@ namespace Pkg_Checker.Implementations
             val = Fields.GetField(FormFields.F_DO178Level);
             F_DO178Level = String.IsNullOrEmpty(val) ? ' ' : char.Parse(val);
             F_ACMProject = Fields.GetField(FormFields.F_ACMProject);
+            if (null != F_ACMProject) F_ACMProject = F_ACMProject.ToUpper();
             F_ACMSubProject = Fields.GetField(FormFields.F_ACMSubProject);
+            if (null != F_ACMSubProject) F_ACMSubProject = F_ACMSubProject.ToUpper();
             F_ModStamp = Fields.GetField(FormFields.F_ModStamp);
             F_ReviewLocation = Fields.GetField(FormFields.F_ReviewLocation);
             F_WorkProductType = Fields.GetField(FormFields.F_WorkProductType);
@@ -440,7 +442,8 @@ namespace Pkg_Checker.Implementations
                     {
                         for (int i = 0; i < annotArray.Size; ++i)
                         {
-                            PdfDictionary curAnnot = annotArray.GetAsDict(i);
+                            PdfDictionary curAnnot = annotArray.GetAsDict(i);                            
+                            string note = "";
 
                             // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
                             PdfName annotSubtype = (PdfName)curAnnot.Get(PdfName.SUBTYPE);
@@ -451,10 +454,13 @@ namespace Pkg_Checker.Implementations
                             // PdfName.STATE values: ND, ST, NC, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
                             PdfString annotState = (PdfString)curAnnot.Get(PdfName.STATE);
 
-                            if (PdfName.TEXT == annotSubtype)
+                            if (PdfName.TEXT == annotSubtype && null != annotStateType)
                             {
                                 if (null != annotState && annotState.ToString().IndexOf("Accepted") >= 0)
-                                    ++TotalAcceptedDefectCount;
+                                {
+                                    note = curAnnot.ToString();
+                                    ++TotalAcceptedDefectCount;                                    
+                                }
                             }
                         }
                     }
@@ -551,9 +557,11 @@ namespace Pkg_Checker.Implementations
                     Defects.Add(@"According to the coversheet fillings, there are no defects, but the package is closed as"
                         + F_ReviewStatus);
 
-                if (TotalAcceptedDefectCount != F_ProducerNontechDefectCount + F_ProducerTechDefectCount
-                    + F_ProducerProcessDefectCount)
-                    Defects.Add(@"Total defects count is not equal to actual accepted comments count.");
+                int filledDefectCount = F_ProducerNontechDefectCount + F_ProducerTechDefectCount
+                    + F_ProducerProcessDefectCount;
+                if (TotalAcceptedDefectCount != filledDefectCount)
+                    Defects.Add(String.Format(@"Total defects count filled in coversheet is {0}, but actual accepted comments count is {1}.",
+                        filledDefectCount, TotalAcceptedDefectCount));
 
                 bool reworkFound = false;
                 foreach (var checkedInFile in CheckedInFiles)
