@@ -9,6 +9,7 @@ using System.Threading;
 using System.ComponentModel;
 using Pkg_Checker.Entities;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Pkg_Checker
 {
@@ -127,7 +128,7 @@ namespace Pkg_Checker
         private void btnCheck_Click(object sender, EventArgs e)
         {
             btnCheck.Enabled = false;
-
+            
             if (!this.chkAppendOutput.Checked)
                 this.tbOutput.Text = @"";
 

@@ -1,0 +1,75 @@
+[Defect] Number of review participants is 3, but there is/are 4 stamp(s).
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_14547_35_Review_Packet.pdf
+----------------------------------------------------------------------------
+[Defect] Incomplete info for checked in file 1
+[Defect] Incomplete info for checked in file 2
+[Defect] Incomplete info for checked in file 3
+[Defect] Incomplete info for checked in file 4
+[Defect] Incomplete info for checked in file 5
+[Defect] Incomplete info for checked in file 6
+[Defect] Incomplete attributes for the comment on page 58
+[Defect] Incomplete attributes for the comment on page 59
+[Defect] Incomplete attributes for the comment on page 130
+[Defect] Incomplete attributes for the comment on page 161
+[Defect] Incomplete attributes for the comment on page 178
+[Defect] Incomplete attributes for the comment on page 184
+[Defect] Review Location is Conference Room; expected Moderator Cubicle
+[Defect] Moderator did not stamp on the package.
+[Defect] Number of review participants is 0, but there is/are 1 stamp(s).
+[Defect] Review participants shoud be at least three.
+[Defect] Review status is not valid.
+[Defect] Tracing: Work Product Type and checked in files do not match.
+[Defect] The Trace Checklist is redundant because no trace file is updated.
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_14551_51_REVIEW_PACKET_0.PDF
+----------------------------------------------------------------------------
+[Defect] Review Location is eMeeting; expected Moderator Cubicle
+[Defect] Total defects count filled in coversheet is 10, but actual accepted comments count is 19.
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_14551_64_Review_Packet.PDF
+----------------------------------------------------------------------------
+[Defect] Incomplete attributes for the comment on page 116
+[Defect] Number of review participants is 3, but there is/are 4 stamp(s).
+[Defect] Total defects count filled in coversheet is 7, but actual accepted comments count is 21.
+[Defect] SLTP_B787_10_05_05.TRT is not printed to the review package.
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_14554_75_Review_Packet.pdf
+----------------------------------------------------------------------------
+[Defect] Number of review participants is 3, but there is/are 4 stamp(s).
+[Defect] The SCR report indicates that file SLTP_B787_10_09_03.DOC is not checked into SCR 15940.01
+[Defect] The SCR report indicates that file SLTP_B787_10_09_03.ZIP is not checked into SCR 15940.01
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_15770_03_Review_Packet.PDF
+----------------------------------------------------------------------------
+[Defect] Incomplete info for checked in file 1
+[Defect] Incomplete info for checked in file 2
+[Defect] Incomplete info for checked in file 3
+[Defect] Incomplete info for checked in file 4
+[Defect] Incomplete info for checked in file 5
+[Defect] Incomplete info for checked in file 6
+[Defect] Incomplete attributes for the comment on page 86
+[Defect] Incomplete attributes for the comment on page 87
+[Defect] Moderator did not stamp on the package.
+[Defect] Number of review participants is 0, but there is/are 1 stamp(s).
+[Defect] Review participants shoud be at least three.
+[Defect] Review status is not valid.
+[Defect] Tracing: Work Product Type and checked in files do not match.
+[Defect] The Trace Checklist is redundant because no trace file is updated.
+[Defect] No justification for NO or N/A item(s) 10 12  in SLTP check list, or the justification cannot be parsed.
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_15993_01_Review_Packet_0.pdf
+----------------------------------------------------------------------------
+[Defect] Number of review participants is 3, but there is/are 4 stamp(s).
+[Defect] Tracing: Work Product Type and checked in files do not match.
+[Defect] The Trace Checklist is redundant because no trace file is updated.
+[Defect] The coversheet indicates that the checked in ver of file SLTP_B787_10_17_29.DOC is 7, but the max ver in SCR report is 8. SCR: 0
+[Defect] The coversheet indicates that the checked in ver of file SLTP_B787_10_17_29.ZIP is 7, but the max ver in SCR report is 8. SCR: 0
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_16746_01_Review_Packet.pdf
+----------------------------------------------------------------------------
+[Defect] Number of review participants is 3, but there is/are 5 stamp(s).
+[Defect] SLTP_B787_04_05_01.TRT is not printed to the review package.
+[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
+Checked D:\temp\B7E7_B7E7FMS_16939_02_Review_Packet.pdf
+----------------------------------------------------------------------------

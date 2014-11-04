@@ -20,7 +20,7 @@ namespace Pkg_Checker.Implementations
         public float SCRTolerance { get { return 0.001F; } }  // SCR is in XXXX.XX form
 
         public String ReviewPackageName { get; set; }
-        public bool PackageIsLocked { get; set; }
+        // public bool PackageIsLocked { get; set; }
         public bool HasTraceChecklist { get; set; }
         public String Aircraft { get; set; }
         public float F_ReviewID { get; set; }
@@ -40,6 +40,7 @@ namespace Pkg_Checker.Implementations
         public String F_ReviewStatus { get; set; }
         public String F_ProducerLocation { get; set; }
         public String F_CTP_Justification { get; set; }
+        public String F_SLTP_Justification { get; set; }
         public String F_Trace_Justification { get; set; }
 
         public int TotalAcceptedDefectCount { get; set; }
@@ -70,8 +71,7 @@ namespace Pkg_Checker.Implementations
             catch (Exception)
             {
                 Reader = null;
-                Fields = null;
-                return;
+                Fields = null;                
             }            
         }
 
@@ -120,12 +120,12 @@ namespace Pkg_Checker.Implementations
 
             #region Coversheet Fields
 
-            AcroFields.Item reviewIDField = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
-            if (null != reviewIDField)
-            {
-                var n = reviewIDField.GetMerged(0).GetAsNumber(PdfName.FF);
-                PackageIsLocked = null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0;
-            }
+            // AcroFields.Item reviewIDField = Reader.AcroFields.GetFieldItem(FormFields.F_ReviewID);
+            // if (null != reviewIDField)
+            // {
+            //     var n = reviewIDField.GetMerged(0).GetAsNumber(PdfName.FF);
+            //     PackageIsLocked = null != n && (n.IntValue & PdfFormField.FF_READ_ONLY) > 0;
+            // }
 
             HasTraceChecklist = null != Reader.AcroFields.GetFieldItem(FormFields.F_TraceCheckList);
 
@@ -145,6 +145,9 @@ namespace Pkg_Checker.Implementations
             F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_1);
             if (String.IsNullOrWhiteSpace(F_CTP_Justification))
                 F_CTP_Justification = Fields.GetField(FormFields.F_CTP_Justification_2);
+            F_SLTP_Justification = Fields.GetField(FormFields.F_SLTP_Justification_1);
+            if (String.IsNullOrWhiteSpace(F_SLTP_Justification))
+                F_SLTP_Justification = Fields.GetField(FormFields.F_SLTP_Justification_2);
             F_Trace_Justification = Fields.GetField(FormFields.F_Trace_Justification);
 
             // Review participants field may be filled as 3.0
@@ -430,40 +433,75 @@ namespace Pkg_Checker.Implementations
                 //myDefectSeverity["Major"] = {cUIName: "Major"};
                 //Collab.addStateModel({cName: "DefectSeverity", cUIName: "Defect Severity",oStates: myDefectSeverity});
 
+                // Summary:
+                // KEY = Resolution Status, VALUE = None, In Work, Work Completed, Need Additional Rework, Verified Complete
+                // KEY = Is Defect State, VALUE = None, Accepted, Nondefect, Duplicate
+                // KEY = DefectType, VALUE = NT, TT, NC...
+                // KEY = DefectSeverity, VALUE = Minor, Major
+
                 #endregion Annotation state model
 
-                // How to collect all state models that belong to one sticky note?
-#warning One comment may be accepted by multiple people
                 PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once
                 if (null != pdfDict)
                 {
                     PdfArray annotArray = pdfDict.GetAsArray(PdfName.ANNOTS);
-                    if (null != annotArray)
+                    // How to collect all state models that belong to one sticky note?
+#warning assume there is only ONE comment on one page
+                    bool isDefectAccepted = false;
+                    bool defectSeverityFound = false;
+                    bool defectTyeFound = false;
+                    bool authorWorkCompletedFound = false;
+                    bool moderatorVerifyCompletedFound = false;
+                    for (int i = 0; null != annotArray && i < annotArray.Size; ++i)
                     {
-                        for (int i = 0; i < annotArray.Size; ++i)
+                        PdfDictionary curAnnot = annotArray.GetAsDict(i);                        
+                        // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
+                        if (PdfName.TEXT == (PdfName)curAnnot.Get(PdfName.SUBTYPE))
                         {
-                            PdfDictionary curAnnot = annotArray.GetAsDict(i);                            
-                            string note = "";
-
-                            // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
-                            PdfName annotSubtype = (PdfName)curAnnot.Get(PdfName.SUBTYPE);
-
+                            // The KEY
                             // StateModel values: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
-                            PdfString annotStateType = (PdfString)curAnnot.Get(new PdfName("StateModel"));
+                            PdfString KEY = (PdfString)curAnnot.Get(new PdfName("StateModel"));
 
+                            // The VALUE
                             // PdfName.STATE values: ND, ST, NC, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
-                            PdfString annotState = (PdfString)curAnnot.Get(PdfName.STATE);
-
-                            if (PdfName.TEXT == annotSubtype && null != annotStateType)
+                            PdfString VALUE = (PdfString)curAnnot.Get(PdfName.STATE);
+                            
+                            if (null != KEY && null != VALUE)
                             {
-                                if (null != annotState && annotState.ToString().IndexOf("Accepted") >= 0)
+                                if (KEY.ToString().Contains("Is Defect State") &&
+                                    VALUE.ToString().Contains("Accepted"))
                                 {
-                                    note = curAnnot.ToString();
-                                    ++TotalAcceptedDefectCount;                                    
+                                    ++TotalAcceptedDefectCount;
+                                    isDefectAccepted = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("DefectSeverity") &&
+                                    (VALUE.ToString().Contains("Minor") || VALUE.ToString().Contains("Major")))
+                                {
+                                    defectSeverityFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("DefectType") && !String.IsNullOrWhiteSpace(VALUE.ToString()))
+                                {
+                                    defectTyeFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Work Completed"))
+                                {
+                                    authorWorkCompletedFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Verified Complete"))
+                                {
+                                    moderatorVerifyCompletedFound = true;
+                                    continue;
                                 }
                             }
                         }
                     }
+                    if (isDefectAccepted &&
+                         !(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
+                        Defects.Add("Incomplete attributes for the comment on page " + page);
                 }
 
                 #endregion collect comments
@@ -525,11 +563,11 @@ namespace Pkg_Checker.Implementations
 
         public void CheckReviewStatus()
         {
-            if (!PackageIsLocked)
-            {
-                Defects.Add(@"Review package is not locked.");
-                return;
-            }
+            // if (!PackageIsLocked)
+            // {
+            //     Defects.Add(@"Review package is not locked.");
+            //     return;
+            // }
 
             int filledDefect = F_ProducerTechDefectCount | F_ProducerNontechDefectCount | F_ProducerProcessDefectCount;
 
@@ -598,14 +636,14 @@ namespace Pkg_Checker.Implementations
                         Defects.Add(@"Work Product Type does not match Low-Level Test Procedure.");
 
                     // CTP review package 不能包含 SLTP 相关的内容
-                    if (F_WorkProductType.Contains("Software Test") || ExtFileNames.Contains(@".TST"))
+                    if (F_WorkProductType.Contains("Software Test") || ExtFileNames.Contains(@".TST"))                        
                         Defects.Add(@"Low-Level Test Procedure should not contain SLTP related files or Work Product Types.");
                 }
 
                 // SLTP
                 if ("High-Level Test Procedures".Equals(F_Lifecycle))
                 {
-                    if (!F_WorkProductType.Contains(@"Software Test") || !ExtFileNames.Contains(@".TST"))
+                    if (!F_WorkProductType.Contains(@"Software Test"))
                         Defects.Add(@"Work Product Type does not match High-Level Test Procedure");
 
                     // SLTP review package 不能包含 CTP 相关的内容
@@ -671,50 +709,66 @@ namespace Pkg_Checker.Implementations
         /// <param name="justifications">Justifications to be parsed</param>
         /// <param name="itemsNoOrNA">A list of NO or N/A items</param>
         /// <returns>A list of not disposed items</returns>
-        private List<int> ParseJustifications(String justifications, List<int> itemsNoOrNA)
+        private List<int> ParseJustifications(String justifications, List<int> itemsNoOrNA, CheckListType checkListType)
         {
             if (String.IsNullOrWhiteSpace(justifications) || itemsNoOrNA.Count < 1)
                 return itemsNoOrNA;
 
+            const int SpecialSLTPItemNumber = 5;  // SLTP check list item 5 displays as 4.1
             List<int> notDisposedItems = new List<int>(itemsNoOrNA);
-
             Match match;
             foreach (var item in itemsNoOrNA)
             {
+                // Special case: SLTP check list item 5 displays as 4.1
+                if (checkListType == CheckListType.SLTP && item == SpecialSLTPItemNumber)
+                {
+                    match = Regex.Match(justifications, @"(items?|points?|#)+\s*(\d{1,2}\.\d)", RegexOptions.IgnoreCase);
+                    if (match.Success && Math.Abs(4.1 - float.Parse(match.Groups[2].Value)) < 0.01)
+                    {
+                        notDisposedItems.Remove(item);
+                        continue;
+                    }
+                }               
+
                 foreach (var line in justifications.Split("\r\n".ToCharArray()))
                 {
-                    String[] parsedItems;
-
                     // For item(s) 12 - 15 or For point(s) 12-15
-                    // 匹配下一种形式的，也会匹配这一种形式。这种形式更 specific, 故把它放在前面。
-                    match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}\s*-\s*\d{1,2})+", RegexOptions.IgnoreCase);
+                    // 匹配下一种形式的，也会匹配这种形式。这种形式更 specific, 故把它放在前面。                                        
+                    match = Regex.Match(line, @"(items?|points?|#)+\s*(\d{1,2})\s*-+\s*(\d{1,2})+", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Strip("POINTS").Strip("POINT")
-                            .Trim().Split("- ".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
-                        if (null != parsedItems && parsedItems.Length > 1)
-                            if (item >= int.Parse(parsedItems[0]) &&
-                                item <= int.Parse(parsedItems[1]))
-                                // itemsNoOrNA.Remove(item);                                    
-                                notDisposedItems.Remove(item);
-                        // 匹配了 For item(s) 1 - 3 就不能再匹配 Form item(s) 1, 2, 3... 了
+                        int lowerBound = int.Parse(match.Groups[2].Value);
+                        int upperBound = int.Parse(match.Groups[3].Value);
+                        // 1. consider the special SLTP case first
+                        if (checkListType == CheckListType.SLTP && item > SpecialSLTPItemNumber &&
+                            // item >= lowerBound + 1 && item <= upperBound + 1)
+                            item >= Utilities.HumanToProgram(lowerBound) && item <= Utilities.HumanToProgram(upperBound))
+                            notDisposedItems.Remove(item);
+                        // 2. then normal CTP check list or trace check list
+                        else if (item >= lowerBound && item <= upperBound)
+                            notDisposedItems.Remove(item);
+                        // One line can only match one form, so continue to next line
                         continue;
                     }
 
-                    // For item(s) 1
-                    // For item 12, 13...
-                    match = Regex.Match(line, @"(items?|points?)+\s*(\d{1,2}[\s,]*)+", RegexOptions.IgnoreCase);
+                    // For item 1 2 3
+                    // For items 12, 13...                    
+                    match = Regex.Match(line, @"(items?|points?|#)\s*((\d{1,2}[\s,;:]+)+)", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        parsedItems = match.Value.ToUpper().Strip("ITEMS").Strip("ITEM").Strip("POINTS").Strip("POINT")
-                            .Trim().Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var itemNumber in parsedItems)
-                            if (item == int.Parse(itemNumber))
+                        foreach (var itemNumber in match.Groups[2].Value.Split(" ,;:".ToCharArray(),
+                                                                               StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            int temp = int.Parse(itemNumber);
+                            // again, consider the special SLTP case first
+                            if (checkListType == CheckListType.SLTP && item > SpecialSLTPItemNumber &&
+                                // item == temp + 1)
+                                item == Utilities.HumanToProgram(temp))
                                 notDisposedItems.Remove(item);
-                        // itemsNoOrNA[item.Key] = true;  // disposed
-                        // the Value property is readonly, so set it to a new KeyValuePair
-                        // itemsNoOrNA[item.Key] = new KeyValuePair<int, bool>(item.Key, true);
-                        // itemsNoOrNA.Remove(item);                           
+                            // then normal CTP check list or trace check list
+                            else if (item == temp)
+                                notDisposedItems.Remove(item);
+                        }
                     }
                 }
             }
@@ -722,93 +776,82 @@ namespace Pkg_Checker.Implementations
             return notDisposedItems;
         }
 
-        /// <summary>
-        /// Check CTP check list and trace check list.
-        /// </summary>
-        public void CheckCheckList()
-        {
-            const int CTPCheckListItemCount = 45;
-            const int traceCheckListItemCount = 8;
+        public void CheckCheckList(CheckListType checkListType)
+        {            
+            int checkLiteItemCount = 1;
+            String fieldPrefix = "";
+            String typeName = "";
+            String justification = "";
             List<int> itemsNotChecked = new List<int>();
-            List<int> itemsNoOrNA = new List<int>();
-            List<int> notDisposedItems;
-            // List<KeyValuePair<int, bool>> itemsNoOrNA = new List<KeyValuePair<int, bool>>();  // <item, isDisposed>
-            // Dictionary<int, bool> itemsNoOrNA = new Dictionary<int, bool>();            
+            List<int> itemsNoOrNA = new List<int>();            
 
             if (null == Fields)
                 return;
 
-            #region CTP Check List
+            switch (checkListType)
+            {
+                case CheckListType.CTP:
+                    checkLiteItemCount = 45;
+                    fieldPrefix = @"CTP.";                    
+                    typeName = "CTP";
+                    justification = F_CTP_Justification;
+                    break;
+                case CheckListType.SLTP:                    
+                    checkLiteItemCount = 25;
+                    fieldPrefix = @"SLTP.";
+                    typeName = "SLTP";
+                    justification = F_SLTP_Justification;
+                    break;
+                case CheckListType.Trace:
+                    checkLiteItemCount = 8;
+                    fieldPrefix = @"CkList.";
+                    typeName = "trace";
+                    justification = F_Trace_Justification;
+                    break;
+                default:
+                    break;
+            }
 
-            for (int i = 1; i <= CTPCheckListItemCount; ++i)
+            for (int i = 1; i <= checkLiteItemCount; ++i)
             {
                 // "Yes", "No", "NA", ""
-                String fieldVal = Fields.GetField("CTP." + i);
+                String fieldVal = Fields.GetField(fieldPrefix + i);
                 if (String.IsNullOrWhiteSpace(fieldVal))
                     itemsNotChecked.Add(i);
-                else if (fieldVal.Contains('N'))
-                    // itemsNoOrNA.Add(i, false);
+                else if (fieldVal.Contains('N'))                    
                     itemsNoOrNA.Add(i);
             }
 
             if (itemsNotChecked.Count() > 0)
             {
-                string temp = @"Item(s) ";
+                string items = @"Item(s) ";
                 foreach (int i in itemsNotChecked)
-                    temp += i + " ";
-                Defects.Add(temp + "is/are not checked in CTP check list.");
+                    items += (checkListType == CheckListType.SLTP ? Utilities.ProgramToHuman(i) : i) + " ";
+                Defects.Add(items + "is/are not checked in " +  typeName + " check list.");
             }
 
-            notDisposedItems = ParseJustifications(F_CTP_Justification, itemsNoOrNA);
+            List<int> notDisposedItems = ParseJustifications(justification, itemsNoOrNA, checkListType);
             if (null != notDisposedItems && notDisposedItems.Count > 0)
             {
-                String temp = "";
-                foreach (var item in notDisposedItems)
-                    temp += item + " ";
-                Defects.Add(@"No justification for NO or N/A item(s) " + temp 
-                    + " in CTP check list, or the justification is not in proper form.");
+                String items = "";
+                foreach (var i in notDisposedItems)
+                    items += (checkListType == CheckListType.SLTP ? Utilities.ProgramToHuman(i) : i) + " ";
+                Defects.Add(@"No justification for NO or N/A item(s) " + items
+                    + " in " + typeName + " check list, or the justification cannot be parsed.");
             }
+        }
 
-            #endregion CTP Check List
-
-            itemsNotChecked.Clear();
-            itemsNoOrNA.Clear();
-
-            #region Trace Check List
-
+        /// <summary>
+        /// Check CTP, SLTP check list and trace check list.
+        /// </summary>
+        public void CheckCheckList()
+        {
+            if (null != Reader.AcroFields.GetFieldItem(@"CTP.1"))
+                CheckCheckList(CheckListType.CTP);
+            if (null != Reader.AcroFields.GetFieldItem(@"SLTP.1"))
+                CheckCheckList(CheckListType.SLTP);
             if (HasTraceChecklist)
-            {
-                for (int i = 1; i <= traceCheckListItemCount; ++i)
-                {
-                    // "Yes", "No", "NA", ""
-                    String fieldVal = Fields.GetField("CkList." + i);
-                    if (String.IsNullOrWhiteSpace(fieldVal))
-                        itemsNotChecked.Add(i);
-                    else if (fieldVal.Contains('N'))
-                        // itemsNoOrNA.Add(i, false);
-                        itemsNoOrNA.Add(i);
-                }
-
-                if (itemsNotChecked.Count() > 0)
-                {
-                    string temp = @"Item(s) ";
-                    foreach (int i in itemsNotChecked)
-                        temp += i + " ";
-                    Defects.Add(temp + "is/are not checked in Trace check list.");
-                }
-
-                notDisposedItems = ParseJustifications(F_Trace_Justification, itemsNoOrNA);
-                if (null != notDisposedItems && notDisposedItems.Count > 0)
-                {
-                    String temp = "";
-                    foreach (var item in notDisposedItems)
-                        temp += item + " ";
-                    Defects.Add(@"No justification for NO or N/A item(s) " + temp
-                        + " in Trace check list, or the justification is not in proper form.");
-                }
-            }
-
-            #endregion Trace Check List
+                CheckCheckList(CheckListType.Trace);            
         }
 
         public List<String> GetDefects()
@@ -818,10 +861,8 @@ namespace Pkg_Checker.Implementations
 
         public void Close()
         {
-            if (null == Reader)
-                return;
-
-            Reader.Close();
+            if (null != Reader)
+                Reader.Close();
         }
     }
 }

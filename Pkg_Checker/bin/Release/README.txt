@@ -1,15 +1,18 @@
-This utility is intended to check the (potential) defects in eReview Packages and tries its best to correct any detected defects, according to your instructions.
+This utility reports the (potential) defects in eReview packages. It can run both in GUI mode and cmd line mode.
+Files:
+-- ReviewPackageChecker.exe (main program)
+-- itextsharp.dll           (depends lib)
+-- README.txt
 
+GUI Mode
+If you double-click ReviewPackageChecker.exe, or start it from the cmd line without any args, it will run in GUI mode.
+It is quite intuitive under GUI mode, just drag any files/folders to the window, and it will do the rest for you. Alternatively, you can also specify the path to the review packages via the text box or "Browse" button.
 
-1. Firstly, please modify the configuration file Pkg_Checker.exe.config to initialize the coversheet settings.
-2. Run the main program Pkg_Checker.exe
-3. If you want this tool to fix defects for you, please check the "Try to fix defects" checkbox.
-4. Open the package files for checking. You have 3 choices:
-   a. Open one or more files via the "File --> Open" menu item.
-   b. Click the "Browse" button to locate a folder containing the files to be checked, and this program will recursively dive into any sub-folders to find .PDF files.
-   c. Simply darg one or more files/folders to the window, and it'll also recursively dive into each sub-folders.
-4. After checking (and potentially fixing), you can click the "Open Result File" at the bottom right corner and the result file will be opened in your default text editor. This result file logs the checking details and locates under the same folder with the binary image.
-5. You can (optionally) click the "Clear Result" button to clear the "Output" window and delete the result file.
-
-
-Skipped file item 11 under table "Work Products Under Review" because its value is always "Something here keeps page from being deleted on Save."
+cmd line Mode
+If you run ReviewPackageChecker.exe with at lease one arg, it will start in cmd line mode without GUI. The valid args are:
+    ReviewPackageChecker.exe pdf_path output_file_path
+    
+Known Issues:
+*) Currently, the "Try to fix defects" option does not have any effects yet.
+*) Sometimes it will report a ***.TRT file not printed to the package, which actually did. This is a bug from the third-party lib.
+*) The value of some check list items in the coverage template are wrong (e.g., NA for "Yes" buttons), this will affect the result of this tool.

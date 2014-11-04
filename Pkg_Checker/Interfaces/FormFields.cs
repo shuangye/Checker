@@ -27,6 +27,8 @@ namespace Pkg_Checker.Interfaces
         public const string F_TraceCheckList = @"CkList.1";        
         public const string F_CTP_Justification_1 = @"1.Text1"; // 有些 coversheet 中是这个名字
         public const string F_CTP_Justification_2 = @"Text1"; // 有些 coversheet 中却是这个名字
+        public const string F_SLTP_Justification_1 = @"SLTP_Text1";
+        public const string F_SLTP_Justification_2 = @"Text1";
         public const string F_Trace_Justification = @"Text_N_NA_Justification_12";        
         #endregion Coversheet fields
 
@@ -39,5 +41,12 @@ namespace Pkg_Checker.Interfaces
         public const string F_ReviewStatus_Val_Rereview = "ReReview";
         public const string F_ProducerLocation_Val = @"Shanghai (Avionics excl EDS)";
         #endregion Coversheet fields values
+    }
+
+    public enum CheckListType
+    {
+        CTP = 1,
+        SLTP = 2,
+        Trace = 3
     }
 }

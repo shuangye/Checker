@@ -63,6 +63,7 @@
     <Compile Include="Entities\WorkProgress.cs" />
     <Compile Include="Helpers\FSWalker.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
+    <Compile Include="Helpers\Utilities.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />
     <Compile Include="Interfaces\CommonResource.cs" />
     <Compile Include="Interfaces\FormFields.cs" />
