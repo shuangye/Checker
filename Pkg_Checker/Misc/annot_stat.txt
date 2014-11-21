@@ -1,0 +1,44 @@
+C; Contents; F; NM; Name; P; Popup; T; Type; Number; IRT; State; StateModel
+[Defect] [1.0, 1.0, 0.0]; Unmarked set by Davis Zhou; 30; hIPYR5VwKTBUo4k4olnVjD; /Comment; 3545 0 R; 4119 0 R; Davis Zhou; /Annot; 4118; null; Unmarked; Marked
+[Defect] [1.0, 1.0, 0.0]; Should be TC 3.Note: this fails checklist 45.; 28; 1a9e49e9-e5ce-424d-bfd2-09ed4c6e6e4b; /Comment; 4193 0 R; 6182 0 R; E461456; /Annot; 6181; null; ; 
+[Defect] [1.0, 1.0, 0.0]; ND set by E461456; 30; 737023fb-77fa-47a0-aa70-05dcd67e4243; /Comment; 4193 0 R; 6338 0 R; E461456; /Annot; 6337; 6181 0 R; ND; DefectType
+[Defect] [1.0, 1.0, 0.0]; In Work set by E461456; 30; 25dd6267-3665-4566-9d63-02440c090d77; /Comment; 4193 0 R; 6340 0 R; E461456; /Annot; 6339; 6337 0 R; In Work; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Minor set by E461456; 30; 8a14df2e-ed29-411b-a585-024c84db67cc; /Comment; 4193 0 R; 6342 0 R; E461456; /Annot; 6341; 6339 0 R; Minor; DefectSeverity
+[Defect] [1.0, 1.0, 0.0]; Corrected the test case and raised AO forPERF_SRD_6121 ; 28; 89ea17f0-7e8b-471e-a573-2f1a876d7609; /Comment; 4193 0 R; 6344 0 R; Louis Lu; /Annot; 6343; 6181 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; Accepted set by E461456; 30; 3e37ee83-a2c0-49c9-b272-8d8f40a8776d; /Comment; 4193 0 R; 6346 0 R; E461456; /Annot; 6345; 6341 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Work Completed set by E461456; 30; 0790aff3-d932-4ca8-8daf-801967832791; /Comment; 4193 0 R; 6348 0 R; E461456; /Annot; 6347; 6345 0 R; Work Completed; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Verified Complete set by E461456; 30; f464c93e-3695-495a-9699-10386203e3db; /Comment; 4193 0 R; 6350 0 R; E461456; /Annot; 6349; 6347 0 R; Verified Complete; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Work Completed set by E461456; 30; 98dce024-868d-468a-9155-583e29e2ea91; /Comment; 4193 0 R; 6352 0 R; E461456; /Annot; 6351; 6349 0 R; Work Completed; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Need Additional Rework set by E461456; 30; 994a4bc0-428a-4a8a-bd67-c19030242098; /Comment; 4193 0 R; 6354 0 R; E461456; /Annot; 6353; null; Need Additional Rework; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Accepted set by E461456; 30; 103192c7-ea0a-4552-a424-1624f0dc9181; /Comment; 4193 0 R; 6356 0 R; E461456; /Annot; 6355; 6353 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Verified Complete set by E461456; 30; 16cf7da3-03c3-4c6b-8414-77668670723c; /Comment; 4193 0 R; 6358 0 R; E461456; /Annot; 6357; 6351 0 R; Verified Complete; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; 9ca31c78-6e86-407e-b4e5-7cb9cd4ba6c7; /Comment; 4193 0 R; 6384 0 R; e817739; /Annot; 6383; 6357 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; 433e2501-d378-4ee9-a899-f8ac09f81697; /Comment; 4193 0 R; 6386 0 R; e817739; /Annot; 6385; 6383 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; cca15148-d895-4e40-beb1-b5ef11bfebbf; /Comment; 4193 0 R; 6390 0 R; e817739; /Annot; 6389; 6385 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; 2a8500f4-f3dd-4992-9584-8352095615a3; /Comment; 4193 0 R; 6394 0 R; e817739; /Annot; 6393; 6389 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; a698f6b3-8508-4cf2-be4d-f317988efeb8; /Comment; 4193 0 R; 6398 0 R; e817739; /Annot; 6397; 6393 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.666656]; Should be #2; 28; 53e58411-8d56-4e0a-916a-d2b9761a5321; /Comment; 13565 0 R; 13948 0 R; Debra Barnes; /Annot; 13947; null; ; 
+[Defect] [1.0, 1.0, 0.0]; Fixed.; 28; ed2ec643-5a53-484e-a282-5218fee1c2ba; /Comment; 13565 0 R; 14354 0 R; E447598; /Annot; 14353; 13947 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; Work Completed set by E447598; 30; 26ebf4a7-8b34-45bd-b90a-34068477b7d8; /Comment; 13565 0 R; 14359 0 R; E447598; /Annot; 14358; 13947 0 R; Work Completed; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; ND set by E382984; 30; d84075d7-b9d5-4828-a1c2-2ff46a90b2cf; /Comment; 13565 0 R; 14552 0 R; E382984; /Annot; 14551; 14358 0 R; ND; DefectType
+[Defect] [1.0, 1.0, 0.0]; Accepted set by E382984; 30; 4aca47c4-befd-4ce3-a472-210a2ff09532; /Comment; 13565 0 R; 14554 0 R; E382984; /Annot; 14553; 14551 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Verified Complete set by E382984; 30; c8105702-1802-4492-b524-455c7369d532; /Comment; 13565 0 R; 14556 0 R; E382984; /Annot; 14555; 14553 0 R; Verified Complete; Resolution Status
+[Defect] [1.0, 1.0, 0.0]; Minor set by E382984; 30; ddde971f-b859-4e7d-90b5-875cccec6acc; /Comment; 13565 0 R; 14558 0 R; E382984; /Annot; 14557; 14555 0 R; Minor; DefectSeverity
+[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 48c9129d-da32-4b8f-8c24-e75fc754c821; /Comment; 13565 0 R; 14560 0 R; E382984; /Annot; 14559; 13947 0 R; Marked; Marked
+[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; 6439e175-6110-47f0-9a9d-341e3fd0a30f; /Comment; 13565 0 R; 14936 0 R; e817739; /Annot; 14935; 14559 0 R; Accepted; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; This disposition is not ported in new DSP sheet; 28; b1e96468-7d87-4f58-be85-a7823cbeda75; /Comment; 332 0 R; 14157 0 R; E382984; /Annot; 14158; null; ; 
+[Defect] [1.0, 1.0, 0.0]; This scr and previous scr is same, combine the disposition; 28; 45283667-e7a7-4729-9d18-b23aee20b1ea; /Comment; 332 0 R; 14159 0 R; E382984; /Annot; 14160; null; ; 
+[Defect] [1.0, 1.0, 0.0]; This SCR information is not ported to new disposition sheet; 28; 6181b6f6-4a43-41d6-9699-681a77c94708; /Comment; 332 0 R; 14161 0 R; E382984; /Annot; 14162; null; ; 
+[Defect] [1.0, 1.0, 0.0]; This is not come under any other issues. this is partial testing information; 28; c11bd017-4ffa-40b9-a46c-dfa45a67eba6; /Comment; 332 0 R; 14163 0 R; E382984; /Annot; 14164; null; ; 
+[Defect] [1.0, 1.0, 0.0]; non-issue.Test update done.; 28; 0f3d03d1-1629-46e1-bdab-e8ebddb75725; /Comment; 332 0 R; 14165 0 R; E447598; /Annot; 14166; 14158 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; non-issue.as the requirement were different so disposed in different sections; 28; 6cb8f360-0e90-4a4c-a54d-ff856dd00eac; /Comment; 332 0 R; 14167 0 R; E447598; /Annot; 14168; 14160 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; non-issue.Test update done.; 28; ea252510-be6d-47aa-ad2f-2300bb174d19; /Comment; 332 0 R; 14169 0 R; E447598; /Annot; 14170; 14162 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; non-issue; 28; 5010e5b2-74ea-4b9d-b25b-dccc1eb3edb3; /Comment; 332 0 R; 14346 0 R; E447598; /Annot; 14345; 14164 0 R; ; 
+[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; ed5f9c01-7254-4d7d-b55a-90630e2922d4; /Comment; 332 0 R; 14536 0 R; E382984; /Annot; 14535; 14158 0 R; Nondefect; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 9f49b1c0-6a83-4d9e-8560-60f5701d7c2a; /Comment; 332 0 R; 14538 0 R; E382984; /Annot; 14537; 14158 0 R; Marked; Marked
+[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 7ca9cbd8-5300-4578-b2a2-e959ba6340e6; /Comment; 332 0 R; 14540 0 R; E382984; /Annot; 14539; 14160 0 R; Nondefect; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; a5505f49-046e-4e92-87c8-ebb8ac1104f6; /Comment; 332 0 R; 14542 0 R; E382984; /Annot; 14541; 14160 0 R; Marked; Marked
+[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 7095a09f-4acc-4cbc-96e2-179eddf28467; /Comment; 332 0 R; 14544 0 R; E382984; /Annot; 14543; 14162 0 R; Nondefect; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 54443a48-8055-407e-a375-4556ce798637; /Comment; 332 0 R; 14546 0 R; E382984; /Annot; 14545; 14162 0 R; Marked; Marked
+[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 806982fd-570d-4c98-981f-fc598a961095; /Comment; 332 0 R; 14548 0 R; E382984; /Annot; 14547; 14164 0 R; Nondefect; Is Defect State
+[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 7320e4c3-668c-4f56-a533-67b953e3b7a1; /Comment; 332 0 R; 14550 0 R; E382984; /Annot; 14549; 14164 0 R; Marked; Marked

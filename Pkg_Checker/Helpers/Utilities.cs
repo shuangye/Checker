@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Pkg_Checker.Helpers
 {
-    public static class Utilities
+    public class Utilities
     {
         const int SpecialNumber = 5;
 

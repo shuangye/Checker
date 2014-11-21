@@ -16,8 +16,6 @@ namespace Pkg_Checker.Interfaces
         void CheckWorkProducts();
         void CheckCheckList();
         
-        List<String> GetDefects();
-
-        void Close();
+        List<String> GetDefects();        
     }
 }

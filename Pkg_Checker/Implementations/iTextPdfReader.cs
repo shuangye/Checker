@@ -1,4 +1,7 @@
-﻿using System;
+﻿#undef COMMENT_COLLECTION_METHOD_1
+#undef DEBUG_VERBOSE
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +57,12 @@ namespace Pkg_Checker.Implementations
         public List<String> Defects { get; set; }
         #endregion Properties
 
+        ~iTextPdfReader()
+        {
+            if (null != Reader)
+                Reader.Close();
+        }
+
         /// <summary>
         /// Call this method before any checking methods to populate necessary data
         /// </summary>
@@ -93,6 +102,7 @@ namespace Pkg_Checker.Implementations
 
             const int maxFileCount = 40;
             Match match;
+            const String SCR_PATTERN = @"\d{3,}\.\d{2}";
             String val = "";
 
             #region Parse Info from Review Package Name
@@ -177,7 +187,7 @@ namespace Pkg_Checker.Implementations
             ExtFileNames = new List<string>();
             BaseFileNames = new List<string>();
             SCRs = new List<float>();
-            String scr, fileName, checkedInVer, approvedVer;
+            String scr, fileName, checkedInVer, approvedVer;            
             for (int i = 1; i <= maxFileCount; ++i)
             {
                 scr = Fields.GetField("F" + i + ".SCR");
@@ -194,17 +204,32 @@ namespace Pkg_Checker.Implementations
                     }
 
                     CheckedInFile checkedInFile = new CheckedInFile { FileName = fileName.Trim().ToUpper() };
-                    try { checkedInFile.SCR = float.Parse(scr); }
-                    catch { checkedInFile.SCR = 0.0F; }
-                    try { checkedInFile.CheckedInVer = int.Parse(checkedInVer); }
-                    catch { checkedInFile.CheckedInVer = 0; }
-                    try { checkedInFile.ApprovedVer = int.Parse(approvedVer); }
-                    catch { checkedInFile.ApprovedVer = 0; }
+                                        
+                    // parse checked in version
+                    match = Regex.Match(checkedInVer, @"\d+");
+                    if (match.Success)
+                        checkedInFile.CheckedInVer = int.Parse(match.Value);
+
+                    // parse approved version
+                    match = Regex.Match(approvedVer, @"\d+");
+                    if (match.Success)
+                        checkedInFile.ApprovedVer = int.Parse(match.Value);
 
                     if (checkedInFile.ApprovedVer < checkedInFile.CheckedInVer)
                         Defects.Add(@"Approved ver is less than checked in ver for file " + checkedInFile.FileName);
 
-                    CheckedInFiles.Add(checkedInFile);
+                    // parse under which SCR is this file checked in                    
+                    // one field may contain multiple SCRs, e.g., 123.45, 678.90
+                    foreach (Match item in Regex.Matches(scr, SCR_PATTERN))
+                    {
+                        CheckedInFiles.Add(new CheckedInFile { 
+                            FileName = checkedInFile.FileName,
+                            SCR = float.Parse(item.Value),
+                            ApprovedVer = checkedInFile.ApprovedVer,
+                            CheckedInVer = checkedInFile.CheckedInVer
+                        });                        
+                    }
+                    
                     String ext = Path.GetExtension(checkedInFile.FileName);
                     ExtFileNames.Add(ext);
                     BaseFileNames.Add(checkedInFile.FileName.Substring(0, checkedInFile.FileName.LastIndexOf(ext)));
@@ -224,7 +249,7 @@ namespace Pkg_Checker.Implementations
 
             SCRReports = new List<SCRReport>();
             PrintedFiles = new List<string>();            
-            String KEYWORKDS;
+            String KEYWORKDS;           
 
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
             {
@@ -239,7 +264,7 @@ namespace Pkg_Checker.Implementations
                 // So locate the SCR report by keywords.
                 // Begin: SYSTEM CHANGE REQUEST Page # of #
                 // End: Closed in Config.: ***                
-                match = Regex.Match(pageText, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+");
+                match = Regex.Match(pageText, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+", RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     SCRReport report = new SCRReport();
@@ -251,26 +276,26 @@ namespace Pkg_Checker.Implementations
 
                         // Change Category: PROBLEM SCR No.: P 17011.01                        
                         // Change Category: INITIAL DEVELOPMENT SCR No.:  08982.04                        
-                        match = Regex.Match(SCRPageContent, @"Change Category:\s*\w{1,}\s*SCR No.:\s*[A-Z]*\s*\d{3,}\.\d{2}");
-                        if (match.Success)
-                            report.SCRNumber = float.Parse(
-                                Regex.Match(match.Value.Strip(@"Change Category:").Strip("PROBLEM").Strip("SCR No.:").Trim(),
-                                @"\d{3,}\.\d{2}").Value);
+                        match = Regex.Match(SCRPageContent, 
+                                            @"Change Category:.*SCR No\.:\s*[A-Z]*\s*(" + SCR_PATTERN + ")",
+                                            RegexOptions.IgnoreCase);
+                        if (match.Success)                            
+                            report.SCRNumber = float.Parse(match.Groups[1].Value);
 
                         // SCR Status: SEC
-                        match = Regex.Match(SCRPageContent, @"SCR Status:\s*[A-Z]{3}");
-                        if (match.Success)
-                            report.Status = match.Value.Strip("SCR Status:").Trim();
+                        match = Regex.Match(SCRPageContent, @"SCR Status:\s*([A-Z]{3})");
+                        if (match.Success)                            
+                            report.Status = match.Groups[1].Value;
 
                         // Affected Area: VGUIDE
-                        match = Regex.Match(SCRPageContent, @"Affected Area:\s*\w{2,}");
-                        if (match.Success)
-                            report.AffectedArea = match.Value.Strip("Affected Area:").Trim();
+                        match = Regex.Match(SCRPageContent, @"Affected Area:\s*(\w{2,})");
+                        if (match.Success)                            
+                            report.AffectedArea = match.Groups[1].Value;
 
                         // Target Configuration: A350_CERT1_TST_X04
-                        match = Regex.Match(SCRPageContent, @"Target Configuration:\s*\w{2,}");
-                        if (match.Success)
-                            report.TargetConfig = match.Value.Strip("Target Configuration:").Trim();
+                        match = Regex.Match(SCRPageContent, @"Target Configuration:\s*(\w{2,})");
+                        if (match.Success)                            
+                            report.TargetConfig = match.Groups[1].Value;
 
                         #region Elements Affected
                         // Begin: Elements Affected:
@@ -329,9 +354,10 @@ namespace Pkg_Checker.Implementations
                                         checkedInFile.FileName = match.Value;
 
                                         // File name may also contain digits, e.g., A350, MD11
-                                        match = Regex.Match(line, checkedInFile.FileName + @"\s*\d{1,}");
+                                        match = Regex.Match(line, checkedInFile.FileName + @"\s*(\d{1,})");
                                         if (match.Success)
-                                            checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
+                                            // checkedInFile.CheckedInVer = int.Parse(match.Value.Strip(checkedInFile.FileName));
+                                            checkedInFile.CheckedInVer = int.Parse(match.Groups[1].Value);
 
                                         report.AffectedElements.Add(checkedInFile);
                                     }
@@ -341,10 +367,11 @@ namespace Pkg_Checker.Implementations
                         #endregion Elements Affected
 
                         // Closed in Config.: MD11_922_TST
-                        match = Regex.Match(SCRPageContent, @"Closed in Config.:\s*\w{2,}");
+                        match = Regex.Match(SCRPageContent, @"Closed in Config.:\s*(\w{1,})");
                         if (match.Success)
                         {
-                            report.ClosedConfig = match.Value.Strip("Closed in Config.:").Trim();
+                            // report.ClosedConfig = match.Value.Strip("Closed in Config.:").Trim();
+                            report.ClosedConfig = match.Groups[1].Value;
                             break;  // reach the end of the SCR report
                         }
                     }
@@ -360,88 +387,11 @@ namespace Pkg_Checker.Implementations
                     PrintedFiles.Add(matchItem.Value.ToUpper().Strip(@"TRACE FILENAME").Trim().Strip(@":").Trim());
                 #endregion Collect Prerequisite Files
 
-                #region Collect Comments
+                #region Collect Comments                
 
-                #region Annotation state model
-
-                //// Standard Defect State Model setup - 
-                //// This code defines the Annotation state models in support of Review Defect Statusing.
-                //// It defines Two models:
-                //// 1. Defect Review State.  This provides a state of defect acceptance.
-                //// 2. Defect Status.  This provides a status of the defect resolution.
-                //// 3. Defect Status (default Adobe Review state is deleted)
-
-                //// First, delete any old state models,
-
-                //// Defect type model
-                //try { Collab.removeStateModel("DefectType");    } catch (e) {}
-                //// Qualifier model
-                //try { Collab.removeStateModel("QualifierType"); } catch (e) {}
-                //// Impact model
-                //try { Collab.removeStateModel("Impact");        } catch (e) {}
-                //// Delete Adobe default state model - don't need it anymore
-                //try { Collab.removeStateModel("Review");        } catch (e) {}
-
-                //// Create the new state models
-
-                //// Defect Review State model
-                //var myIsDefectType = new Object;
-                //myIsDefectType["None"] = {cUIName: "None"};
-                //myIsDefectType["Accepted"] = {cUIName: "Accepted"};
-                //myIsDefectType["Nondefect"] = {cUIName: "Not a Defect"};
-                //myIsDefectType["Duplicate"] = {cUIName: "Duplicate"};
-                //Collab.addStateModel({cName: "Is Defect State", cUIName: "IsDefectState",oStates: myIsDefectType, Default: "Accepted"});
-
-                //// Defect Status model
-                //var myResolutionStatusType = new Object;
-                //myResolutionStatusType["None"] = {cUIName: "None"};
-                //myResolutionStatusType["In Work"] = {cUIName: "In Work"};
-                //myResolutionStatusType["Work Completed"] = {cUIName: "Work Completed"};
-                //myResolutionStatusType["Need Additional Rework"] = {cUIName: "Need Additional Rework"};
-                //myResolutionStatusType["Verified Complete"] = {cUIName: "Verified Complete"};
-                //Collab.addStateModel({cName: "Resolution Status", cUIName: "ResolutionStatus",oStates: myResolutionStatusType, Default: "In Work"});
-
-                //// Defect Classification state model
-                //var myDefectType = new Object;
-                //myDefectType["DR"] = {cUIName: "Driving Requirement"};
-                //myDefectType["FN"] = {cUIName: "Functionality"};
-                //myDefectType["IF"] = {cUIName: "Interface"};
-                //myDefectType["LA"] = {cUIName: "Language"};
-                //myDefectType["LO"] = {cUIName: "Logic"};
-                //myDefectType["MN"] = {cUIName: "Maintainability"};
-                //myDefectType["PF"] = {cUIName: "Performance"};
-                //myDefectType["ST"] = {cUIName: "Standards"};
-                //myDefectType["OT"] = {cUIName: "Other"};
-                //myDefectType["ND"] = {cUIName: "Documentation:NT"};
-                //myDefectType["PD"] = {cUIName: "Documentation:P"};
-                //myDefectType["TE"] = {cUIName: "Incomplete Test Execution:T"};
-                //myDefectType["TI"] = {cUIName: "Incorrect Stubbing:T"};
-                //myDefectType["PR"] = {cUIName: "Review Packet Deficiency:P"};
-                //myDefectType["TS"] = {cUIName: "Structural Coverage:T"};
-                //myDefectType["NS"] = {cUIName: "Structural Coverage:NT"};
-                //myDefectType["TC"] = {cUIName: "Test case:T"};
-                //myDefectType["NC"] = {cUIName: "Test case:NT"};
-                //myDefectType["PG"] = {cUIName: "Test Generation System warnings:P"};
-                //myDefectType["TT"] = {cUIName: "Trace:T"};
-                //myDefectType["NT"] = {cUIName: "Trace:NT"};
-                //myDefectType["PT"] = {cUIName: "Trace:P"};
-                //Collab.addStateModel({cName: "DefectType", cUIName: "Defect Type",oStates: myDefectType});
-
-                //// Defect Classification state model
-                //var myDefectSeverity = new Object;
-                //myDefectSeverity["Minor"] = {cUIName: "Minor"};
-                //myDefectSeverity["Major"] = {cUIName: "Major"};
-                //Collab.addStateModel({cName: "DefectSeverity", cUIName: "Defect Severity",oStates: myDefectSeverity});
-
-                // Summary:
-                // KEY = Resolution Status, VALUE = None, In Work, Work Completed, Need Additional Rework, Verified Complete
-                // KEY = Is Defect State, VALUE = None, Accepted, Nondefect, Duplicate
-                // KEY = DefectType, VALUE = NT, TT, NC...
-                // KEY = DefectSeverity, VALUE = Minor, Major
-
-                #endregion Annotation state model
-
-                PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once
+#if COMMENT_COLLECTION_METHOD_1
+                #region method 1
+                PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once                
                 if (null != pdfDict)
                 {
                     PdfArray annotArray = pdfDict.GetAsArray(PdfName.ANNOTS);
@@ -470,18 +420,16 @@ namespace Pkg_Checker.Implementations
                             {
                                 if (KEY.ToString().Contains("Is Defect State") &&
                                     VALUE.ToString().Contains("Accepted"))
-                                {
-                                    ++TotalAcceptedDefectCount;
+                                {                                    
                                     isDefectAccepted = true;
                                     continue;
                                 }
-                                if (KEY.ToString().Contains("DefectSeverity") &&
-                                    (VALUE.ToString().Contains("Minor") || VALUE.ToString().Contains("Major")))
+                                if (KEY.ToString().Contains("DefectSeverity"))
                                 {
                                     defectSeverityFound = true;
                                     continue;
                                 }
-                                if (KEY.ToString().Contains("DefectType") && !String.IsNullOrWhiteSpace(VALUE.ToString()))
+                                if (KEY.ToString().Contains("DefectType"))
                                 {
                                     defectTyeFound = true;
                                     continue;
@@ -499,12 +447,316 @@ namespace Pkg_Checker.Implementations
                             }
                         }
                     }
-                    if (isDefectAccepted &&
-                         !(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
-                        Defects.Add("Incomplete attributes for the comment on page " + page);
+                    if (isDefectAccepted)
+                    {
+                        ++TotalAcceptedDefectCount;
+                        if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
+                            Defects.Add("Incomplete attributes for the comment on page " + page);
+                    }
                 }
+                #endregion method 1
+#else
+                #region method 2
+                PdfObject pageObj = Reader.GetPageN(page).Get(PdfName.ANNOTS);
+                List<PdfIndirectReference> commentsInOnePage = new List<PdfIndirectReference>();
+                if (null != pageObj)
+                {
+                    PdfArray annotArray = (PdfArray)PdfReader.GetPdfObject(pageObj);
+                    if (null != annotArray)
+                    {
+                        foreach (PdfIndirectReference annot in annotArray.ArrayList)
+                        {
+                            bool isDefectAccepted = false;
+                            bool defectSeverityFound = false;
+                            bool defectTyeFound = false;
+                            bool authorWorkCompletedFound = false;
+                            bool moderatorVerifyCompletedFound = false;
 
+                            #region retrieve info from an annotation
+
+                            PdfDictionary annotDict = (PdfDictionary)PdfReader.GetPdfObject(annot);
+                            
+                            PdfName _annotSubtype = (PdfName)annotDict.Get(PdfName.SUBTYPE);
+                                                                               
+                            // IRT: In Reply To
+                            PdfObject _annotIRT = annotDict.Get(PdfName.IRT);
+                            PdfDictionary prefs = (PdfDictionary)PdfReader.GetPdfObject(_annotIRT);
+                            
+                            // Work Completed, Verified Complete, ND, Accepted, Minor, etc.
+                            PdfString _annotState = (PdfString)annotDict.Get(PdfName.STATE);
+                            String annotState = null == _annotState ? "" : _annotState.ToString();
+
+                            // "MigrationStatus", "DefectType", "Is Defect State", "Resolution Status", "DefectSeverity"
+                            PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));
+                            String annotStateModel = null == _annotStateModel ? "" : _annotStateModel.ToString();
+
+                            PdfString _annotContents = annotDict.GetAsString(PdfName.CONTENTS);
+                            String annotContents = null == _annotContents ? "" : _annotContents.ToString();
+                            
+                            #endregion retrieve info from an annotation
+
+                            // Guess: this is the sticky note
+                            if (null == _annotState && null == prefs &&
+                                (_annotSubtype.Equals(PdfName.TEXT) || _annotSubtype.Equals(new PdfName("Highlight"))))
+                            {
+                                // check the contents of this comment, by moderator.
+                                // such as "Should be TC 3. Note: this fails checklist 45."
+
+                                // annot.Number property: 6181
+                                // annot.Generation property: 0
+                                // annotDict Keys:
+                                // AP                {Dictionary}
+                                // C                 {[1.0, 1.0, 0.0]}
+                                // Contents          "Should be TC 3.\rNote: this fails checklist 45."
+                                // CreationDate      {D:20141120162918+08'00'}
+                                // F                 {28}
+                                // M                 {D:20141120163832+08'00'}
+                                // NM                {1a9e49e9-e5ce-424d-bfd2-09ed4c6e6e4b}
+                                // Name              {/Comment}
+                                // P                 {4193 0 R}
+                                // Popup             {6182 0 R}
+                                // RC                {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p dir="ltr"><span dir="ltr" style="font-size:10.0pt;text-align:left;color:#000000;font-weight:normal;font-style:normal">Should be TC 3.&#13;Note: this fails checklist 45.</span></p></body>}
+                                // Rect              {[51.3388, 606.718, 71.3388, 624.718]}
+                                // Rotate            {90}
+                                // Subj              null
+                                // Subtype           {/Text}
+                                // T                 {E461456}
+                                // Type              {/Annot}                                
+
+                                if (String.IsNullOrWhiteSpace(annotContents))
+                                    Defects.Add(String.Format(@"The content of the comment on page {0} is empty.", page));
+                                commentsInOnePage.Add(annot);
+                            }
+                                                        
+                            for (int i = 0; i < commentsInOnePage.Count; ++i)
+                            {                                
+                                if (null != prefs && prefs.Equals((PdfDictionary)PdfReader.GetPdfObject(commentsInOnePage[i]))) 
+                                {                                       
+                                    commentsInOnePage.Add(annot);
+                                    if (null != _annotState)
+                                    {
+                                        // annot.Number property: 6337
+                                        // annot.Generation property: 0
+                                        // annotDict Keys:
+                                        // AP               {Dictionary}
+                                        // C                {[1.0, 1.0, 0.0]}
+                                        // Contents         {ND set by E461456}
+                                        // CreationDate     {D:20141120162951+08'00'}
+                                        // F                {30}
+                                        // + IRT            {6181 0 R}
+                                        // M                {D:20141120162951+08'00'}
+                                        // NM               {737023fb-77fa-47a0-aa70-05dcd67e4243}
+                                        // Name             {/Comment}
+                                        // P                {4193 0 R}
+                                        // Popup            {6338 0 R}
+                                        // RC               {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p>ND set by E461456</p></body>}
+                                        // Rect             {[100.0, 82.0, 120.0, 100.0]}
+                                        // + State          {ND}
+                                        // + StateModel     {DefectType}
+                                        // Subj             null
+                                        // Subtype          {/Text}
+                                        // T                {E461456}
+                                        // Type             {/Annot}
+
+                                        if ("DefectType".Equals(annotStateModel))
+                                            defectTyeFound = true;
+                                        else if ("Is Defect State".Equals(annotStateModel) && annotState.Contains("Accepted"))
+                                            isDefectAccepted = true;
+                                        else if ("Resolution Status".Equals(annotStateModel))
+                                        {
+                                            if (annotState.Contains("Work Completed"))
+                                                authorWorkCompletedFound = true;
+                                            if (annotState.Contains("Verified Complete"))
+                                                moderatorVerifyCompletedFound = true;
+                                        }
+                                        else if ("DefectSeverity".Equals(annotStateModel))
+                                            defectSeverityFound = true;
+                                    }
+                                    else // null == annotState
+                                    {
+                                        // author's reply
+                                        if (String.IsNullOrWhiteSpace(annotContents))
+                                            Defects.Add(String.Format(@"The comment on page {0} has no reply.", page));
+                                    }                                    
+                                }                                 
+                            }  
+                            if (isDefectAccepted)
+                            {
+                                ++TotalAcceptedDefectCount;
+                                if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
+                                    Defects.Add("Incomplete attributes for the comment on page " + page);
+                            }
+                        }                        
+                    }
+                }
+                #endregion method 2
+#endif
                 #endregion collect comments
+            }
+        }
+
+        private void CollectComments(int page)
+        {
+            #region Annotation state model
+
+            //// Standard Defect State Model setup - 
+            //// This code defines the Annotation state models in support of Review Defect Statusing.
+            //// It defines Two models:
+            //// 1. Defect Review State.  This provides a state of defect acceptance.
+            //// 2. Defect Status.  This provides a status of the defect resolution.
+            //// 3. Defect Status (default Adobe Review state is deleted)
+
+            //// First, delete any old state models,
+
+            //// Defect type model
+            //try { Collab.removeStateModel("DefectType");    } catch (e) {}
+            //// Qualifier model
+            //try { Collab.removeStateModel("QualifierType"); } catch (e) {}
+            //// Impact model
+            //try { Collab.removeStateModel("Impact");        } catch (e) {}
+            //// Delete Adobe default state model - don't need it anymore
+            //try { Collab.removeStateModel("Review");        } catch (e) {}
+
+            //// Create the new state models
+
+            //// Defect Review State model
+            //var myIsDefectType = new Object;
+            //myIsDefectType["None"] = {cUIName: "None"};
+            //myIsDefectType["Accepted"] = {cUIName: "Accepted"};
+            //myIsDefectType["Nondefect"] = {cUIName: "Not a Defect"};
+            //myIsDefectType["Duplicate"] = {cUIName: "Duplicate"};
+            //Collab.addStateModel({cName: "Is Defect State", cUIName: "IsDefectState",oStates: myIsDefectType, Default: "Accepted"});
+
+            //// Defect Status model
+            //var myResolutionStatusType = new Object;
+            //myResolutionStatusType["None"] = {cUIName: "None"};
+            //myResolutionStatusType["In Work"] = {cUIName: "In Work"};
+            //myResolutionStatusType["Work Completed"] = {cUIName: "Work Completed"};
+            //myResolutionStatusType["Need Additional Rework"] = {cUIName: "Need Additional Rework"};
+            //myResolutionStatusType["Verified Complete"] = {cUIName: "Verified Complete"};
+            //Collab.addStateModel({cName: "Resolution Status", cUIName: "ResolutionStatus",oStates: myResolutionStatusType, Default: "In Work"});
+
+            //// Defect Classification state model
+            //var myDefectType = new Object;
+            //myDefectType["DR"] = {cUIName: "Driving Requirement"};
+            //myDefectType["FN"] = {cUIName: "Functionality"};
+            //myDefectType["IF"] = {cUIName: "Interface"};
+            //myDefectType["LA"] = {cUIName: "Language"};
+            //myDefectType["LO"] = {cUIName: "Logic"};
+            //myDefectType["MN"] = {cUIName: "Maintainability"};
+            //myDefectType["PF"] = {cUIName: "Performance"};
+            //myDefectType["ST"] = {cUIName: "Standards"};
+            //myDefectType["OT"] = {cUIName: "Other"};
+            //myDefectType["ND"] = {cUIName: "Documentation:NT"};
+            //myDefectType["PD"] = {cUIName: "Documentation:P"};
+            //myDefectType["TE"] = {cUIName: "Incomplete Test Execution:T"};
+            //myDefectType["TI"] = {cUIName: "Incorrect Stubbing:T"};
+            //myDefectType["PR"] = {cUIName: "Review Packet Deficiency:P"};
+            //myDefectType["TS"] = {cUIName: "Structural Coverage:T"};
+            //myDefectType["NS"] = {cUIName: "Structural Coverage:NT"};
+            //myDefectType["TC"] = {cUIName: "Test case:T"};
+            //myDefectType["NC"] = {cUIName: "Test case:NT"};
+            //myDefectType["PG"] = {cUIName: "Test Generation System warnings:P"};
+            //myDefectType["TT"] = {cUIName: "Trace:T"};
+            //myDefectType["NT"] = {cUIName: "Trace:NT"};
+            //myDefectType["PT"] = {cUIName: "Trace:P"};
+            //Collab.addStateModel({cName: "DefectType", cUIName: "Defect Type",oStates: myDefectType});
+
+            //// Defect Classification state model
+            //var myDefectSeverity = new Object;
+            //myDefectSeverity["Minor"] = {cUIName: "Minor"};
+            //myDefectSeverity["Major"] = {cUIName: "Major"};
+            //Collab.addStateModel({cName: "DefectSeverity", cUIName: "Defect Severity",oStates: myDefectSeverity});
+
+            // Summary:
+            // KEY = Resolution Status, VALUE = None, In Work, Work Completed, Need Additional Rework, Verified Complete
+            // KEY = Is Defect State, VALUE = None, Accepted, Nondefect, Duplicate
+            // KEY = DefectType, VALUE = NT, TT, NC...
+            // KEY = DefectSeverity, VALUE = Minor, Major
+
+            #endregion Annotation state model
+
+            PdfObject pageObj = Reader.GetPageN(page).Get(PdfName.ANNOTS);
+            if (null == pageObj)
+                return;
+
+            PdfArray annotArray = (PdfArray)PdfReader.GetPdfObject(pageObj);
+            if (null == annotArray)
+                return;
+
+            foreach (PdfIndirectReference annot in annotArray.ArrayList)
+            {
+                PdfDictionary annotDict = (PdfDictionary)PdfReader.GetPdfObject(annot);
+                                
+                if (PdfName.TEXT != (PdfName)annotDict.Get(PdfName.SUBTYPE))
+                    continue; // early filter: sticky notes and their attributes are all of subtype TEXT
+
+                PdfObject _annotP = annotDict.Get(PdfName.P);  // possibly means Place
+                PdfObject _annotIRT = annotDict.Get(PdfName.IRT);  // IRT: In Reply To
+                PdfString _annotContents = annotDict.GetAsString(PdfName.CONTENTS);
+                // PdfObject _annotT = annotDict.Get(PdfName.T);  // Title, usually indicates the author who created this annot
+
+                // Work Completed, Verified Complete, ND, Accepted, Minor, etc.
+                PdfString _annotState = (PdfString)annotDict.Get(PdfName.STATE);                
+
+                // "MigrationStatus", "DefectType", "Is Defect State", "Resolution Status", "DefectSeverity"
+                PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));                
+                
+#if DEBUG_VERBOSE
+                PdfObject _annotAP = annotDict.Get(PdfName.AP);
+                PdfObject _annotC = annotDict.Get(PdfName.C);
+                PdfObject _annotCreationDate = annotDict.Get(PdfName.CREATIONDATE);
+                PdfObject _annotF = annotDict.Get(PdfName.F);
+                PdfObject _annotM = annotDict.Get(PdfName.M);
+                PdfObject _annotNM = annotDict.Get(PdfName.NM);
+                PdfObject _annotName = annotDict.Get(PdfName.NAME);                
+                PdfObject _annotPopup = annotDict.Get(PdfName.POPUP);
+                PdfObject _annotRC = annotDict.Get(PdfName.RC);
+                PdfObject _annotRect = annotDict.Get(PdfName.RECT);
+                PdfObject _annotRotate = annotDict.Get(PdfName.ROTATE);
+                PdfObject _annotSubj = annotDict.Get(PdfName.SUBJECT);
+                PdfObject _annotT = annotDict.Get(PdfName.T);
+                PdfObject _annotType = annotDict.Get(PdfName.TYPE);
+
+                // C; Contents; F; NM; Name; P; Popup; T; Type; Number; IRT; State; StateModel
+                if (_annotSubtype == PdfName.TEXT)
+                    Defects.Add(_annotC.ToString() + "; "
+                                + _annotContents.ToString() + "; "
+                                + _annotF.ToString() + "; "
+                                + _annotNM.ToString() + "; "
+                                + _annotName.ToString() + "; "
+                                + _annotP.ToString() + "; "
+                                + _annotPopup.ToString() + "; "                                            
+                                + _annotT.ToString() + "; "
+                                + _annotType.ToString() + "; "
+                                + annot.Number + "; "
+                                + (_annotIRT == null ? "null; " : _annotIRT.ToString() + "; ")
+                                + annotState + "; "
+                                + annotStateModel
+                                );
+#endif
+
+                #region Parse annotation info
+                // Sticky note and its reply have no State and StateModel values.
+                // This can be the basis to distinguish them from other attributes.
+                AnnotGroup annotGroup = new AnnotGroup { AnnotP = null };
+                if (null == _annotState && null == _annotStateModel)
+                {
+                    if (null == _annotContents || String.IsNullOrWhiteSpace(_annotContents.ToString()))
+                    {
+                        // Sticky note has no IRT value. This can be the basis to distinguish it from its reply.
+                        if (null == _annotIRT)
+                            Defects.Add(String.Format("The comment on page {0} is empty.", page));
+                        else
+                            Defects.Add(String.Format("The comment on page {0} has no reply.", page));
+                    }
+                }
+                                
+                // P 值指的是文档中的一个位置；不同的 annotation 组可能有相同的 P 值，同一个 annotation 组的 P 值是相同的。
+                // Attributes 的 IRT 值位于本 annotation 组其他元素的 Number 值集合中。
+                // 结合以上两点可定位出一个 annotation 组。
+
+                #endregion Parse annotation info
             }
         }
 
@@ -541,8 +793,9 @@ namespace Pkg_Checker.Implementations
                     + "; expected FMS2000 and MDXX, respectively.");
 
             // Review location
-            if (String.IsNullOrWhiteSpace(F_ReviewLocation) || !F_ReviewLocation.Equals(FormFields.F_ReviewLocation_Val))
-                Defects.Add(@"Review Location is " + F_ReviewLocation + "; expected " + FormFields.F_ReviewLocation_Val);
+            if (String.IsNullOrWhiteSpace(F_ReviewLocation) || F_ReviewLocation.ToUpper().Contains("INVALID") ||
+                F_ReviewLocation.Contains(FormFields.F_N_ReviewLocation_Val))
+                Defects.Add(@"Review Location is invalid.");
 
             // Moderator stamp
             if (String.IsNullOrWhiteSpace(F_ModStamp) || !"Yes".Equals(F_ModStamp))
@@ -658,8 +911,8 @@ namespace Pkg_Checker.Implementations
                 //     Defects.Add(@"Missing Trace Check List, or the .TRT file is not updated but the Trace check list presents.");
                 if (ExtFileNames.Contains(".TRT") && !HasTraceChecklist)
                     Defects.Add(@"Missing Trace Checklist.");
-                if (!ExtFileNames.Contains(".TRT") && HasTraceChecklist)
-                    Defects.Add(@"The Trace Checklist is redundant because no trace file is updated.");
+                // if (!ExtFileNames.Contains(".TRT") && HasTraceChecklist)
+                //     Defects.Add(@"The Trace Checklist is redundant because no trace file is updated.");
             }
 
             #endregion Work Product Type
@@ -698,6 +951,8 @@ namespace Pkg_Checker.Implementations
                         Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
                             + " is not checked into SCR " + checkedInFile.SCR);
                 }
+                else
+                    Defects.Add("Missing report for SCR " + checkedInFile.SCR);
             }
 
             #endregion ACM Info vs. Coversheet Info
@@ -818,7 +1073,7 @@ namespace Pkg_Checker.Implementations
                 String fieldVal = Fields.GetField(fieldPrefix + i);
                 if (String.IsNullOrWhiteSpace(fieldVal))
                     itemsNotChecked.Add(i);
-                else if (fieldVal.Contains('N'))                    
+                else if (!fieldVal.ToUpper().Contains('Y'))
                     itemsNoOrNA.Add(i);
             }
 
@@ -857,12 +1112,6 @@ namespace Pkg_Checker.Implementations
         public List<String> GetDefects()
         {
             return Defects;
-        }
-
-        public void Close()
-        {
-            if (null != Reader)
-                Reader.Close();
         }
     }
 }

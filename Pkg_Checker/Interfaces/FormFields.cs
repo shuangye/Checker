@@ -33,7 +33,7 @@ namespace Pkg_Checker.Interfaces
         #endregion Coversheet fields
 
         #region Coversheet fields values
-        public const string F_ReviewLocation_Val = @"Moderator Cubicle";
+        public const string F_N_ReviewLocation_Val = @"No Meeting";
         public const string F_Lifecycle_Val_CTP = @"Low-Level Test Procedures";
         public const string F_Lifecycle_Val_SLTP = @"High-Level Test Procedures";
         public const string F_ReviewStatus_Val_Accepted = "Accepted";
