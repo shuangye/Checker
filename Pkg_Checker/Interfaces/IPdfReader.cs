@@ -13,6 +13,7 @@ namespace Pkg_Checker.Interfaces
         void ReadWholeFile();
         void CheckCommonFields();
         void CheckReviewStatus();
+        void CheckComments();
         void CheckWorkProducts();
         void CheckCheckList();
         

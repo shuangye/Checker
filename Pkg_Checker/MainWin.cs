@@ -43,7 +43,12 @@ namespace Pkg_Checker
             StreamWriter SW = null;
 
             try { SW = new StreamWriter(outputFilePath, appendOutput, Encoding.Default); }
-            catch { MessageBox.Show(@"Cannot open result file for writting."); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(@"Cannot open result file for writting: " + ex.Message);
+                if (null != SW)
+                    SW.Close();
+            }            
 
             // do work...
             foreach (var file in FilesToCheck)
@@ -64,6 +69,7 @@ namespace Pkg_Checker
                     reader.ReadWholeFile();
                     reader.CheckCommonFields();
                     reader.CheckReviewStatus();
+                    reader.CheckComments();
                     reader.CheckWorkProducts();
                     reader.CheckCheckList();
                     
@@ -127,6 +133,10 @@ namespace Pkg_Checker
 
         private void btnCheck_Click(object sender, EventArgs e)
         {
+            // StreamReader sr = new StreamReader(@"E:\Temp\Test.txt");            
+            // Helpers.Parser.ParseSCRReport(sr.ReadToEnd());
+            // return;
+
             btnCheck.Enabled = false;
             
             if (!this.chkAppendOutput.Checked)
@@ -178,9 +188,10 @@ namespace Pkg_Checker
         {
             btnCheck.Enabled = false;
             bool errorOccurred = false;
+            this.tbLocation.Text = "";
 
             if (!this.chkAppendOutput.Checked)
-                this.tbOutput.Text = @"";
+                this.tbOutput.Text = "";
 
             // dropped items may contain folders
             String[] s = (String[])e.Data.GetData(DataFormats.FileDrop, false);
@@ -192,7 +203,7 @@ namespace Pkg_Checker
                         FilesToCheck.Add(item);                
 
                 // .pdf files are archives
-                if (System.IO.Path.GetExtension(s[i]).ToUpper() == ".PDF")
+                if (".PDF".Equals(System.IO.Path.GetExtension(s[i]).ToUpper()))
                     FilesToCheck.Add(s[i]);
             }
 

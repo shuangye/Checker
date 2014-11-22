@@ -42,7 +42,6 @@
             this.lblOutput = new System.Windows.Forms.Label();
             this.lblDrag = new System.Windows.Forms.Label();
             this.lnkResult = new System.Windows.Forms.LinkLabel();
-            this.cbFix = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.supportedChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -188,18 +187,6 @@
             this.lnkResult.Text = "Open Result File";
             this.lnkResult.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkResult_LinkClicked);
             // 
-            // cbFix
-            // 
-            this.cbFix.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.cbFix.AutoSize = true;
-            this.cbFix.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.cbFix.Location = new System.Drawing.Point(436, 82);
-            this.cbFix.Name = "cbFix";
-            this.cbFix.Size = new System.Drawing.Size(131, 21);
-            this.cbFix.TabIndex = 4;
-            this.cbFix.Text = "Try to fix defects";
-            this.cbFix.UseVisualStyleBackColor = true;
-            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -272,7 +259,6 @@
             this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.chkAppendOutput);
             this.Controls.Add(this.totalProgress);
-            this.Controls.Add(this.cbFix);
             this.Controls.Add(this.lnkResult);
             this.Controls.Add(this.lblDrag);
             this.Controls.Add(this.lblOutput);
@@ -314,7 +300,6 @@
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.Label lblDrag;
         private System.Windows.Forms.LinkLabel lnkResult;
-        private System.Windows.Forms.CheckBox cbFix;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem supportedChecksToolStripMenuItem;

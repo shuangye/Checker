@@ -41,6 +41,11 @@ namespace Pkg_Checker.Interfaces
         public const string F_ReviewStatus_Val_Rereview = "ReReview";
         public const string F_ProducerLocation_Val = @"Shanghai (Avionics excl EDS)";
         #endregion Coversheet fields values
+
+        #region regex patterns
+        public const String PATTERN_SCR_NUMBER = @"\d{3,}\.\d{2}";
+        public const String PATTERN_SCR_NUMBER_2 = @"\d{3,}_\d{2}";
+        #endregion regex patterns
     }
 
     public enum CheckListType

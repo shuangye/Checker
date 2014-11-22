@@ -33,7 +33,6 @@ D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyR
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
 D:\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
-E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyReference.cache
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
@@ -56,3 +55,4 @@ D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyRef
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.MainWin.resources
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.Properties.Resources.resources
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csproj.GenerateResource.Cache
+E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Debug\Pkg_Checker.csprojResolveAssemblyReference.cache

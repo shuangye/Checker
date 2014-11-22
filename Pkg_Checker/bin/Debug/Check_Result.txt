@@ -1,38 +1,10 @@
-[Defect] [1.0, 1.0, 0.666656]; Should be #2; 28; 53e58411-8d56-4e0a-916a-d2b9761a5321; /Comment; 13565 0 R; 13948 0 R; Debra Barnes; /Annot; 13947; null; ; 
-[Defect] [1.0, 1.0, 0.0]; Fixed.; 28; ed2ec643-5a53-484e-a282-5218fee1c2ba; /Comment; 13565 0 R; 14354 0 R; E447598; /Annot; 14353; 13947 0 R; ; 
-[Defect] [1.0, 1.0, 0.0]; Work Completed set by E447598; 30; 26ebf4a7-8b34-45bd-b90a-34068477b7d8; /Comment; 13565 0 R; 14359 0 R; E447598; /Annot; 14358; 13947 0 R; Work Completed; Resolution Status
-[Defect] [1.0, 1.0, 0.0]; ND set by E382984; 30; d84075d7-b9d5-4828-a1c2-2ff46a90b2cf; /Comment; 13565 0 R; 14552 0 R; E382984; /Annot; 14551; 14358 0 R; ND; DefectType
-[Defect] [1.0, 1.0, 0.0]; Accepted set by E382984; 30; 4aca47c4-befd-4ce3-a472-210a2ff09532; /Comment; 13565 0 R; 14554 0 R; E382984; /Annot; 14553; 14551 0 R; Accepted; Is Defect State
-[Defect] Incomplete attributes for the comment on page 12
-[Defect] [1.0, 1.0, 0.0]; Verified Complete set by E382984; 30; c8105702-1802-4492-b524-455c7369d532; /Comment; 13565 0 R; 14556 0 R; E382984; /Annot; 14555; 14553 0 R; Verified Complete; Resolution Status
-[Defect] [1.0, 1.0, 0.0]; Minor set by E382984; 30; ddde971f-b859-4e7d-90b5-875cccec6acc; /Comment; 13565 0 R; 14558 0 R; E382984; /Annot; 14557; 14555 0 R; Minor; DefectSeverity
-[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 48c9129d-da32-4b8f-8c24-e75fc754c821; /Comment; 13565 0 R; 14560 0 R; E382984; /Annot; 14559; 13947 0 R; Marked; Marked
-[Defect] [1.0, 1.0, 0.0]; Accepted set by e817739; 30; 6439e175-6110-47f0-9a9d-341e3fd0a30f; /Comment; 13565 0 R; 14936 0 R; e817739; /Annot; 14935; 14559 0 R; Accepted; Is Defect State
-[Defect] Incomplete attributes for the comment on page 12
-[Defect] [1.0, 1.0, 0.0]; This disposition is not ported in new DSP sheet; 28; b1e96468-7d87-4f58-be85-a7823cbeda75; /Comment; 332 0 R; 14157 0 R; E382984; /Annot; 14158; null; ; 
-[Defect] [1.0, 1.0, 0.0]; This scr and previous scr is same, combine the disposition; 28; 45283667-e7a7-4729-9d18-b23aee20b1ea; /Comment; 332 0 R; 14159 0 R; E382984; /Annot; 14160; null; ; 
-[Defect] [1.0, 1.0, 0.0]; This SCR information is not ported to new disposition sheet; 28; 6181b6f6-4a43-41d6-9699-681a77c94708; /Comment; 332 0 R; 14161 0 R; E382984; /Annot; 14162; null; ; 
-[Defect] [1.0, 1.0, 0.0]; This is not come under any other issues. this is partial testing information; 28; c11bd017-4ffa-40b9-a46c-dfa45a67eba6; /Comment; 332 0 R; 14163 0 R; E382984; /Annot; 14164; null; ; 
-[Defect] [1.0, 1.0, 0.0]; non-issue.Test update done.; 28; 0f3d03d1-1629-46e1-bdab-e8ebddb75725; /Comment; 332 0 R; 14165 0 R; E447598; /Annot; 14166; 14158 0 R; ; 
-[Defect] [1.0, 1.0, 0.0]; non-issue.as the requirement were different so disposed in different sections; 28; 6cb8f360-0e90-4a4c-a54d-ff856dd00eac; /Comment; 332 0 R; 14167 0 R; E447598; /Annot; 14168; 14160 0 R; ; 
-[Defect] [1.0, 1.0, 0.0]; non-issue.Test update done.; 28; ea252510-be6d-47aa-ad2f-2300bb174d19; /Comment; 332 0 R; 14169 0 R; E447598; /Annot; 14170; 14162 0 R; ; 
-[Defect] [1.0, 1.0, 0.0]; non-issue; 28; 5010e5b2-74ea-4b9d-b25b-dccc1eb3edb3; /Comment; 332 0 R; 14346 0 R; E447598; /Annot; 14345; 14164 0 R; ; 
-[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; ed5f9c01-7254-4d7d-b55a-90630e2922d4; /Comment; 332 0 R; 14536 0 R; E382984; /Annot; 14535; 14158 0 R; Nondefect; Is Defect State
-[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 9f49b1c0-6a83-4d9e-8560-60f5701d7c2a; /Comment; 332 0 R; 14538 0 R; E382984; /Annot; 14537; 14158 0 R; Marked; Marked
-[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 7ca9cbd8-5300-4578-b2a2-e959ba6340e6; /Comment; 332 0 R; 14540 0 R; E382984; /Annot; 14539; 14160 0 R; Nondefect; Is Defect State
-[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; a5505f49-046e-4e92-87c8-ebb8ac1104f6; /Comment; 332 0 R; 14542 0 R; E382984; /Annot; 14541; 14160 0 R; Marked; Marked
-[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 7095a09f-4acc-4cbc-96e2-179eddf28467; /Comment; 332 0 R; 14544 0 R; E382984; /Annot; 14543; 14162 0 R; Nondefect; Is Defect State
-[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 54443a48-8055-407e-a375-4556ce798637; /Comment; 332 0 R; 14546 0 R; E382984; /Annot; 14545; 14162 0 R; Marked; Marked
-[Defect] [1.0, 1.0, 0.0]; Nondefect set by E382984; 30; 806982fd-570d-4c98-981f-fc598a961095; /Comment; 332 0 R; 14548 0 R; E382984; /Annot; 14547; 14164 0 R; Nondefect; Is Defect State
-[Defect] [1.0, 1.0, 0.0]; Marked set by E382984; 30; 7320e4c3-668c-4f56-a533-67b953e3b7a1; /Comment; 332 0 R; 14550 0 R; E382984; /Annot; 14549; 14164 0 R; Marked; Marked
-[Defect] Number of review participants is 3, but there is/are 4 stamp(s).
-[Defect] Total defects count filled in coversheet is 1, but actual accepted comments count is 2.
+[Defect] Incomplete info for checked in file 3
+[Defect] According to the coversheet fillings, there are no defects, but the package is closed asReReview
+[Defect] The comment on page 76 has no resolution status - work complete set.
+[Defect] Total defects count filled in coversheet is 0, but actual accepted comments count is 4.
+[Defect] High-Level Test Procedure should not contain CTP related files or Work Product Types.
 [Defect] Tracing: Work Product Type and checked in files do not match.
-[Defect] The coversheet indicates that the checked in ver of file SLTP_B787_10_17_29.DOC is 7, but the max ver in SCR report is 8. SCR: 16746.01
-[Defect] The SCR report indicates that file SLTP_B787_10_17_29.DOC is not checked into SCR 16680.46
-[Defect] The coversheet indicates that the checked in ver of file SLTP_B787_10_17_29.ZIP is 7, but the max ver in SCR report is 8. SCR: 16746.01
-[Defect] The SCR report indicates that file SLTP_B787_10_17_29.ZIP is not checked into SCR 16680.46
-[Defect] No justification for NO or N/A item(s) 14  in SLTP check list, or the justification cannot be parsed.
-[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
-Checked D:\Temp\Test\B7E7_B7E7FMS_16746_01_Review_Packet.pdf
+[Defect] Item(s) 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 is/are not checked in CTP check list.
+[Defect] No justification for NO or N/A item(s) 2 3  in CTP check list, or the justification cannot be parsed.
+Checked E:\Programming\Projects\Checker\Pkg_Checker\bin\Release\FMS2000_MDXX_17011_01_Review_Packet.pdf
 ----------------------------------------------------------------------------
