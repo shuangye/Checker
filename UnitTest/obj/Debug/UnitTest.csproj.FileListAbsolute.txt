@@ -1,0 +1,8 @@
+E:\Programming\Projects\Checker\UnitTest\bin\Debug\UnitTest.dll
+E:\Programming\Projects\Checker\UnitTest\bin\Debug\UnitTest.pdb
+E:\Programming\Projects\Checker\UnitTest\bin\Debug\ReviewPackageChecker.exe
+E:\Programming\Projects\Checker\UnitTest\bin\Debug\itextsharp.dll
+E:\Programming\Projects\Checker\UnitTest\bin\Debug\ReviewPackageChecker.pdb
+E:\Programming\Projects\Checker\UnitTest\obj\Debug\UnitTest.csprojResolveAssemblyReference.cache
+E:\Programming\Projects\Checker\UnitTest\obj\Debug\UnitTest.dll
+E:\Programming\Projects\Checker\UnitTest\obj\Debug\UnitTest.pdb

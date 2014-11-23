@@ -45,6 +45,8 @@ namespace Pkg_Checker.Interfaces
         #region regex patterns
         public const String PATTERN_SCR_NUMBER = @"\d{3,}\.\d{2}";
         public const String PATTERN_SCR_NUMBER_2 = @"\d{3,}_\d{2}";
+        public const String PATTERN_SCR_REPORT_BEGIN_MARK = @"\w+\s*:\s*\w+\s*-\s*SYSTEM CHANGE REQUEST";
+        public const String PATTERN_SCR_REPORT_END_MARK = @"Closed in Config\.:\s*(\w{1,})";
         #endregion regex patterns
     }
 

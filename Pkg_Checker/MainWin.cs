@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.IO;
 using Pkg_Checker.Interfaces;
 using Pkg_Checker.Implementations;
+using Pkg_Checker.Helpers;
+using Pkg_Checker.Entities;
 using System.Threading;
 using System.ComponentModel;
-using Pkg_Checker.Entities;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -132,11 +132,7 @@ namespace Pkg_Checker
         }
 
         private void btnCheck_Click(object sender, EventArgs e)
-        {
-            // StreamReader sr = new StreamReader(@"E:\Temp\Test.txt");            
-            // Helpers.Parser.ParseSCRReport(sr.ReadToEnd());
-            // return;
-
+        {            
             btnCheck.Enabled = false;
             
             if (!this.chkAppendOutput.Checked)

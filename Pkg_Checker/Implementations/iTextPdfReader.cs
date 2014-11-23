@@ -259,10 +259,10 @@ namespace Pkg_Checker.Implementations
                 // Begin: FMS2000 : A350_A380 - SYSTEM CHANGE REQUEST (Proj : Subproj - SYSTEM CHANGE REQUEST)
                 // End: Closed in Config.: ***     
                 // This algorithm assumes both the begin mark and end mark exist.
-                match = Regex.Match(pageText, @"\w+\s*:\s*\w+\s*-\s*SYSTEM CHANGE REQUEST", RegexOptions.IgnoreCase);
+                match = Regex.Match(pageText, FormFields.PATTERN_SCR_REPORT_BEGIN_MARK, RegexOptions.IgnoreCase);
                 if (match.Success)                
                     isOpeningTargetArea = true;                
-                match = Regex.Match(pageText, @"Closed in Config\.:\s*(\w{1,})");
+                match = Regex.Match(pageText, FormFields.PATTERN_SCR_REPORT_END_MARK);
                 if (match.Success)                
                     isEndMarkFound = true;                    
 
@@ -951,6 +951,10 @@ namespace Pkg_Checker.Implementations
                     x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
                 if (null != matchingSCRReport)
                 {
+                    if (!"SEC".Equals(matchingSCRReport.Status))
+                        Defects.Add(String.Format(@"SCR report {0} is in {1} status; ecptcted SEC.", 
+                                                  matchingSCRReport.SCRNumber, matchingSCRReport.Status));
+
                     IEnumerable<CheckedInFile> matchingFiles =
                         matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
                     if (null != matchingFiles && matchingFiles.Count() > 0)
@@ -1035,7 +1039,7 @@ namespace Pkg_Checker.Implementations
                 foreach (var i in notDisposedItems)
                     items += (checkListType == CheckListType.SLTP ? Utilities.ProgramToHuman(i) : i) + " ";
                 Defects.Add(@"No justification for NO or N/A item(s) " + items
-                    + " in " + typeName + " check list, or the justification cannot be parsed.");
+                    + " in " + typeName + " check list, or the justification cannot be recognized.");
             }
         }
 

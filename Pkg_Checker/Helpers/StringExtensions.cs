@@ -37,17 +37,26 @@ namespace Pkg_Checker.Helpers
         /// <returns></returns>
         public static String SubString(this String str, String beginMark, String endMark, bool beginMarkIncluded, bool endMarkIncluded)
         {
-            if (null == beginMark || null == endMark)
+            if (String.IsNullOrEmpty(beginMark) || String.IsNullOrEmpty(endMark))
                 return null;
 
-            int beginLocation = str.IndexOf(beginMark);
-            int endLocation = str.IndexOf(endMark);
-            if (beginLocation < 0 && endLocation < 0)
+            int subStringStartLocation, subStringLength;
+            int beginMarkLocation = str.IndexOf(beginMark);
+            int endMarkLocation = str.IndexOf(endMark);
+            if (beginMarkLocation < 0 && endMarkLocation < 0)
                 return null;  // both marks not found
-            
-            if (beginLocation < 0) beginLocation = 0;  // zero based
-            if (endLocation < 0) endLocation = str.Length - 1;
-            return str.Substring(beginLocation + beginMark.Length, endLocation - beginLocation - beginMark.Length);            
+
+            if (beginMarkLocation < 0)
+                subStringStartLocation = 0;  // zero based
+            else            
+                subStringStartLocation = beginMarkIncluded ? beginMarkLocation : beginMarkLocation + beginMark.Length;
+
+            if (endMarkLocation < 0)
+                subStringLength = str.Length - subStringStartLocation;
+            else
+                subStringLength = endMarkLocation + (endMarkIncluded ? endMark.Length : 0) - subStringStartLocation;
+
+            return str.Substring(subStringStartLocation, subStringLength);            
         }
     }
 }

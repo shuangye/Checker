@@ -321,7 +321,7 @@ namespace Pkg_Checker.Helpers
             // BEGIN: SYSTEM CHANGE REQUEST Page # of #
             // END: Closed in Config.: *** 
 
-            Match match = Regex.Match(contents, @"SYSTEM CHANGE REQUEST\s*Page\s*\d+\s*of\s*\d+", RegexOptions.IgnoreCase);
+            Match match = Regex.Match(contents, FormFields.PATTERN_SCR_REPORT_BEGIN_MARK, RegexOptions.IgnoreCase);
             if (!match.Success)
                 return null;
             else
@@ -377,7 +377,7 @@ namespace Pkg_Checker.Helpers
                 #endregion Elements Affected
 
                 // Closed in Config.: MD11_922_TST
-                match = Regex.Match(contents, @"Closed in Config\.:\s*(\w{1,})");
+                match = Regex.Match(contents, FormFields.PATTERN_SCR_REPORT_END_MARK);
                 if (match.Success)
                     report.ClosedConfig = match.Groups[1].Value;
 

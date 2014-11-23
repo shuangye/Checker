@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("eReview Package Checker")]
-[assembly: AssemblyDescription("Check eReview Package Validity")]
+[assembly: AssemblyTitle("UnitTest")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("eReview Package Checker")]
-[assembly: AssemblyCopyright("Copyright © Liu Mingyang 2014")]
-[assembly: AssemblyTrademark("Liu Mingyang")]
+[assembly: AssemblyProduct("UnitTest")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d257395a-ffeb-4a1d-8912-d0e39601f302")]
+[assembly: Guid("3a82c42c-8d6b-44ac-a171-f500094ab921")]
 
 // Version information for an assembly consists of the following four values:
 //
