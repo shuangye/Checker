@@ -9,7 +9,8 @@ namespace Pkg_Checker.Entities
     {
         Start = 1,
         End = 2,
-        ErrorOccurred = 3
+        ErrorOccurred = 3,
+        FatalError = 4
     }
 
     public class WorkProgress

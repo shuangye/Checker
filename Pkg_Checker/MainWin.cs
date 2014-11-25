@@ -53,17 +53,31 @@ namespace Pkg_Checker
             // do work...
             foreach (var file in FilesToCheck)
             {
+                IPdfReader reader = null;
+
                 WorkProgress progress = new WorkProgress();
                 progress.WorkName = file;
-                progress.Type = WorkType.Start;
-
-                // update UI
+                progress.Type = WorkType.Start;                                
                 worker.ReportProgress(CheckedFileCount, progress);
 
                 #warning creating a new object each time may increase memory footprint
                 // consider the Singleton design pattern
-                IPdfReader reader = new iTextPdfReader();
-                reader.Init(file);
+                try { reader = new iTextPdfReader(file); }
+                catch (Exception ex)
+                {
+                    progress.Type = WorkType.FatalError;
+                    progress.WorkResult = new List<String> { ex.Message + Environment.NewLine + Environment.NewLine
+                         + "Please try to put ITEXTSHARP.DLL at the same place with this executable." };
+                    worker.ReportProgress(CheckedFileCount, progress);
+                    // worker.CancelAsync();
+
+                    // UI related code should be placed in the UI thread.
+                    // MessageBox.Show(ex.Message + Environment.NewLine + Environment.NewLine
+                    //     + "Please try to put ITEXTSHARP.DLL at the same place with this executable.",
+                    //     "Fatal Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+                }
+
                 if (reader.IsValidReviewPackage())
                 {
                     reader.ReadWholeFile();
@@ -72,8 +86,8 @@ namespace Pkg_Checker
                     reader.CheckComments();
                     reader.CheckWorkProducts();
                     reader.CheckCheckList();
-                    
-                    ++CheckedFileCount;
+
+                    // ++CheckedFileCount;
                     progress.Type = WorkType.End;
                     progress.WorkResult = reader.GetDefects();
 
@@ -84,11 +98,15 @@ namespace Pkg_Checker
                         SW.WriteLine(@"Checked " + file);
                         SW.WriteLine(CommonResource.LineSeperator);
                     }
-                }    
+                }
                 else
+                {
                     progress.Type = WorkType.ErrorOccurred;
+                    progress.WorkResult = new List<string> { file + " is not a valid review package." + Environment.NewLine };
+                }
 
-                // output check result                
+                // output check result
+                ++CheckedFileCount;
                 worker.ReportProgress(CheckedFileCount, progress);
             }
 
@@ -108,6 +126,7 @@ namespace Pkg_Checker
                     lblProcessStatus.Text = String.Format(@"Checking {0} ... {1} of {2}.", 
                         progress.WorkName, e.ProgressPercentage + 1, FilesToCheck.Count);
                     break;
+
                 case WorkType.End:
                     if (null != progress.WorkResult)
                         foreach (var defect in progress.WorkResult)
@@ -115,9 +134,16 @@ namespace Pkg_Checker
                     tbOutput.AppendText(@"Done checking " + progress.WorkName + Environment.NewLine
                         + CommonResource.LineSeperator + Environment.NewLine);
                     break;
+
                 case WorkType.ErrorOccurred:
-                    tbOutput.AppendText(String.Format(progress.WorkName + " is not a valid review package." + Environment.NewLine));
+                    tbOutput.AppendText(progress.WorkResult[0]);
                     break;
+
+                case WorkType.FatalError:
+                    MessageBox.Show(progress.WorkResult[0],
+                         "Fatal Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+
                 default:
                     break;
             }
@@ -266,26 +292,16 @@ namespace Pkg_Checker
         //    }
         //}
 
+        private void knownIssuesStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tbOutput.AppendText(@"Missing report for SCR XXX." + Environment.NewLine
+                + @"XXX.TRT is not printed to the review package." + Environment.NewLine);
+        }
+
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            tbOutput.AppendText(@"This tool checks the potential defects in a review package." + Environment.NewLine +
-                @"Bug report: mingyang.liu@honeywell.com" + Environment.NewLine +
-                @"Powered by iTextSharp." + Environment.NewLine);
-        }
-
-        private void supportedChecksToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            tbOutput.AppendText(@"Currently, this tool can check the following items:" + Environment.NewLine);
-            tbOutput.AppendText(@"To be filled..." + Environment.NewLine);
-        }
-
-        private void toDoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            
-            tbOutput.AppendText(@"Approved version vs. CM21 version." + Environment.NewLine);
-            //"TO DO:            
-            // How to collect all state models that belong to one sticky note?        
-            // Approved ver vs. max ver in CM21                   
-        }
+            tbOutput.AppendText(@"This tool checks the potential defects in a review package." + Environment.NewLine
+                + @"Build Date: Nov 25, 2014.");
+        }        
     }
 }

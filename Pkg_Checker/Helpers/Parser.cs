@@ -1,4 +1,6 @@
-﻿using iTextSharp.text.pdf;
+﻿#undef DEBUG_VERBOSE
+
+using iTextSharp.text.pdf;
 using Pkg_Checker.Entities;
 using Pkg_Checker.Interfaces;
 using System;
@@ -206,6 +208,7 @@ namespace Pkg_Checker.Helpers
                 PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));
 
 #if DEBUG_VERBOSE
+                PdfObject _annotSubtype = annotDict.Get(PdfName.SUBTYPE);
                 PdfObject _annotAP = annotDict.Get(PdfName.AP);
                 PdfObject _annotC = annotDict.Get(PdfName.C);
                 PdfObject _annotCreationDate = annotDict.Get(PdfName.CREATIONDATE);
@@ -222,8 +225,10 @@ namespace Pkg_Checker.Helpers
                 PdfObject _annotType = annotDict.Get(PdfName.TYPE);
 
                 // C; Contents; F; NM; Name; P; Popup; T; Type; Number; IRT; State; StateModel
+                String info;
                 if (_annotSubtype == PdfName.TEXT)
-                    Defects.Add(_annotC.ToString() + "; "
+                    // Defects.Add(_annotC.ToString() + "; "
+                    info = (_annotC.ToString() + ""
                                 + _annotContents.ToString() + "; "
                                 + _annotF.ToString() + "; "
                                 + _annotNM.ToString() + "; "
@@ -234,8 +239,8 @@ namespace Pkg_Checker.Helpers
                                 + _annotType.ToString() + "; "
                                 + annot.Number + "; "
                                 + (_annotIRT == null ? "null; " : _annotIRT.ToString() + "; ")
-                                + annotState + "; "
-                                + annotStateModel
+                                // + _annotState.ToString() + "; "
+                                // + _annotStateModel.ToString()
                                 );
 #endif
 
@@ -353,7 +358,7 @@ namespace Pkg_Checker.Helpers
 
                 #region Elements Affected
                 String targetArea = contents.SubString(@"Elements Affected:", @"Closure Category:", false, false);
-                if (null != targetArea)
+                if (!String.IsNullOrWhiteSpace(targetArea))
                 {                    
                     // Having located the "Affected Elements" area, it is time now to parse info therein
                     // match lines like "TEST CTP_A350_FMCI_EVENT_HANDLER.ZIP 4"                    

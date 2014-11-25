@@ -58,6 +58,14 @@ namespace Pkg_Checker.Implementations
         public List<String> Defects { get; set; }
         #endregion Properties
 
+        public iTextPdfReader(String filePath)
+        {
+            Defects = new List<String>();
+            Reader = new PdfReader(filePath);
+            Fields = Reader.AcroFields;
+            ReviewPackageName = Path.GetFileName(filePath).ToUpper();
+        }
+
         ~iTextPdfReader()
         {
             if (null != Reader)
@@ -68,8 +76,11 @@ namespace Pkg_Checker.Implementations
         /// Call this method before any checking methods to populate preliminary data
         /// </summary>
         /// <param name="filePath"></param>
-        public void Init(string filePath)
+        [Obsolete]
+        private bool Init(string filePath)
         {
+            bool result = true;
+
             try
             {
                 Defects = new List<String>();
@@ -81,8 +92,11 @@ namespace Pkg_Checker.Implementations
             catch (Exception)
             {
                 Reader = null;
-                Fields = null;                
-            }            
+                Fields = null;
+                result = false;
+            }
+
+            return result;
         }
 
         public bool IsValidReviewPackage()
@@ -108,7 +122,7 @@ namespace Pkg_Checker.Implementations
             Match match;            
             String val = "";
 
-            #region Parse Info from Review Package Name                        
+            #region Parse Info from Review Package Name
             match = Regex.Match(ReviewPackageName, @"_(" + FormFields.PATTERN_SCR_NUMBER_2 + ")_");
             if (match.Success)
                 MasterSCR = float.Parse(match.Groups[1].Value.Replace('_', '.'));
@@ -249,8 +263,230 @@ namespace Pkg_Checker.Implementations
             bool isOpeningTargetArea = false;
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
             {
-                SimpleTextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
-                String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, strategy);
+                // sticky notes does not depend on page text, so put it before pageText checking
+                #region Collect Comments
+                // CollectComments(page);
+                switch (Parser.ParseComments(Reader, page, AnnotGroups))
+                {
+                    case 1:
+                        Defects.Add(String.Format("The comment on page {0} is empty.", page));
+                        break;
+                    case 2:
+                        Defects.Add(String.Format("The comment on page {0} has no reply.", page));
+                        break;
+                    default:
+                        break;
+                }
+
+#if COMMENT_COLLECTION_METHOD_1
+                #region method 1
+                PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once                
+                if (null != pdfDict)
+                {
+                    PdfArray annotArray = pdfDict.GetAsArray(PdfName.ANNOTS);
+                    // How to collect all state models that belong to one sticky note?
+#warning assume there is only ONE comment on one page
+                    bool isDefectAccepted = false;
+                    bool defectSeverityFound = false;
+                    bool defectTyeFound = false;
+                    bool authorWorkCompletedFound = false;
+                    bool moderatorVerifyCompletedFound = false;
+                    for (int i = 0; null != annotArray && i < annotArray.Size; ++i)
+                    {
+                        PdfDictionary curAnnot = annotArray.GetAsDict(i);                        
+                        // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
+                        if (PdfName.TEXT == (PdfName)curAnnot.Get(PdfName.SUBTYPE))
+                        {
+                            // The KEY
+                            // StateModel values: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
+                            PdfString KEY = (PdfString)curAnnot.Get(new PdfName("StateModel"));
+
+                            // The VALUE
+                            // PdfName.STATE values: ND, ST, NC, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
+                            PdfString VALUE = (PdfString)curAnnot.Get(PdfName.STATE);
+                            
+                            if (null != KEY && null != VALUE)
+                            {
+                                if (KEY.ToString().Contains("Is Defect State") &&
+                                    VALUE.ToString().Contains("Accepted"))
+                                {                                    
+                                    isDefectAccepted = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("DefectSeverity"))
+                                {
+                                    defectSeverityFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("DefectType"))
+                                {
+                                    defectTyeFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Work Completed"))
+                                {
+                                    authorWorkCompletedFound = true;
+                                    continue;
+                                }
+                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Verified Complete"))
+                                {
+                                    moderatorVerifyCompletedFound = true;
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    if (isDefectAccepted)
+                    {
+                        ++TotalAcceptedDefectCount;
+                        if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
+                            Defects.Add("Incomplete attributes for the comment on page " + page);
+                    }
+                }
+                #endregion method 1
+#elif COMMENT_COLLECTION_METHOD_2
+                #region method 2
+                PdfObject pageObj = Reader.GetPageN(page).Get(PdfName.ANNOTS);
+                List<PdfIndirectReference> commentsInOnePage = new List<PdfIndirectReference>();
+                if (null != pageObj)
+                {
+                    PdfArray annotArray = (PdfArray)PdfReader.GetPdfObject(pageObj);
+                    if (null != annotArray)
+                    {
+                        foreach (PdfIndirectReference annot in annotArray.ArrayList)
+                        {
+                            bool isDefectAccepted = false;
+                            bool defectSeverityFound = false;
+                            bool defectTyeFound = false;
+                            bool authorWorkCompletedFound = false;
+                            bool moderatorVerifyCompletedFound = false;
+
+                #region retrieve info from an annotation
+
+                            PdfDictionary annotDict = (PdfDictionary)PdfReader.GetPdfObject(annot);
+                            
+                            PdfName _annotSubtype = (PdfName)annotDict.Get(PdfName.SUBTYPE);
+                                                                               
+                            // IRT: In Reply To
+                            // PdfObject _annotIRT = annotDict.Get(PdfName.IRT);
+                            PdfIndirectReference _annotIRT = (PdfIndirectReference)annotDict.Get(PdfName.IRT);
+                            PdfDictionary prefs = (PdfDictionary)PdfReader.GetPdfObject(_annotIRT);
+                            
+                            // Work Completed, Verified Complete, ND, Accepted, Minor, etc.
+                            PdfString _annotState = (PdfString)annotDict.Get(PdfName.STATE);
+                            String annotState = null == _annotState ? "" : _annotState.ToString();
+
+                            // "MigrationStatus", "DefectType", "Is Defect State", "Resolution Status", "DefectSeverity"
+                            PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));
+                            String annotStateModel = null == _annotStateModel ? "" : _annotStateModel.ToString();
+
+                            PdfString _annotContents = annotDict.GetAsString(PdfName.CONTENTS);
+                            String annotContents = null == _annotContents ? "" : _annotContents.ToString();
+                            
+                #endregion retrieve info from an annotation
+
+                            // Guess: this is the sticky note
+                            if (null == _annotState && null == prefs &&
+                                (_annotSubtype.Equals(PdfName.TEXT) || _annotSubtype.Equals(new PdfName("Highlight"))))
+                            {
+                                // check the contents of this comment, by moderator.
+                                // such as "Should be TC 3. Note: this fails checklist 45."
+
+                                // annot.Number property: 6181
+                                // annot.Generation property: 0
+                                // annotDict Keys:
+                                // AP                {Dictionary}
+                                // C                 {[1.0, 1.0, 0.0]}
+                                // Contents          "Should be TC 3.\rNote: this fails checklist 45."
+                                // CreationDate      {D:20141120162918+08'00'}
+                                // F                 {28}
+                                // M                 {D:20141120163832+08'00'}
+                                // NM                {1a9e49e9-e5ce-424d-bfd2-09ed4c6e6e4b}
+                                // Name              {/Comment}
+                                // P                 {4193 0 R}
+                                // Popup             {6182 0 R}
+                                // RC                {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p dir="ltr"><span dir="ltr" style="font-size:10.0pt;text-align:left;color:#000000;font-weight:normal;font-style:normal">Should be TC 3.&#13;Note: this fails checklist 45.</span></p></body>}
+                                // Rect              {[51.3388, 606.718, 71.3388, 624.718]}
+                                // Rotate            {90}
+                                // Subj              null
+                                // Subtype           {/Text}
+                                // T                 {E461456}
+                                // Type              {/Annot}                                
+
+                                if (String.IsNullOrWhiteSpace(annotContents))
+                                    Defects.Add(String.Format(@"The content of the comment on page {0} is empty.", page));
+                                commentsInOnePage.Add(annot);
+                            }
+                                                        
+                            for (int i = 0; i < commentsInOnePage.Count; ++i)
+                            {                                
+                                if (null != prefs && prefs.Equals((PdfDictionary)PdfReader.GetPdfObject(commentsInOnePage[i]))) 
+                                {                                       
+                                    commentsInOnePage.Add(annot);
+                                    if (null != _annotState)
+                                    {
+                                        // annot.Number property: 6337
+                                        // annot.Generation property: 0
+                                        // annotDict Keys:
+                                        // AP               {Dictionary}
+                                        // C                {[1.0, 1.0, 0.0]}
+                                        // Contents         {ND set by E461456}
+                                        // CreationDate     {D:20141120162951+08'00'}
+                                        // F                {30}
+                                        // + IRT            {6181 0 R}
+                                        // M                {D:20141120162951+08'00'}
+                                        // NM               {737023fb-77fa-47a0-aa70-05dcd67e4243}
+                                        // Name             {/Comment}
+                                        // P                {4193 0 R}
+                                        // Popup            {6338 0 R}
+                                        // RC               {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p>ND set by E461456</p></body>}
+                                        // Rect             {[100.0, 82.0, 120.0, 100.0]}
+                                        // + State          {ND}
+                                        // + StateModel     {DefectType}
+                                        // Subj             null
+                                        // Subtype          {/Text}
+                                        // T                {E461456}
+                                        // Type             {/Annot}
+
+                                        if ("DefectType".Equals(annotStateModel))
+                                            defectTyeFound = true;
+                                        else if ("Is Defect State".Equals(annotStateModel) && annotState.Contains("Accepted"))
+                                            isDefectAccepted = true;
+                                        else if ("Resolution Status".Equals(annotStateModel))
+                                        {
+                                            if (annotState.Contains("Work Completed"))
+                                                authorWorkCompletedFound = true;
+                                            if (annotState.Contains("Verified Complete"))
+                                                moderatorVerifyCompletedFound = true;
+                                        }
+                                        else if ("DefectSeverity".Equals(annotStateModel))
+                                            defectSeverityFound = true;
+                                    }
+                                    else // null == annotState
+                                    {
+                                        // author's reply
+                                        if (String.IsNullOrWhiteSpace(annotContents))
+                                            Defects.Add(String.Format(@"The comment on page {0} has no reply.", page));
+                                    }                                    
+                                }                                 
+                            }  
+                            if (isDefectAccepted)
+                            {
+                                ++TotalAcceptedDefectCount;
+                                if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
+                                    Defects.Add("Incomplete attributes for the comment on page " + page);
+                            }
+                        }                        
+                    }
+                }
+                #endregion method 2
+#endif
+                #endregion collect comments
+
+                // String pageText = PdfTextExtractor.GetTextFromPage(Reader, page, new SimpleTextExtractionStrategy());                
+                // pageText = Encoding.UTF8.GetString(ASCIIEncoding.Convert
+                //     (Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(pageText)));
+                String pageText = PdfTextExtractor.GetTextFromPage(Reader, page);
                 if (String.IsNullOrWhiteSpace(pageText))
                     continue;  // early filtering
 
@@ -408,228 +644,9 @@ namespace Pkg_Checker.Implementations
                 
                 #region Collect Prerequisite Files
                 // .TRT files                
-                foreach (Match item in Regex.Matches(pageText, @"TRACE FILENAME\s*:\s*(\w+\.TRT)", RegexOptions.IgnoreCase))
+                foreach (Match item in Regex.Matches(pageText, @"TRACE\s*FILENAME\s*:\s*(\w+\.TRT)", RegexOptions.IgnoreCase))
                     PrintedFiles.Add(item.Groups[1].Value.ToUpper());
-                #endregion Collect Prerequisite Files
-
-                #region Collect Comments
-                // CollectComments(page);
-                switch(Parser.ParseComments(Reader, page, AnnotGroups))
-                {
-                    case 1:
-                        Defects.Add(String.Format("The comment on page {0} is empty.", page));
-                        break;
-                    case 2:
-                        Defects.Add(String.Format("The comment on page {0} has no reply.", page));
-                        break;
-                    default:
-                        break;
-                }
-
-#if COMMENT_COLLECTION_METHOD_1
-                #region method 1
-                PdfDictionary pdfDict = Reader.GetPageN(page);  // read one page once                
-                if (null != pdfDict)
-                {
-                    PdfArray annotArray = pdfDict.GetAsArray(PdfName.ANNOTS);
-                    // How to collect all state models that belong to one sticky note?
-#warning assume there is only ONE comment on one page
-                    bool isDefectAccepted = false;
-                    bool defectSeverityFound = false;
-                    bool defectTyeFound = false;
-                    bool authorWorkCompletedFound = false;
-                    bool moderatorVerifyCompletedFound = false;
-                    for (int i = 0; null != annotArray && i < annotArray.Size; ++i)
-                    {
-                        PdfDictionary curAnnot = annotArray.GetAsDict(i);                        
-                        // SUBTYPE values: /Widget, /Text, /Popup, /StrikeOut, /Stamp
-                        if (PdfName.TEXT == (PdfName)curAnnot.Get(PdfName.SUBTYPE))
-                        {
-                            // The KEY
-                            // StateModel values: DefectType, Resolution Status, DefectSeverity, Is Defect State, Marked
-                            PdfString KEY = (PdfString)curAnnot.Get(new PdfName("StateModel"));
-
-                            // The VALUE
-                            // PdfName.STATE values: ND, ST, NC, Accepted, Minor, Unmarked, In Work, Work Completed, Verified Complete, 
-                            PdfString VALUE = (PdfString)curAnnot.Get(PdfName.STATE);
-                            
-                            if (null != KEY && null != VALUE)
-                            {
-                                if (KEY.ToString().Contains("Is Defect State") &&
-                                    VALUE.ToString().Contains("Accepted"))
-                                {                                    
-                                    isDefectAccepted = true;
-                                    continue;
-                                }
-                                if (KEY.ToString().Contains("DefectSeverity"))
-                                {
-                                    defectSeverityFound = true;
-                                    continue;
-                                }
-                                if (KEY.ToString().Contains("DefectType"))
-                                {
-                                    defectTyeFound = true;
-                                    continue;
-                                }
-                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Work Completed"))
-                                {
-                                    authorWorkCompletedFound = true;
-                                    continue;
-                                }
-                                if (KEY.ToString().Contains("Resolution Status") && VALUE.ToString().Contains("Verified Complete"))
-                                {
-                                    moderatorVerifyCompletedFound = true;
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-                    if (isDefectAccepted)
-                    {
-                        ++TotalAcceptedDefectCount;
-                        if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
-                            Defects.Add("Incomplete attributes for the comment on page " + page);
-                    }
-                }
-                #endregion method 1
-#elif COMMENT_COLLECTION_METHOD_2
-                #region method 2
-                PdfObject pageObj = Reader.GetPageN(page).Get(PdfName.ANNOTS);
-                List<PdfIndirectReference> commentsInOnePage = new List<PdfIndirectReference>();
-                if (null != pageObj)
-                {
-                    PdfArray annotArray = (PdfArray)PdfReader.GetPdfObject(pageObj);
-                    if (null != annotArray)
-                    {
-                        foreach (PdfIndirectReference annot in annotArray.ArrayList)
-                        {
-                            bool isDefectAccepted = false;
-                            bool defectSeverityFound = false;
-                            bool defectTyeFound = false;
-                            bool authorWorkCompletedFound = false;
-                            bool moderatorVerifyCompletedFound = false;
-
-                #region retrieve info from an annotation
-
-                            PdfDictionary annotDict = (PdfDictionary)PdfReader.GetPdfObject(annot);
-                            
-                            PdfName _annotSubtype = (PdfName)annotDict.Get(PdfName.SUBTYPE);
-                                                                               
-                            // IRT: In Reply To
-                            // PdfObject _annotIRT = annotDict.Get(PdfName.IRT);
-                            PdfIndirectReference _annotIRT = (PdfIndirectReference)annotDict.Get(PdfName.IRT);
-                            PdfDictionary prefs = (PdfDictionary)PdfReader.GetPdfObject(_annotIRT);
-                            
-                            // Work Completed, Verified Complete, ND, Accepted, Minor, etc.
-                            PdfString _annotState = (PdfString)annotDict.Get(PdfName.STATE);
-                            String annotState = null == _annotState ? "" : _annotState.ToString();
-
-                            // "MigrationStatus", "DefectType", "Is Defect State", "Resolution Status", "DefectSeverity"
-                            PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));
-                            String annotStateModel = null == _annotStateModel ? "" : _annotStateModel.ToString();
-
-                            PdfString _annotContents = annotDict.GetAsString(PdfName.CONTENTS);
-                            String annotContents = null == _annotContents ? "" : _annotContents.ToString();
-                            
-                            #endregion retrieve info from an annotation
-
-                            // Guess: this is the sticky note
-                            if (null == _annotState && null == prefs &&
-                                (_annotSubtype.Equals(PdfName.TEXT) || _annotSubtype.Equals(new PdfName("Highlight"))))
-                            {
-                                // check the contents of this comment, by moderator.
-                                // such as "Should be TC 3. Note: this fails checklist 45."
-
-                                // annot.Number property: 6181
-                                // annot.Generation property: 0
-                                // annotDict Keys:
-                                // AP                {Dictionary}
-                                // C                 {[1.0, 1.0, 0.0]}
-                                // Contents          "Should be TC 3.\rNote: this fails checklist 45."
-                                // CreationDate      {D:20141120162918+08'00'}
-                                // F                 {28}
-                                // M                 {D:20141120163832+08'00'}
-                                // NM                {1a9e49e9-e5ce-424d-bfd2-09ed4c6e6e4b}
-                                // Name              {/Comment}
-                                // P                 {4193 0 R}
-                                // Popup             {6182 0 R}
-                                // RC                {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p dir="ltr"><span dir="ltr" style="font-size:10.0pt;text-align:left;color:#000000;font-weight:normal;font-style:normal">Should be TC 3.&#13;Note: this fails checklist 45.</span></p></body>}
-                                // Rect              {[51.3388, 606.718, 71.3388, 624.718]}
-                                // Rotate            {90}
-                                // Subj              null
-                                // Subtype           {/Text}
-                                // T                 {E461456}
-                                // Type              {/Annot}                                
-
-                                if (String.IsNullOrWhiteSpace(annotContents))
-                                    Defects.Add(String.Format(@"The content of the comment on page {0} is empty.", page));
-                                commentsInOnePage.Add(annot);
-                            }
-                                                        
-                            for (int i = 0; i < commentsInOnePage.Count; ++i)
-                            {                                
-                                if (null != prefs && prefs.Equals((PdfDictionary)PdfReader.GetPdfObject(commentsInOnePage[i]))) 
-                                {                                       
-                                    commentsInOnePage.Add(annot);
-                                    if (null != _annotState)
-                                    {
-                                        // annot.Number property: 6337
-                                        // annot.Generation property: 0
-                                        // annotDict Keys:
-                                        // AP               {Dictionary}
-                                        // C                {[1.0, 1.0, 0.0]}
-                                        // Contents         {ND set by E461456}
-                                        // CreationDate     {D:20141120162951+08'00'}
-                                        // F                {30}
-                                        // + IRT            {6181 0 R}
-                                        // M                {D:20141120162951+08'00'}
-                                        // NM               {737023fb-77fa-47a0-aa70-05dcd67e4243}
-                                        // Name             {/Comment}
-                                        // P                {4193 0 R}
-                                        // Popup            {6338 0 R}
-                                        // RC               {<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:9.0.0" xfa:spec="2.0.2" ><p>ND set by E461456</p></body>}
-                                        // Rect             {[100.0, 82.0, 120.0, 100.0]}
-                                        // + State          {ND}
-                                        // + StateModel     {DefectType}
-                                        // Subj             null
-                                        // Subtype          {/Text}
-                                        // T                {E461456}
-                                        // Type             {/Annot}
-
-                                        if ("DefectType".Equals(annotStateModel))
-                                            defectTyeFound = true;
-                                        else if ("Is Defect State".Equals(annotStateModel) && annotState.Contains("Accepted"))
-                                            isDefectAccepted = true;
-                                        else if ("Resolution Status".Equals(annotStateModel))
-                                        {
-                                            if (annotState.Contains("Work Completed"))
-                                                authorWorkCompletedFound = true;
-                                            if (annotState.Contains("Verified Complete"))
-                                                moderatorVerifyCompletedFound = true;
-                                        }
-                                        else if ("DefectSeverity".Equals(annotStateModel))
-                                            defectSeverityFound = true;
-                                    }
-                                    else // null == annotState
-                                    {
-                                        // author's reply
-                                        if (String.IsNullOrWhiteSpace(annotContents))
-                                            Defects.Add(String.Format(@"The comment on page {0} has no reply.", page));
-                                    }                                    
-                                }                                 
-                            }  
-                            if (isDefectAccepted)
-                            {
-                                ++TotalAcceptedDefectCount;
-                                if (!(defectSeverityFound && defectTyeFound && authorWorkCompletedFound && moderatorVerifyCompletedFound))
-                                    Defects.Add("Incomplete attributes for the comment on page " + page);
-                            }
-                        }                        
-                    }
-                }
-                #endregion method 2
-#endif
-                #endregion collect comments
+                #endregion Collect Prerequisite Files                                
             }
         }
 
@@ -955,8 +972,10 @@ namespace Pkg_Checker.Implementations
                         Defects.Add(String.Format(@"SCR report {0} is in {1} status; ecptcted SEC.", 
                                                   matchingSCRReport.SCRNumber, matchingSCRReport.Status));
 
-                    IEnumerable<CheckedInFile> matchingFiles =
-                        matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
+                    IEnumerable<CheckedInFile> matchingFiles = null;
+                    if (null != matchingSCRReport.AffectedElements)
+                        matchingFiles =
+                            matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
                     if (null != matchingFiles && matchingFiles.Count() > 0)
                     {
                         int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;

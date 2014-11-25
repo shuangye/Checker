@@ -7,7 +7,7 @@ namespace Pkg_Checker.Interfaces
 {
     public interface IPdfReader
     {
-        void Init(string filePath);
+        // bool Init(string filePath);
         bool IsValidReviewPackage();
         
         void ReadWholeFile();

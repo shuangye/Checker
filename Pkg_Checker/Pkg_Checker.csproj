@@ -13,6 +13,21 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -58,7 +73,6 @@
   <ItemGroup>
     <Compile Include="Entities\AnnotGroup.cs" />
     <Compile Include="Helpers\ConsoleWorker.cs" />
-    <Compile Include="Helpers\Configuration.cs" />
     <Compile Include="Entities\CheckedInFile.cs" />
     <Compile Include="Entities\SCRReport.cs" />
     <Compile Include="Entities\WorkProgress.cs" />
@@ -92,6 +106,15 @@
     </Compile>
     <None Include="app.config" />
     <None Include="Misc\annot_stat.xlsx" />
+    <None Include="Misc\README" />
+    <None Include="Misc\Supporting\B7E7_B7E7FMS_15655_04_Review_Packet.pdf" />
+    <None Include="Misc\Supporting\Comments_Collection.xls" />
+    <None Include="Misc\Supporting\FMS2000_A350_A380_9499_00_Review_Packet.PDF" />
+    <None Include="Misc\Supporting\FMS2000_A3XX_58370_01_Review_Packet.PDF" />
+    <None Include="Misc\Supporting\FMS2000_MDXX_17011_01_Review_Packet.pdf" />
+    <None Include="Misc\Supporting\SLTPCHECKLIST.PDF" />
+    <None Include="Misc\Supporting\SummarizeComments.xls" />
+    <None Include="Misc\Supporting\TRACECHECKLIST.PDF" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -104,8 +127,37 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
+    <Content Include="Misc\Acrobat_Javascripts\aform.js" />
+    <Content Include="Misc\Acrobat_Javascripts\Annots.js" />
+    <Content Include="Misc\Acrobat_Javascripts\ChecklistUpdate.js" />
+    <Content Include="Misc\Acrobat_Javascripts\debugger.js" />
+    <Content Include="Misc\Acrobat_Javascripts\DefectStateModel_standard.js" />
+    <Content Include="Misc\Acrobat_Javascripts\eReviewMailing.js" />
+    <Content Include="Misc\Acrobat_Javascripts\Form07-29-11.js" />
+    <Content Include="Misc\Acrobat_Javascripts\toolbar.js" />
     <Content Include="Misc\annot_stat.txt" />
-    <Content Include="Misc\Bugs.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

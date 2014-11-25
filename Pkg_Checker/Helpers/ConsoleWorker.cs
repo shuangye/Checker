@@ -15,7 +15,6 @@ namespace Pkg_Checker.Helpers
             StreamWriter SW = null;
             bool errorOccurred = false;
             List<String> fileNames;
-
             totalFileCount = 0;
 
             fileNames = FSWalker.Walk(pdfPath, @"*.PDF", false, ref errorOccurred);
@@ -28,8 +27,16 @@ namespace Pkg_Checker.Helpers
 
             foreach (var file in fileNames)
             {
-                IPdfReader reader = new iTextPdfReader();
-                reader.Init(file);
+                // IPdfReader reader = new iTextPdfReader();
+                // reader.Init(file);
+                IPdfReader reader = null;
+                try { reader = new iTextPdfReader(file); }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fatal error: " + ex.Message);                    
+                    break;
+                }
+
                 if (reader.IsValidReviewPackage())
                 {
                     reader.ReadWholeFile();

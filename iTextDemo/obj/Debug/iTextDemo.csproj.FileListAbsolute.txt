@@ -14,3 +14,11 @@ E:\Programming\Projects\Checker\iTextDemo\obj\Debug\demo_readpdf.Properties.Reso
 E:\Programming\Projects\Checker\iTextDemo\obj\Debug\iTextDemo.csproj.GenerateResource.Cache
 E:\Programming\Projects\Checker\iTextDemo\obj\Debug\demo_readpdf.exe
 E:\Programming\Projects\Checker\iTextDemo\obj\Debug\demo_readpdf.pdb
+D:\GitHub\Checker\iTextDemo\bin\Debug\demo_readpdf.exe
+D:\GitHub\Checker\iTextDemo\bin\Debug\demo_readpdf.pdb
+D:\GitHub\Checker\iTextDemo\obj\Debug\iTextDemo.csprojResolveAssemblyReference.cache
+D:\GitHub\Checker\iTextDemo\obj\Debug\demo_readpdf.Form1.resources
+D:\GitHub\Checker\iTextDemo\obj\Debug\demo_readpdf.Properties.Resources.resources
+D:\GitHub\Checker\iTextDemo\obj\Debug\iTextDemo.csproj.GenerateResource.Cache
+D:\GitHub\Checker\iTextDemo\obj\Debug\demo_readpdf.exe
+D:\GitHub\Checker\iTextDemo\obj\Debug\demo_readpdf.pdb

@@ -44,8 +44,7 @@
             this.lnkResult = new System.Windows.Forms.LinkLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.supportedChecksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toDoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.knownIssuesStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.totalProgress = new System.Windows.Forms.ProgressBar();
             this.chkAppendOutput = new System.Windows.Forms.CheckBox();
@@ -56,7 +55,7 @@
             // 
             this.btnCheck.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.btnCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnCheck.Location = new System.Drawing.Point(257, 78);
+            this.btnCheck.Location = new System.Drawing.Point(266, 78);
             this.btnCheck.Name = "btnCheck";
             this.btnCheck.Size = new System.Drawing.Size(177, 28);
             this.btnCheck.TabIndex = 0;
@@ -80,9 +79,9 @@
             this.lblLocation.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblLocation.Location = new System.Drawing.Point(2, 46);
             this.lblLocation.Name = "lblLocation";
-            this.lblLocation.Size = new System.Drawing.Size(174, 20);
+            this.lblLocation.Size = new System.Drawing.Size(167, 20);
             this.lblLocation.TabIndex = 2;
-            this.lblLocation.Text = "eReview package path:";
+            this.lblLocation.Text = "Review Package Path:";
             // 
             // tbLocation
             // 
@@ -166,7 +165,7 @@
             this.lblDrag.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.lblDrag.AutoSize = true;
             this.lblDrag.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDrag.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.lblDrag.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblDrag.Location = new System.Drawing.Point(114, 117);
             this.lblDrag.Name = "lblDrag";
             this.lblDrag.Size = new System.Drawing.Size(554, 20);
@@ -200,31 +199,23 @@
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.supportedChecksToolStripMenuItem,
-            this.toDoToolStripMenuItem,
+            this.knownIssuesStripMenuItem,
             this.aboutToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
             // 
-            // supportedChecksToolStripMenuItem
+            // knownIssuesStripMenuItem
             // 
-            this.supportedChecksToolStripMenuItem.Name = "supportedChecksToolStripMenuItem";
-            this.supportedChecksToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
-            this.supportedChecksToolStripMenuItem.Text = "Supported Checks";
-            this.supportedChecksToolStripMenuItem.Click += new System.EventHandler(this.supportedChecksToolStripMenuItem_Click);
-            // 
-            // toDoToolStripMenuItem
-            // 
-            this.toDoToolStripMenuItem.Name = "toDoToolStripMenuItem";
-            this.toDoToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
-            this.toDoToolStripMenuItem.Text = "To Do";
-            this.toDoToolStripMenuItem.Click += new System.EventHandler(this.toDoToolStripMenuItem_Click);
+            this.knownIssuesStripMenuItem.Name = "knownIssuesStripMenuItem";
+            this.knownIssuesStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.knownIssuesStripMenuItem.Text = "Known Issues";
+            this.knownIssuesStripMenuItem.Click += new System.EventHandler(this.knownIssuesStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -302,9 +293,8 @@
         private System.Windows.Forms.LinkLabel lnkResult;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem supportedChecksToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toDoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem knownIssuesStripMenuItem;
         private System.Windows.Forms.ProgressBar totalProgress;
         private System.Windows.Forms.CheckBox chkAppendOutput;
     }

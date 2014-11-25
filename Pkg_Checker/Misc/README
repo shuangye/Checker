@@ -13,6 +13,4 @@ If you run ReviewPackageChecker.exe with at lease one arg, it will start in cmd 
     ReviewPackageChecker.exe pdf_path output_file_path
     
 Known Issues:
-*) Currently, the "Try to fix defects" option does not have any effects yet.
-*) Sometimes it will report a ***.TRT file not printed to the package, which actually did. This is a bug from the third-party lib.
-*) The value of some check list items in the coverage template are wrong (e.g., NA for "Yes" buttons), this will affect the result of this tool.
+*) Sometimes it will report a ***.TRT file not printed to the package, or missing SCR report, which actually did. This is a bug from the third-party lib.

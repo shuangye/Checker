@@ -1,3 +1,2 @@
-[Defect] No justification for NO or N/A item(s) 1 2 3 4 5 6 7 8  in trace check list, or the justification cannot be parsed.
-Checked E:\Programming\Projects\Checker\Pkg_Checker\bin\Release\B7E7_B7E7FMS_15655_04_Review_Packet.pdf
+Checked \\159.99.234.164\fms\A340\Private\Chen Jixing\packets\FMS2000_A3XX_57940_01_Review_Packet.PDF
 ----------------------------------------------------------------------------
