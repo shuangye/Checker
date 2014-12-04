@@ -11,6 +11,8 @@ namespace Pkg_Checker.Entities
     public class SCRReport
     {
         public float SCRNumber { get; set; }
+        public String Project { get; set; }
+        public String SubProject { get; set; }
         public String Status { get; set; }  // REV, SEC, VER, etc.
         public String AffectedArea { get; set; }
         public String TargetConfig { get; set; }

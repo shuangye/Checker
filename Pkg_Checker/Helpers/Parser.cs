@@ -331,7 +331,7 @@ namespace Pkg_Checker.Helpers
                 return null;
             else
             {
-                SCRReport report = new SCRReport();
+                SCRReport report = new SCRReport { Project = match.Groups[1].Value, SubProject = match.Groups[2].Value };
 
                 // Change Category: PROBLEM SCR No.: P 17011.01                        
                 // Change Category: INITIAL DEVELOPMENT SCR No.:  08982.04                        

@@ -301,7 +301,7 @@ namespace Pkg_Checker
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in a review package." + Environment.NewLine
-                + @"Build Date: Nov 25, 2014.");
+                + @"Build Date: Nov 25, 2014." + Environment.NewLine);
         }        
     }
 }

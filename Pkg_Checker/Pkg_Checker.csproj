@@ -81,6 +81,7 @@
     <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Helpers\Utilities.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />
+    <Compile Include="Integration\CM21.cs" />
     <Compile Include="Interfaces\CommonResource.cs" />
     <Compile Include="Interfaces\FormFields.cs" />
     <Compile Include="Interfaces\IPdfReader.cs" />

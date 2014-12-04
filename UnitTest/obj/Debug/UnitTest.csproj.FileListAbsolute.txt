@@ -1,0 +1,8 @@
+D:\Github\Checker\UnitTest\bin\Debug\UnitTest.dll
+D:\Github\Checker\UnitTest\bin\Debug\UnitTest.pdb
+D:\Github\Checker\UnitTest\bin\Debug\ReviewPackageChecker.exe
+D:\Github\Checker\UnitTest\bin\Debug\itextsharp.dll
+D:\Github\Checker\UnitTest\bin\Debug\ReviewPackageChecker.pdb
+D:\Github\Checker\UnitTest\obj\Debug\UnitTest.csprojResolveAssemblyReference.cache
+D:\Github\Checker\UnitTest\obj\Debug\UnitTest.dll
+D:\Github\Checker\UnitTest\obj\Debug\UnitTest.pdb
