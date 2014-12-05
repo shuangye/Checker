@@ -1,0 +1,110 @@
+FMS2000 : MDXX - SYSTEM CHANGE REQUEST                              Page 1 of 2
+
+ Change Category: PROBLEM                                   SCR No.: P 17011.01
+ SCR Status: CLO   SCR Status Date: 20-OCT-2013
+ Originator: Deanna Meloche                      Date Originated:  17-MAY-2013
+ Affected Area: VGUIDE                           Customer No.:                
+ Assignee: Dun, Qing                             Priority:  3                 
+ Verification Assignee: Jiang Guan Lan                    
+ Found in Configuration: MDXX_SRD_REV_007        Hardcopy Attachment: None    
+ Target Configuration: MD11_922_TST      
+
+ Planned Impact: Test
+ Found During: HI Other
+
+SCR Copied To:             < None Entered >
+
+SCR Copied From:             < None Entered >
+
+SCR Reissued To:             < None Entered >
+
+SCR Reissued From:             < None Entered >
+
+ Title: Alt Tgt in Des - Requirements Clarification
+
+ Description:
+
+ VG_MDXX_ALT_TGT_PFD.SRD anchor 7006 needs clarification.
+ 7004 states the altitude target shall be the VG Ref Altitude while not on
+ path.
+ 7006 states the altitude target shall be the max of VG Target Altitude and
+ Descent Target Altitude while on path.
+ 7006 is wrong, there is no such thing as "VG Target Altitude", it should be VG
+ Reference Altitude.
+ Using VG Target Altitude in 7006 is confusing and should be changed.
+
+ SRB Reviewed By: O'Connor, Michael                    Date: 17-MAY-2013
+
+ Analysis/Solution:
+
+ <17-May-2013>[E800858-HTSC]
+ Updated CTP_MD11_VG_SEL_ALT_TGT for MD11 on bulid 922_604.
+ TDF(Gen=2)
+ 1. Renumber the TESTID as the same TESTID
+ 2. Added TCs 32-33 to test the anchor VGUIDE_SRD_7006 as per SCR 17011.00
+ 3. Modify TC 15 to test the anchor VGUIDE_SRD_7006 as per SCR 17011.00
+ ZIP(Gen=4)
+ 1. Update Rst, Rpt file.
+ 2. Added DSP file
+ ---------------------------------------------------------------
+ <30-May-2013>[E800858-HTSC]
+ Rework after HTSC Inspection CTP_MD11_VG_SEL_ALT_TGT for MD11 on bulid
+ 922_604.
+ TDF(Gen=3)
+ 1. Modifed TCs 17-19,21,26-28,33 to test the anchor VGUIDE_SRD_7006 as per SCR
+ 17011.00
+ 2. Added the SRD anchor name for TCs 2-14,16,20,22-25,3
+ ZIP(Gen=5)
+ 1. Update Rst, Rpt file.
+ ---------------------------------------------------------------
+ <30-May-2013>[E800858-HTSC]
+
+              < Solution field continued >     SCR No. 17011.01    Page 2 of 2
+
+ Rework after HTSC Inspection CTP_MD11_VG_SEL_ALT_TGT for MD11 on bulid
+ 922_604.
+ TDF(Gen=4)
+ 1. Integration of the SRD Anchor
+ ZIP(Gen=6)
+ 1. Update Rst, Rpt file.
+ TRT(gen=2)
+ 1. Integration of the SRD Anchor
+ ---------------------------------------------------------------
+ <8-Jun-2013>[E800858-HTSC]
+ self_Rework CTP_MD11_VG_SEL_ALT_TGT for MD11 on bulid 922_604.
+ TDF(Gen=5)
+ 1. Deleted the test Anchor in TCs 1, 28-29, as it is not unique.
+ ZIP(Gen=7)
+ 1. Update Rst, Rpt file.
+
+ Elements Affected:
+
+   Doc.      Element                                       Generation
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.TDF                   2                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.TDF                   3                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.TDF                   4                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.TDF                   5                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.ZIP                   4                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.ZIP                   5                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.ZIP                   6                   
+   TEST      CTP_MD11_VG_SEL_ALT_TGT.ZIP                   7                   
+   TRACE     CTP_MD11_VG_SEL_ALT_TGT.TRT                   2                   
+
+             ASSIGNEE: Dun, Qing                              Date:  8-JUN-2013
+             VERIFIER: Jiang Guan Lan                         Date:  8-JUN-2013
+      CCB COORDINATOR: Emmanual, Shanitha                     Date: 21-OCT-2013
+
+ Closure Category: Fixed/Added           Duplicate SCR No.: 00000.00
+ Project Status: Done
+ Addendum: 
+ Visual Review Info: 
+ Cert/Sys Concern: 0    - CC1/S1 None/Level 1
+ Cust Notification: 0    - CN1 None
+ Expected Inservice: 0    - I1 Not expected to occur in-service
+ Flight Deck Effect: 0    - FD1 None
+ Non Customer Input: 0    - P1 None
+ Workload Wrkaround: 0    - W1 No Workaround Necessary
+ Must Fix: 0    - MF1 Use Score
+ Score/Meeting: 
+ Score Comment: NA
+Closed in Config.: MD11_922_TST

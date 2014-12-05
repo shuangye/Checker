@@ -16,6 +16,7 @@ namespace Pkg_Checker.Interfaces
         void CheckComments();
         void CheckWorkProducts();
         void CheckCheckList();
+        void CheckWithCM21(String EID, String password, String cwd);
         
         List<String> GetDefects();        
     }

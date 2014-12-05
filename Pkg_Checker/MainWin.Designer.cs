@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWin));
             this.btnCheck = new System.Windows.Forms.Button();
-            this.lblProcessStatus = new System.Windows.Forms.Label();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.lblLocation = new System.Windows.Forms.Label();
             this.tbLocation = new System.Windows.Forms.TextBox();
@@ -39,23 +39,43 @@
             this.btnBrowse = new System.Windows.Forms.Button();
             this.btnClr = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.lblOutput = new System.Windows.Forms.Label();
             this.lblDrag = new System.Windows.Forms.Label();
             this.lnkResult = new System.Windows.Forms.LinkLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.cM21ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuEnableCm21 = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.knownIssuesStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.totalProgress = new System.Windows.Forms.ProgressBar();
             this.chkAppendOutput = new System.Windows.Forms.CheckBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusTotalProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.statusCurrentObj = new System.Windows.Forms.ToolStripStatusLabel();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.groupCM21 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnSCRDownloadPath = new System.Windows.Forms.Button();
+            this.lblSCRDownloadPath = new System.Windows.Forms.Label();
+            this.txtEID = new System.Windows.Forms.TextBox();
+            this.lblPWD = new System.Windows.Forms.Label();
+            this.txtPWD = new System.Windows.Forms.TextBox();
+            this.txtSCRDownloadPath = new System.Windows.Forms.TextBox();
+            this.lblEID = new System.Windows.Forms.Label();
+            this.panelMisc = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.groupCM21.SuspendLayout();
+            this.panelMisc.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnCheck
             // 
             this.btnCheck.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.btnCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnCheck.Location = new System.Drawing.Point(266, 78);
+            this.btnCheck.Location = new System.Drawing.Point(300, 19);
             this.btnCheck.Name = "btnCheck";
             this.btnCheck.Size = new System.Drawing.Size(177, 28);
             this.btnCheck.TabIndex = 0;
@@ -63,21 +83,11 @@
             this.btnCheck.UseVisualStyleBackColor = true;
             this.btnCheck.Click += new System.EventHandler(this.btnCheck_Click);
             // 
-            // lblProcessStatus
-            // 
-            this.lblProcessStatus.AutoSize = true;
-            this.lblProcessStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblProcessStatus.Location = new System.Drawing.Point(58, 173);
-            this.lblProcessStatus.Name = "lblProcessStatus";
-            this.lblProcessStatus.Size = new System.Drawing.Size(42, 15);
-            this.lblProcessStatus.TabIndex = 1;
-            this.lblProcessStatus.Text = "Ready";
-            // 
             // lblLocation
             // 
             this.lblLocation.AutoSize = true;
             this.lblLocation.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblLocation.Location = new System.Drawing.Point(2, 46);
+            this.lblLocation.Location = new System.Drawing.Point(3, 38);
             this.lblLocation.Name = "lblLocation";
             this.lblLocation.Size = new System.Drawing.Size(167, 20);
             this.lblLocation.TabIndex = 2;
@@ -89,7 +99,7 @@
             this.tbLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbLocation.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.tbLocation.Location = new System.Drawing.Point(176, 46);
+            this.tbLocation.Location = new System.Drawing.Point(176, 36);
             this.tbLocation.Name = "tbLocation";
             this.tbLocation.Size = new System.Drawing.Size(354, 26);
             this.tbLocation.TabIndex = 1;
@@ -99,7 +109,7 @@
             this.checkSub.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkSub.AutoSize = true;
             this.checkSub.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.checkSub.Location = new System.Drawing.Point(536, 47);
+            this.checkSub.Location = new System.Drawing.Point(537, 36);
             this.checkSub.Name = "checkSub";
             this.checkSub.Size = new System.Drawing.Size(163, 24);
             this.checkSub.TabIndex = 2;
@@ -111,20 +121,20 @@
             this.tbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbOutput.Location = new System.Drawing.Point(5, 224);
+            this.tbOutput.Location = new System.Drawing.Point(5, 217);
             this.tbOutput.MaxLength = 655360;
             this.tbOutput.Multiline = true;
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbOutput.Size = new System.Drawing.Size(776, 332);
-            this.tbOutput.TabIndex = 5;
+            this.tbOutput.Size = new System.Drawing.Size(776, 340);
+            this.tbOutput.TabIndex = 100;
             // 
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowse.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowse.Location = new System.Drawing.Point(702, 44);
+            this.btnBrowse.Location = new System.Drawing.Point(706, 34);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 27);
             this.btnBrowse.TabIndex = 3;
@@ -134,13 +144,13 @@
             // 
             // btnClr
             // 
-            this.btnClr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClr.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnClr.Location = new System.Drawing.Point(672, 197);
+            this.btnClr.Location = new System.Drawing.Point(701, 59);
             this.btnClr.Name = "btnClr";
-            this.btnClr.Size = new System.Drawing.Size(109, 28);
-            this.btnClr.TabIndex = 5;
-            this.btnClr.Text = "Clear Result";
+            this.btnClr.Size = new System.Drawing.Size(75, 28);
+            this.btnClr.TabIndex = 98;
+            this.btnClr.Text = "Clear";
             this.btnClr.UseVisualStyleBackColor = true;
             this.btnClr.Click += new System.EventHandler(this.btnClr_Click);
             // 
@@ -148,29 +158,17 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // lblOutput
-            // 
-            this.lblOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblOutput.AutoSize = true;
-            this.lblOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblOutput.Location = new System.Drawing.Point(2, 201);
-            this.lblOutput.Name = "lblOutput";
-            this.lblOutput.Size = new System.Drawing.Size(62, 20);
-            this.lblOutput.TabIndex = 9;
-            this.lblOutput.Text = "Output:";
-            // 
             // lblDrag
             // 
             this.lblDrag.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.lblDrag.AutoSize = true;
             this.lblDrag.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDrag.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lblDrag.Location = new System.Drawing.Point(114, 117);
+            this.lblDrag.Location = new System.Drawing.Point(169, 63);
             this.lblDrag.Name = "lblDrag";
-            this.lblDrag.Size = new System.Drawing.Size(554, 20);
+            this.lblDrag.Size = new System.Drawing.Size(375, 20);
             this.lblDrag.TabIndex = 10;
-            this.lblDrag.Text = "You can also simply drop one or more files/folders to this window for checking.";
+            this.lblDrag.Text = "Try droping one or more files/folders to this window...";
             this.lblDrag.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lnkResult
@@ -178,10 +176,10 @@
             this.lnkResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkResult.AutoSize = true;
             this.lnkResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lnkResult.Location = new System.Drawing.Point(539, 201);
+            this.lnkResult.Location = new System.Drawing.Point(568, 59);
             this.lnkResult.Name = "lnkResult";
             this.lnkResult.Size = new System.Drawing.Size(127, 20);
-            this.lnkResult.TabIndex = 11;
+            this.lnkResult.TabIndex = 99;
             this.lnkResult.TabStop = true;
             this.lnkResult.Text = "Open Result File";
             this.lnkResult.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkResult_LinkClicked);
@@ -189,12 +187,29 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cM21ToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(784, 24);
             this.menuStrip1.TabIndex = 12;
             this.menuStrip1.Text = "menuStrip1";
+            // 
+            // cM21ToolStripMenuItem
+            // 
+            this.cM21ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuEnableCm21});
+            this.cM21ToolStripMenuItem.Name = "cM21ToolStripMenuItem";
+            this.cM21ToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.cM21ToolStripMenuItem.Text = "&CM21";
+            // 
+            // menuEnableCm21
+            // 
+            this.menuEnableCm21.CheckOnClick = true;
+            this.menuEnableCm21.Name = "menuEnableCm21";
+            this.menuEnableCm21.Size = new System.Drawing.Size(248, 22);
+            this.menuEnableCm21.Text = "Compare SCR Report from CM21";
+            this.menuEnableCm21.Click += new System.EventHandler(this.menuEnableCm21_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -208,25 +223,16 @@
             // knownIssuesStripMenuItem
             // 
             this.knownIssuesStripMenuItem.Name = "knownIssuesStripMenuItem";
-            this.knownIssuesStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.knownIssuesStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.knownIssuesStripMenuItem.Text = "Known Issues";
             this.knownIssuesStripMenuItem.Click += new System.EventHandler(this.knownIssuesStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
-            // 
-            // totalProgress
-            // 
-            this.totalProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.totalProgress.Location = new System.Drawing.Point(61, 147);
-            this.totalProgress.Name = "totalProgress";
-            this.totalProgress.Size = new System.Drawing.Size(661, 23);
-            this.totalProgress.TabIndex = 13;
             // 
             // chkAppendOutput
             // 
@@ -234,12 +240,189 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.chkAppendOutput.AutoSize = true;
             this.chkAppendOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.chkAppendOutput.Location = new System.Drawing.Point(61, 200);
+            this.chkAppendOutput.Location = new System.Drawing.Point(0, 62);
             this.chkAppendOutput.Name = "chkAppendOutput";
             this.chkAppendOutput.Size = new System.Drawing.Size(137, 24);
-            this.chkAppendOutput.TabIndex = 14;
+            this.chkAppendOutput.TabIndex = 96;
             this.chkAppendOutput.Text = "Append Output";
             this.chkAppendOutput.UseVisualStyleBackColor = true;
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusTotalProgress,
+            this.statusCurrentObj});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 540);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(784, 22);
+            this.statusStrip1.TabIndex = 101;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusTotalProgress
+            // 
+            this.statusTotalProgress.Name = "statusTotalProgress";
+            this.statusTotalProgress.Size = new System.Drawing.Size(240, 16);
+            // 
+            // statusCurrentObj
+            // 
+            this.statusCurrentObj.Name = "statusCurrentObj";
+            this.statusCurrentObj.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always;
+            this.statusCurrentObj.Size = new System.Drawing.Size(527, 17);
+            this.statusCurrentObj.Spring = true;
+            this.statusCurrentObj.Text = "Ready";
+            // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Increment = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Location = new System.Drawing.Point(169, 46);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            180,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(42, 20);
+            this.numericUpDown1.TabIndex = 103;
+            this.numericUpDown1.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(281, 20);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(101, 17);
+            this.checkBox1.TabIndex = 104;
+            this.checkBox1.Text = "Save Credential";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // groupCM21
+            // 
+            this.groupCM21.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupCM21.Controls.Add(this.label1);
+            this.groupCM21.Controls.Add(this.btnSCRDownloadPath);
+            this.groupCM21.Controls.Add(this.lblSCRDownloadPath);
+            this.groupCM21.Controls.Add(this.numericUpDown1);
+            this.groupCM21.Controls.Add(this.checkBox1);
+            this.groupCM21.Controls.Add(this.txtEID);
+            this.groupCM21.Controls.Add(this.lblPWD);
+            this.groupCM21.Controls.Add(this.txtPWD);
+            this.groupCM21.Controls.Add(this.txtSCRDownloadPath);
+            this.groupCM21.Controls.Add(this.lblEID);
+            this.groupCM21.Location = new System.Drawing.Point(5, 68);
+            this.groupCM21.Name = "groupCM21";
+            this.groupCM21.Size = new System.Drawing.Size(776, 74);
+            this.groupCM21.TabIndex = 105;
+            this.groupCM21.TabStop = false;
+            this.groupCM21.Text = "Compare SCR Report from CM21";
+            this.groupCM21.Visible = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(10, 48);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(154, 13);
+            this.label1.TabIndex = 105;
+            this.label1.Text = "Operation Timeout (in seconds)";
+            // 
+            // btnSCRDownloadPath
+            // 
+            this.btnSCRDownloadPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSCRDownloadPath.Location = new System.Drawing.Point(695, 18);
+            this.btnSCRDownloadPath.Name = "btnSCRDownloadPath";
+            this.btnSCRDownloadPath.Size = new System.Drawing.Size(75, 27);
+            this.btnSCRDownloadPath.TabIndex = 8;
+            this.btnSCRDownloadPath.Text = "Browse";
+            this.btnSCRDownloadPath.UseVisualStyleBackColor = true;
+            this.btnSCRDownloadPath.Click += new System.EventHandler(this.btnBrowse_Click);
+            // 
+            // lblSCRDownloadPath
+            // 
+            this.lblSCRDownloadPath.AutoSize = true;
+            this.lblSCRDownloadPath.Location = new System.Drawing.Point(389, 21);
+            this.lblSCRDownloadPath.Name = "lblSCRDownloadPath";
+            this.lblSCRDownloadPath.Size = new System.Drawing.Size(134, 13);
+            this.lblSCRDownloadPath.TabIndex = 21;
+            this.lblSCRDownloadPath.Text = "SCR Report Download To:";
+            // 
+            // txtEID
+            // 
+            this.txtEID.Location = new System.Drawing.Point(36, 18);
+            this.txtEID.MaxLength = 12;
+            this.txtEID.Name = "txtEID";
+            this.txtEID.Size = new System.Drawing.Size(100, 20);
+            this.txtEID.TabIndex = 5;
+            // 
+            // lblPWD
+            // 
+            this.lblPWD.AutoSize = true;
+            this.lblPWD.Location = new System.Drawing.Point(142, 22);
+            this.lblPWD.Name = "lblPWD";
+            this.lblPWD.Size = new System.Drawing.Size(36, 13);
+            this.lblPWD.TabIndex = 20;
+            this.lblPWD.Text = "PWD:";
+            // 
+            // txtPWD
+            // 
+            this.txtPWD.Location = new System.Drawing.Point(175, 18);
+            this.txtPWD.MaxLength = 20;
+            this.txtPWD.Name = "txtPWD";
+            this.txtPWD.PasswordChar = '*';
+            this.txtPWD.Size = new System.Drawing.Size(100, 20);
+            this.txtPWD.TabIndex = 6;
+            // 
+            // txtSCRDownloadPath
+            // 
+            this.txtSCRDownloadPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSCRDownloadPath.Location = new System.Drawing.Point(521, 18);
+            this.txtSCRDownloadPath.Name = "txtSCRDownloadPath";
+            this.txtSCRDownloadPath.Size = new System.Drawing.Size(174, 20);
+            this.txtSCRDownloadPath.TabIndex = 7;
+            // 
+            // lblEID
+            // 
+            this.lblEID.AutoSize = true;
+            this.lblEID.Location = new System.Drawing.Point(10, 22);
+            this.lblEID.Name = "lblEID";
+            this.lblEID.Size = new System.Drawing.Size(28, 13);
+            this.lblEID.TabIndex = 16;
+            this.lblEID.Text = "EID:";
+            // 
+            // panelMisc
+            // 
+            this.panelMisc.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelMisc.AutoSize = true;
+            this.panelMisc.Controls.Add(this.btnClr);
+            this.panelMisc.Controls.Add(this.lnkResult);
+            this.panelMisc.Controls.Add(this.lblDrag);
+            this.panelMisc.Controls.Add(this.chkAppendOutput);
+            this.panelMisc.Controls.Add(this.btnCheck);
+            this.panelMisc.Location = new System.Drawing.Point(5, 132);
+            this.panelMisc.Name = "panelMisc";
+            this.panelMisc.Size = new System.Drawing.Size(776, 93);
+            this.panelMisc.TabIndex = 20;
+            this.panelMisc.Tag = "Tag";
             // 
             // MainWin
             // 
@@ -247,21 +430,16 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 561);
-            this.Controls.Add(this.chkAppendOutput);
-            this.Controls.Add(this.totalProgress);
-            this.Controls.Add(this.lnkResult);
-            this.Controls.Add(this.lblDrag);
-            this.Controls.Add(this.lblOutput);
-            this.Controls.Add(this.btnClr);
+            this.ClientSize = new System.Drawing.Size(784, 562);
+            this.Controls.Add(this.groupCM21);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.tbOutput);
             this.Controls.Add(this.checkSub);
             this.Controls.Add(this.tbLocation);
             this.Controls.Add(this.lblLocation);
-            this.Controls.Add(this.lblProcessStatus);
-            this.Controls.Add(this.btnCheck);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.panelMisc);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainWin";
@@ -271,6 +449,13 @@
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWin_DragEnter);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            this.groupCM21.ResumeLayout(false);
+            this.groupCM21.PerformLayout();
+            this.panelMisc.ResumeLayout(false);
+            this.panelMisc.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -279,7 +464,6 @@
         #endregion
 
         private System.Windows.Forms.Button btnCheck;
-        private System.Windows.Forms.Label lblProcessStatus;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.Label lblLocation;
         private System.Windows.Forms.TextBox tbLocation;
@@ -288,15 +472,31 @@
         private System.Windows.Forms.Button btnBrowse;
         private System.Windows.Forms.Button btnClr;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.Label lblDrag;
         private System.Windows.Forms.LinkLabel lnkResult;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem knownIssuesStripMenuItem;
-        private System.Windows.Forms.ProgressBar totalProgress;
         private System.Windows.Forms.CheckBox chkAppendOutput;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripProgressBar statusTotalProgress;
+        private System.Windows.Forms.ToolStripStatusLabel statusCurrentObj;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem cM21ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem menuEnableCm21;
+        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.GroupBox groupCM21;
+        private System.Windows.Forms.Button btnSCRDownloadPath;
+        private System.Windows.Forms.Label lblSCRDownloadPath;
+        private System.Windows.Forms.TextBox txtEID;
+        private System.Windows.Forms.Label lblPWD;
+        private System.Windows.Forms.TextBox txtPWD;
+        private System.Windows.Forms.TextBox txtSCRDownloadPath;
+        private System.Windows.Forms.Label lblEID;
+        private System.Windows.Forms.Panel panelMisc;
+        private System.Windows.Forms.Label label1;
     }
 }
 

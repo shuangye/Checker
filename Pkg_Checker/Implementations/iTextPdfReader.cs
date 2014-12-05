@@ -13,6 +13,7 @@ using Pkg_Checker.Interfaces;
 using Pkg_Checker.Entities;
 using Pkg_Checker.Helpers;
 using System.Text.RegularExpressions;
+using Pkg_Checker.Integration;
 
 namespace Pkg_Checker.Implementations
 {
@@ -1073,6 +1074,27 @@ namespace Pkg_Checker.Implementations
                 CheckCheckList(CheckListType.SLTP);
             if (HasTraceChecklist)
                 CheckCheckList(CheckListType.Trace);            
+        }
+
+        public void CheckWithCM21(String EID, String password, String outputPath)
+        {
+            // CM21 cm21;
+            try
+            {
+                CM21 cm21 = new CM21(EID, password, F_ACMProject, F_ACMSubProject, outputPath);
+                cm21.FetchSCRReport(SCRReports);
+                cm21.Exit();
+            }
+            catch(FileLoadException ex)
+            {
+                Defects.Add(ex.Message);
+                return;
+            }
+            catch(ApplicationException ex)
+            {
+                Defects.Add(ex.Message);
+                return;
+            }
         }
 
         public List<String> GetDefects()

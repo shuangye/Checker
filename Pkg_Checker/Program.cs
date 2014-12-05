@@ -11,6 +11,8 @@ namespace Pkg_Checker
         /// The main entry point for the application.
         /// </summary>
 
+        public static String AppName { get { return "Review Package Checker"; } }
+
         [DllImport("kernel32.dll")] 
         static extern bool AllocConsole();
 
