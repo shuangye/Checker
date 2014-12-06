@@ -78,6 +78,7 @@
     <Compile Include="Entities\WorkProgress.cs" />
     <Compile Include="Helpers\FSWalker.cs" />
     <Compile Include="Helpers\Parser.cs" />
+    <Compile Include="Helpers\RegistryOperator.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Helpers\Utilities.cs" />
     <Compile Include="Implementations\iTextPdfReader.cs" />

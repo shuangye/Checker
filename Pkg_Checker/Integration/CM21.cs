@@ -20,12 +20,10 @@ namespace Pkg_Checker.Integration
         [DefaultValue(@"C:\Program Files\honeywell_eng\cm21_v2_2b2\bin\cm21.exe")]
         public String CM21ExePath { get; set; }
         public Process CM21Process { get; set; }
-        public int ExitCode { get; set; }
-
-        private const int maxWaitingTime = 3 * 60 * 1000;  // 3 min
+        public int ExitCode { get; set; }                
 
 #warning Search registry for installed apps.
-        public CM21(String EID, String PWD, String proj, String subProj, String outputPath)
+        public CM21(String EID, String PWD, String proj, String subProj, String outputPath, int timeout)
         {
             CM21ExePath = @"C:\Program Files\honeywell_eng\cm21_v2_2b2\bin\cm21.exe";
             if (!File.Exists(CM21ExePath))               
@@ -38,7 +36,7 @@ namespace Pkg_Checker.Integration
                 EID, PWD, proj, subProj, outputPath);
             CM21Process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             CM21Process.Start();
-            if (CM21Process.WaitForExit(1))
+            if (CM21Process.WaitForExit(timeout))
             {
                 // ExitCode == 0 means logged in successfully
                 if (CM21Process.HasExited && 0 != CM21Process.ExitCode)
@@ -52,23 +50,18 @@ namespace Pkg_Checker.Integration
             }
         }
 
-         ~CM21()
-        {
-            CM21Process.Close();
-        }
-
         // report scr/p1=SCR_NUMBER
-        public void FetchSCRReport(IEnumerable<SCRReport> reports)
+        public void FetchSCRReport(IEnumerable<float> SCRNumbers, int timeout)
         {            
-           foreach (SCRReport report in reports)
+           foreach (var item in SCRNumbers)
            {
                // CM21Process.HasExited: is previous command has finished?
                if (null != CM21Process && CM21Process.HasExited)
                {
-                   String scrNumber = report.SCRNumber.ToString("0.00");
+                   String scrNumber = item.ToString("0.00");
                    CM21Process.StartInfo.Arguments = String.Format("REPORT SCR/P1=\"{0}\"/OUTPUT={1}", scrNumber, scrNumber);
                    CM21Process.Start();
-                   if (!CM21Process.WaitForExit(maxWaitingTime))
+                   if (!CM21Process.WaitForExit(timeout))
                        CM21Process.Kill();
                }
            }            
@@ -76,13 +69,13 @@ namespace Pkg_Checker.Integration
 
         // wait for process to exit: (Process.Exit event)
         // Process.Exit += () => {}
-        public void Exit()
+        public void Exit(int timeout)
         {
             if (null != CM21Process)
             {
                 CM21Process.StartInfo.Arguments = "EXIT";
                 CM21Process.Start();
-                if (!CM21Process.WaitForExit(maxWaitingTime))
+                if (!CM21Process.WaitForExit(timeout))
                     CM21Process.Kill();
                 else
                     CM21Process.Close();

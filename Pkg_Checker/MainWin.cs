@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.RegularExpressions;
 using Pkg_Checker.Integration;
+using Microsoft.Win32;
 
 namespace Pkg_Checker
 {
@@ -18,23 +19,28 @@ namespace Pkg_Checker
     {
         private BackgroundWorker worker;
         private String outputFilePath = @"Check_Result.txt";
-        public List<String> FilesToCheck { get; set; }
-        public int CheckedFileCount { get; set; }
+        private String registryKeyNameEID = "EID";
+        private String registryKeyNamePWD = "PWD";
+        private List<String> FilesToCheck { get; set; }
+        private int CheckedFileCount { get; set; }
 
         // CM21
         private bool CheckWithCM21 { get; set; }
-        public String EID { get; set; }
-        public String CM21Password { get; set; }
-        public String SCRReportDownloadPath { get; set; }
+        private String EID { get; set; }
+        private String CM21Password { get; set; }
+        private String SCRReportDownloadPath { get; set; }
+        private int Timeout { get; set; }
 
         public MainWin()
         {
             InitializeComponent();
 
-            this.ActiveControl = this.tbLocation;            
+            this.ActiveControl = this.tbLocation;
             statusTotalProgress.Value = 0;
             FilesToCheck = new List<String>();
             CheckWithCM21 = false;
+            SlideControls(CheckWithCM21, this.groupCM21.Height, this.btnCheck, this.lblDrag,
+                this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
 
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -61,7 +67,7 @@ namespace Pkg_Checker
                 MessageBox.Show(@"Cannot open result file for writting: " + ex.Message);
                 if (null != SW)
                     SW.Close();
-            }            
+            }
 
             // do work...
             foreach (var file in FilesToCheck)
@@ -70,10 +76,10 @@ namespace Pkg_Checker
 
                 WorkProgress progress = new WorkProgress();
                 progress.WorkName = file;
-                progress.Type = WorkType.Start;                                
+                progress.Type = WorkType.Start;
                 worker.ReportProgress(CheckedFileCount, progress);
 
-                #warning creating a new object each time may increase memory footprint
+#warning creating a new object each time may increase memory footprint
                 // consider the Singleton design pattern
                 try { reader = new iTextPdfReader(file); }
                 catch (Exception ex)
@@ -99,8 +105,8 @@ namespace Pkg_Checker
                     reader.CheckComments();
                     reader.CheckWorkProducts();
                     reader.CheckCheckList();
-                    if (this.CheckWithCM21)
-                        reader.CheckWithCM21(EID, CM21Password, SCRReportDownloadPath);
+                    if (CheckWithCM21)
+                        reader.CheckWithCM21(EID, CM21Password, SCRReportDownloadPath, Timeout);
 
                     // ++CheckedFileCount;
                     progress.Type = WorkType.End;
@@ -130,7 +136,7 @@ namespace Pkg_Checker
         }
 
         private void UpdateUI(object sender, ProgressChangedEventArgs e)
-        {            
+        {
             statusTotalProgress.Value = e.ProgressPercentage;
 
             WorkProgress progress = (WorkProgress)e.UserState;
@@ -138,7 +144,7 @@ namespace Pkg_Checker
             {
                 case WorkType.Start:
                     tbOutput.AppendText(@"Begin to check " + progress.WorkName + Environment.NewLine);
-                    statusCurrentObj.Text = String.Format(@"Checking {0} ... {1} of {2}.", 
+                    statusCurrentObj.Text = String.Format(@"Checking {0} ... {1} of {2}.",
                         progress.WorkName, e.ProgressPercentage + 1, FilesToCheck.Count);
                     break;
 
@@ -168,15 +174,15 @@ namespace Pkg_Checker
         {
             CheckedFileCount = 0;
             FilesToCheck.Clear();
-            statusCurrentObj.Text = String.Format(@"Done! Checked {0} of {1} file(s).", CheckedFileCount, FilesToCheck.Count);            
+            statusCurrentObj.Text = String.Format(@"Done! Checked {0} of {1} file(s).", CheckedFileCount, FilesToCheck.Count);
             this.btnCheck.Enabled = true;
             // this.chkCM21.Enabled = true;
             this.timer1.Start();
         }
 
         #endregion Background Task
-        
-        
+
+
         //protected override void WndProc(ref Message m)
         //{
         //    FormWindowState previousWindowState = this.WindowState;
@@ -190,6 +196,22 @@ namespace Pkg_Checker
         //}
 
         #region Menus
+        private void menuEnableCm21_Click(object sender, EventArgs e)
+        {
+            // this.groupCM21.Visible = this.menuEnableCm21.Checked;
+            CheckWithCM21 = this.menuEnableCm21.Checked;
+            if (CheckWithCM21)
+            {
+                string eid, pwd;
+                RegistryOperator.ReadRegistry(Program.AppName, registryKeyNameEID, out eid, registryKeyNamePWD, out pwd);
+                this.txtEID.Text = eid;
+                this.txtPWD.Text = pwd;
+                this.chkSave.Checked = CheckWithCM21;
+            }
+
+            SlideControls(CheckWithCM21, this.groupCM21.Height, this.btnCheck,
+                this.lblDrag, this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
+        }
 
         private void knownIssuesStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -199,8 +221,8 @@ namespace Pkg_Checker
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            tbOutput.AppendText(@"This tool checks the potential defects in a review package." + Environment.NewLine
-                + @"Build Date: Nov 25, 2014." + Environment.NewLine);
+            tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
+                + @"Build Date: Dec 07, 2014." + Environment.NewLine);
         }
 
         #endregion Menus
@@ -216,7 +238,7 @@ namespace Pkg_Checker
             {
                 if ((String.IsNullOrWhiteSpace(txtEID.Text) || String.IsNullOrWhiteSpace(txtPWD.Text)))
                 {
-                    MessageBox.Show("Invalid CM21 credential.", 
+                    MessageBox.Show("Invalid CM21 credential.",
                         Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return false;
                 }
@@ -228,13 +250,14 @@ namespace Pkg_Checker
                 }
                 catch
                 {
-                    MessageBox.Show("Cannot write to the SCR report download path.", 
+                    MessageBox.Show("Cannot write to the SCR report download path.",
                         Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return false;
                 }
 
                 EID = this.txtEID.Text.Trim();
                 CM21Password = this.txtPWD.Text;
+                Timeout = Convert.ToInt32(this.spinTimeout.Value);
                 SCRReportDownloadPath = this.txtSCRDownloadPath.Text;
             }
 
@@ -244,7 +267,7 @@ namespace Pkg_Checker
         private void LaunchTasks(int count)
         {
             if (count > 0)
-            {                
+            {
                 this.timer1.Stop();
                 this.btnCheck.Enabled = false;
                 // this.chkCM21.Enabled = false;
@@ -303,7 +326,7 @@ namespace Pkg_Checker
             if (String.IsNullOrWhiteSpace(this.tbLocation.Text))
             {
                 this.ActiveControl = this.tbLocation;
-                this.tbOutput.Text = @"Please specify a valid path.";
+                this.tbOutput.Text = @"Please specify a valid review package path." + Environment.NewLine;
                 return;
             }
 
@@ -362,45 +385,93 @@ namespace Pkg_Checker
             }
         }
 
-        // private void chkCM21_CheckedChanged(object sender, EventArgs e)
-        // {
-        //     panelCM21.Visible = chkCM21.Checked;
-        //     CheckWithCM21 = chkCM21.Checked;
-        // }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             this.lblDrag.Visible = !this.lblDrag.Visible;
         }
-        
-        private void menuEnableCm21_Click(object sender, EventArgs e)
+
+        private void SlideControls(bool visible, int offset, params Control[] controls)
         {
-            // this.menuEnableCm21.Checked;
-            this.groupCM21.Visible = this.menuEnableCm21.Checked;
-            CheckWithCM21 = this.menuEnableCm21.Checked;
-            if (this.menuEnableCm21.Checked)
+            const int times = 20;
+            int delta = offset / times;  // ensure offset / times is an integer
+            System.Drawing.Point point = new System.Drawing.Point();  // avoid creating multiple objects to save memory
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 300;
+            timer.Tick += (sender, e) =>
             {
-                this.panelMisc.Location = new System.Drawing.Point
+                // place the condition outside the heavy loop to save CPU
+                if (visible)
                 {
-                    X = this.panelMisc.Location.X,
-                    Y = this.panelMisc.Location.Y - this.groupCM21.Height
-                };
-                this.tbOutput.Size = new System.Drawing.Size
+                    for (int i = 0; i < times; ++i)
+                    {
+                        this.tbOutput.Height -= delta;
+                        foreach (var control in controls)
+                        {
+                            point.X = control.Location.X;
+                            point.Y = control.Location.Y + delta;
+                            control.Location = point;
+                        }
+                    }
+                    // hiding goes before animation, thus to alleviate stuck
+                    this.groupCM21.Visible = visible;
+                }
+                else
                 {
-                    Height = this.tbOutput.Size.Height - this.groupCM21.Height,
-                    Width = this.tbOutput.Size.Width                    
-                };
-            }
-            else
+                    // hiding goes before animation, thus to alleviate stuck
+                    this.groupCM21.Visible = visible;
+                    for (int i = 0; i < times; ++i)
+                    {
+                        this.tbOutput.Height += delta;
+                        foreach (var control in controls)
+                        {
+                            point.X = control.Location.X;
+                            point.Y = control.Location.Y - delta;
+                            control.Location = point;
+                        }
+                    }
+                }
+                timer.Stop();
+                timer.Dispose();
+                // this.groupCM21.Visible = visible;
+            };
+            timer.Start();            
+
+            #region with no animation
+            // if (visible)
+            // {
+            //     this.tbOutput.Height -= offset;
+            //     foreach (var control in controls)
+            //         control.Location = new System.Drawing.Point
+            //         {
+            //             X = control.Location.X,
+            //             Y = control.Location.Y + offset
+            //         };
+            // }
+            // else
+            // {
+            //     this.tbOutput.Height += offset;
+            //     foreach (var control in controls)
+            //         control.Location = new System.Drawing.Point
+            //         {
+            //             X = control.Location.X,
+            //             Y = control.Location.Y - offset
+            //         };
+            // }
+            // this.groupCM21.Visible = visible;
+            #endregion with no animation
+        }
+        
+        private void MainWin_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (CheckWithCM21)
             {
-                this.panelMisc.Location = new System.Drawing.Point
-                {
-                    X = this.panelMisc.Location.X,
-                    Y = this.panelMisc.Location.Y + this.groupCM21.Height
-                };
+                if (this.chkSave.Checked)
+                    RegistryOperator.WriteRegistry(Program.AppName, registryKeyNameEID, this.txtEID.Text, registryKeyNamePWD, this.txtPWD.Text);
+                else
+                    RegistryOperator.WriteRegistry(Program.AppName, registryKeyNameEID, String.Empty, registryKeyNamePWD, String.Empty);
             }
         }
 
-        #endregion UI Elements Events
+        #endregion UI Elements Events                
     }
 }

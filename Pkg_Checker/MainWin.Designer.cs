@@ -52,8 +52,8 @@
             this.statusTotalProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.statusCurrentObj = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.spinTimeout = new System.Windows.Forms.NumericUpDown();
+            this.chkSave = new System.Windows.Forms.CheckBox();
             this.groupCM21 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnSCRDownloadPath = new System.Windows.Forms.Button();
@@ -63,19 +63,18 @@
             this.txtPWD = new System.Windows.Forms.TextBox();
             this.txtSCRDownloadPath = new System.Windows.Forms.TextBox();
             this.lblEID = new System.Windows.Forms.Label();
-            this.panelMisc = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spinTimeout)).BeginInit();
             this.groupCM21.SuspendLayout();
-            this.panelMisc.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnCheck
             // 
             this.btnCheck.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.btnCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnCheck.Location = new System.Drawing.Point(300, 19);
+            this.btnCheck.Location = new System.Drawing.Point(308, 149);
             this.btnCheck.Name = "btnCheck";
             this.btnCheck.Size = new System.Drawing.Size(177, 28);
             this.btnCheck.TabIndex = 0;
@@ -87,7 +86,7 @@
             // 
             this.lblLocation.AutoSize = true;
             this.lblLocation.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblLocation.Location = new System.Drawing.Point(3, 38);
+            this.lblLocation.Location = new System.Drawing.Point(1, 37);
             this.lblLocation.Name = "lblLocation";
             this.lblLocation.Size = new System.Drawing.Size(167, 20);
             this.lblLocation.TabIndex = 2;
@@ -121,20 +120,21 @@
             this.tbOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbOutput.Location = new System.Drawing.Point(5, 217);
+            this.tbOutput.Location = new System.Drawing.Point(5, 226);
+            this.tbOutput.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.tbOutput.MaxLength = 655360;
             this.tbOutput.Multiline = true;
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbOutput.Size = new System.Drawing.Size(776, 340);
+            this.tbOutput.Size = new System.Drawing.Size(773, 330);
             this.tbOutput.TabIndex = 100;
             // 
             // btnBrowse
             // 
             this.btnBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowse.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnBrowse.Location = new System.Drawing.Point(706, 34);
+            this.btnBrowse.Location = new System.Drawing.Point(703, 36);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(75, 27);
             this.btnBrowse.TabIndex = 3;
@@ -144,11 +144,11 @@
             // 
             // btnClr
             // 
-            this.btnClr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClr.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnClr.Location = new System.Drawing.Point(701, 59);
+            this.btnClr.Location = new System.Drawing.Point(703, 195);
             this.btnClr.Name = "btnClr";
-            this.btnClr.Size = new System.Drawing.Size(75, 28);
+            this.btnClr.Size = new System.Drawing.Size(75, 27);
             this.btnClr.TabIndex = 98;
             this.btnClr.Text = "Clear";
             this.btnClr.UseVisualStyleBackColor = true;
@@ -164,7 +164,7 @@
             this.lblDrag.AutoSize = true;
             this.lblDrag.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDrag.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lblDrag.Location = new System.Drawing.Point(169, 63);
+            this.lblDrag.Location = new System.Drawing.Point(221, 180);
             this.lblDrag.Name = "lblDrag";
             this.lblDrag.Size = new System.Drawing.Size(375, 20);
             this.lblDrag.TabIndex = 10;
@@ -176,11 +176,11 @@
             this.lnkResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkResult.AutoSize = true;
             this.lnkResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lnkResult.Location = new System.Drawing.Point(568, 59);
+            this.lnkResult.Location = new System.Drawing.Point(573, 202);
+            this.lnkResult.Margin = new System.Windows.Forms.Padding(0);
             this.lnkResult.Name = "lnkResult";
             this.lnkResult.Size = new System.Drawing.Size(127, 20);
             this.lnkResult.TabIndex = 99;
-            this.lnkResult.TabStop = true;
             this.lnkResult.Text = "Open Result File";
             this.lnkResult.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkResult_LinkClicked);
             // 
@@ -236,11 +236,9 @@
             // 
             // chkAppendOutput
             // 
-            this.chkAppendOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.chkAppendOutput.AutoSize = true;
             this.chkAppendOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.chkAppendOutput.Location = new System.Drawing.Point(0, 62);
+            this.chkAppendOutput.Location = new System.Drawing.Point(5, 202);
             this.chkAppendOutput.Name = "chkAppendOutput";
             this.chkAppendOutput.Size = new System.Drawing.Size(137, 24);
             this.chkAppendOutput.TabIndex = 96;
@@ -252,7 +250,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusTotalProgress,
             this.statusCurrentObj});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 540);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 539);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(784, 22);
             this.statusStrip1.TabIndex = 101;
@@ -275,81 +273,81 @@
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // numericUpDown1
+            // spinTimeout
             // 
-            this.numericUpDown1.Increment = new decimal(new int[] {
+            this.spinTimeout.Increment = new decimal(new int[] {
             2,
             0,
             0,
             0});
-            this.numericUpDown1.Location = new System.Drawing.Point(169, 46);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            180,
+            this.spinTimeout.Location = new System.Drawing.Point(191, 52);
+            this.spinTimeout.Maximum = new decimal(new int[] {
+            600,
             0,
             0,
             0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
+            this.spinTimeout.Minimum = new decimal(new int[] {
+            2,
             0,
             0,
             0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(42, 20);
-            this.numericUpDown1.TabIndex = 103;
-            this.numericUpDown1.Value = new decimal(new int[] {
+            this.spinTimeout.Name = "spinTimeout";
+            this.spinTimeout.Size = new System.Drawing.Size(42, 21);
+            this.spinTimeout.TabIndex = 9;
+            this.spinTimeout.Value = new decimal(new int[] {
             60,
             0,
             0,
             0});
             // 
-            // checkBox1
+            // chkSave
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(281, 20);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(101, 17);
-            this.checkBox1.TabIndex = 104;
-            this.checkBox1.Text = "Save Credential";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.chkSave.AutoSize = true;
+            this.chkSave.Location = new System.Drawing.Point(281, 20);
+            this.chkSave.Name = "chkSave";
+            this.chkSave.Size = new System.Drawing.Size(112, 19);
+            this.chkSave.TabIndex = 6;
+            this.chkSave.Text = "Save Credential";
+            this.chkSave.UseVisualStyleBackColor = true;
             // 
             // groupCM21
             // 
             this.groupCM21.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupCM21.Controls.Add(this.label2);
             this.groupCM21.Controls.Add(this.label1);
             this.groupCM21.Controls.Add(this.btnSCRDownloadPath);
             this.groupCM21.Controls.Add(this.lblSCRDownloadPath);
-            this.groupCM21.Controls.Add(this.numericUpDown1);
-            this.groupCM21.Controls.Add(this.checkBox1);
+            this.groupCM21.Controls.Add(this.spinTimeout);
+            this.groupCM21.Controls.Add(this.chkSave);
             this.groupCM21.Controls.Add(this.txtEID);
             this.groupCM21.Controls.Add(this.lblPWD);
             this.groupCM21.Controls.Add(this.txtPWD);
             this.groupCM21.Controls.Add(this.txtSCRDownloadPath);
             this.groupCM21.Controls.Add(this.lblEID);
-            this.groupCM21.Location = new System.Drawing.Point(5, 68);
+            this.groupCM21.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.groupCM21.Location = new System.Drawing.Point(5, 66);
             this.groupCM21.Name = "groupCM21";
-            this.groupCM21.Size = new System.Drawing.Size(776, 74);
-            this.groupCM21.TabIndex = 105;
+            this.groupCM21.Size = new System.Drawing.Size(773, 80);
+            this.groupCM21.TabIndex = 4;
             this.groupCM21.TabStop = false;
             this.groupCM21.Text = "Compare SCR Report from CM21";
-            this.groupCM21.Visible = false;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 48);
+            this.label1.Location = new System.Drawing.Point(6, 54);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(154, 13);
+            this.label1.Size = new System.Drawing.Size(179, 15);
             this.label1.TabIndex = 105;
             this.label1.Text = "Operation Timeout (in seconds)";
             // 
             // btnSCRDownloadPath
             // 
-            this.btnSCRDownloadPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSCRDownloadPath.Location = new System.Drawing.Point(695, 18);
+            this.btnSCRDownloadPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSCRDownloadPath.Location = new System.Drawing.Point(698, 16);
             this.btnSCRDownloadPath.Name = "btnSCRDownloadPath";
-            this.btnSCRDownloadPath.Size = new System.Drawing.Size(75, 27);
+            this.btnSCRDownloadPath.Size = new System.Drawing.Size(75, 24);
             this.btnSCRDownloadPath.TabIndex = 8;
             this.btnSCRDownloadPath.Text = "Browse";
             this.btnSCRDownloadPath.UseVisualStyleBackColor = true;
@@ -358,26 +356,26 @@
             // lblSCRDownloadPath
             // 
             this.lblSCRDownloadPath.AutoSize = true;
-            this.lblSCRDownloadPath.Location = new System.Drawing.Point(389, 21);
+            this.lblSCRDownloadPath.Location = new System.Drawing.Point(402, 21);
             this.lblSCRDownloadPath.Name = "lblSCRDownloadPath";
-            this.lblSCRDownloadPath.Size = new System.Drawing.Size(134, 13);
+            this.lblSCRDownloadPath.Size = new System.Drawing.Size(151, 15);
             this.lblSCRDownloadPath.TabIndex = 21;
-            this.lblSCRDownloadPath.Text = "SCR Report Download To:";
+            this.lblSCRDownloadPath.Text = "Download SCR Report To:";
             // 
             // txtEID
             // 
-            this.txtEID.Location = new System.Drawing.Point(36, 18);
+            this.txtEID.Location = new System.Drawing.Point(34, 18);
             this.txtEID.MaxLength = 12;
             this.txtEID.Name = "txtEID";
-            this.txtEID.Size = new System.Drawing.Size(100, 20);
-            this.txtEID.TabIndex = 5;
+            this.txtEID.Size = new System.Drawing.Size(100, 21);
+            this.txtEID.TabIndex = 4;
             // 
             // lblPWD
             // 
             this.lblPWD.AutoSize = true;
-            this.lblPWD.Location = new System.Drawing.Point(142, 22);
+            this.lblPWD.Location = new System.Drawing.Point(137, 21);
             this.lblPWD.Name = "lblPWD";
-            this.lblPWD.Size = new System.Drawing.Size(36, 13);
+            this.lblPWD.Size = new System.Drawing.Size(38, 15);
             this.lblPWD.TabIndex = 20;
             this.lblPWD.Text = "PWD:";
             // 
@@ -387,42 +385,36 @@
             this.txtPWD.MaxLength = 20;
             this.txtPWD.Name = "txtPWD";
             this.txtPWD.PasswordChar = '*';
-            this.txtPWD.Size = new System.Drawing.Size(100, 20);
-            this.txtPWD.TabIndex = 6;
+            this.txtPWD.Size = new System.Drawing.Size(100, 21);
+            this.txtPWD.TabIndex = 5;
             // 
             // txtSCRDownloadPath
             // 
             this.txtSCRDownloadPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSCRDownloadPath.Location = new System.Drawing.Point(521, 18);
+            this.txtSCRDownloadPath.Location = new System.Drawing.Point(553, 18);
             this.txtSCRDownloadPath.Name = "txtSCRDownloadPath";
-            this.txtSCRDownloadPath.Size = new System.Drawing.Size(174, 20);
+            this.txtSCRDownloadPath.Size = new System.Drawing.Size(139, 21);
             this.txtSCRDownloadPath.TabIndex = 7;
             // 
             // lblEID
             // 
             this.lblEID.AutoSize = true;
-            this.lblEID.Location = new System.Drawing.Point(10, 22);
+            this.lblEID.Location = new System.Drawing.Point(6, 21);
             this.lblEID.Name = "lblEID";
-            this.lblEID.Size = new System.Drawing.Size(28, 13);
+            this.lblEID.Size = new System.Drawing.Size(30, 15);
             this.lblEID.TabIndex = 16;
             this.lblEID.Text = "EID:";
             // 
-            // panelMisc
+            // label2
             // 
-            this.panelMisc.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelMisc.AutoSize = true;
-            this.panelMisc.Controls.Add(this.btnClr);
-            this.panelMisc.Controls.Add(this.lnkResult);
-            this.panelMisc.Controls.Add(this.lblDrag);
-            this.panelMisc.Controls.Add(this.chkAppendOutput);
-            this.panelMisc.Controls.Add(this.btnCheck);
-            this.panelMisc.Location = new System.Drawing.Point(5, 132);
-            this.panelMisc.Name = "panelMisc";
-            this.panelMisc.Size = new System.Drawing.Size(776, 93);
-            this.panelMisc.TabIndex = 20;
-            this.panelMisc.Tag = "Tag";
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.label2.Location = new System.Drawing.Point(237, 54);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(272, 15);
+            this.label2.TabIndex = 106;
+            this.label2.Text = "(CM21 process will be kill after this time expires.)";
             // 
             // MainWin
             // 
@@ -430,32 +422,35 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 562);
-            this.Controls.Add(this.groupCM21);
-            this.Controls.Add(this.statusStrip1);
+            this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.btnBrowse);
-            this.Controls.Add(this.tbOutput);
             this.Controls.Add(this.checkSub);
             this.Controls.Add(this.tbLocation);
             this.Controls.Add(this.lblLocation);
+            this.Controls.Add(this.btnCheck);
+            this.Controls.Add(this.chkAppendOutput);
+            this.Controls.Add(this.btnClr);
+            this.Controls.Add(this.lblDrag);
+            this.Controls.Add(this.lnkResult);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.panelMisc);
+            this.Controls.Add(this.tbOutput);
+            this.Controls.Add(this.groupCM21);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainWin";
             this.Text = "Review Package Checker";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWin_FormClosing);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainWin_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainWin_DragEnter);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.spinTimeout)).EndInit();
             this.groupCM21.ResumeLayout(false);
             this.groupCM21.PerformLayout();
-            this.panelMisc.ResumeLayout(false);
-            this.panelMisc.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -485,8 +480,8 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem cM21ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuEnableCm21;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.NumericUpDown spinTimeout;
+        private System.Windows.Forms.CheckBox chkSave;
         private System.Windows.Forms.GroupBox groupCM21;
         private System.Windows.Forms.Button btnSCRDownloadPath;
         private System.Windows.Forms.Label lblSCRDownloadPath;
@@ -495,8 +490,8 @@
         private System.Windows.Forms.TextBox txtPWD;
         private System.Windows.Forms.TextBox txtSCRDownloadPath;
         private System.Windows.Forms.Label lblEID;
-        private System.Windows.Forms.Panel panelMisc;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
 
