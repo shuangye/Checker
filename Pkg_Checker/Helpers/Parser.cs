@@ -367,10 +367,10 @@ namespace Pkg_Checker.Helpers
                                                             RegexOptions.Multiline);
                     if (matches.Count > 0)
                     {
-                        report.AffectedElements = new List<CheckedInFile>();
+                        report.AffectedElements = new List<AffectedElement>();
                         foreach (Match item in matches)
                         {
-                            report.AffectedElements.Add(new CheckedInFile
+                            report.AffectedElements.Add(new AffectedElement
                             {
                                 SCR = report.SCRNumber,
                                 FileName = item.Groups[2].Value.ToUpper(),

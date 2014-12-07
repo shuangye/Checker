@@ -50,18 +50,21 @@ namespace Pkg_Checker.Implementations
 
         public int TotalAcceptedDefectCount { get; set; }
         public List<AnnotGroup> AnnotGroups { get; set; }
-        public List<SCRReport> SCRReports { get; set; }        
-        public List<CheckedInFile> CheckedInFiles { get; set; }
+        public List<SCRReport> SCRReportsFromPackage { get; set; }
+        public List<SCRReport> SCRReportsFromCM21 { get; set; }
+        public List<CheckedInElement> CheckedInElements { get; set; }
         public List<float> SCRs { get; set; }   // SCRs of "Work products under review"
         public List<String> BaseFileNames { get; set; }
         public List<String> ExtFileNames { get; set; }
         public List<String> PrintedFiles { get; set; }
         public List<String> Defects { get; set; }
+        public List<String> Warnings { get; set; }
         #endregion Properties
 
         public iTextPdfReader(String filePath)
         {
             Defects = new List<String>();
+            Warnings = new List<String>();
             Reader = new PdfReader(filePath);
             Fields = Reader.AcroFields;
             ReviewPackageName = Path.GetFileName(filePath).ToUpper();
@@ -116,7 +119,7 @@ namespace Pkg_Checker.Implementations
             if (null == Reader || null == Fields)
                 return;
 
-            SCRReports = new List<SCRReport>();
+            SCRReportsFromPackage = new List<SCRReport>();
             PrintedFiles = new List<string>();
             AnnotGroups = new List<AnnotGroup>();            
             const int maxFileCount = 40;            
@@ -200,7 +203,7 @@ namespace Pkg_Checker.Implementations
 
             #region Checked in Files
 
-            CheckedInFiles = new List<CheckedInFile>();
+            CheckedInElements = new List<CheckedInElement>();
             ExtFileNames = new List<string>();
             BaseFileNames = new List<string>();
             SCRs = new List<float>();
@@ -220,7 +223,7 @@ namespace Pkg_Checker.Implementations
                         continue;
                     }
 
-                    CheckedInFile checkedInFile = new CheckedInFile { FileName = fileName.Trim().ToUpper() };
+                    CheckedInElement checkedInFile = new CheckedInElement { FileName = fileName.Trim().ToUpper() };
                                         
                     // parse checked in version
                     match = Regex.Match(checkedInVer, @"\d+");
@@ -239,9 +242,12 @@ namespace Pkg_Checker.Implementations
                     // one field may contain multiple SCRs, e.g., 123.45, 678.90
                     foreach (Match item in Regex.Matches(scr, FormFields.PATTERN_SCR_NUMBER))
                     {
-                        CheckedInFiles.Add(new CheckedInFile { 
+                        float SCRNumber = float.Parse(item.Value);
+                        SCRs.Add(SCRNumber);
+                        CheckedInElements.Add(new CheckedInElement
+                        { 
                             FileName = checkedInFile.FileName,
-                            SCR = float.Parse(item.Value),
+                            SCR = SCRNumber,
                             ApprovedVer = checkedInFile.ApprovedVer,
                             CheckedInVer = checkedInFile.CheckedInVer
                         });                        
@@ -250,7 +256,7 @@ namespace Pkg_Checker.Implementations
                     String ext = Path.GetExtension(checkedInFile.FileName);
                     ExtFileNames.Add(ext);
                     BaseFileNames.Add(checkedInFile.FileName.Substring(0, checkedInFile.FileName.LastIndexOf(ext)));
-                    SCRs.Add(checkedInFile.SCR);
+                    // SCRs.Add(checkedInFile.SCR);
                 }
             }
             ExtFileNames = ExtFileNames.Distinct().ToList();
@@ -510,7 +516,7 @@ namespace Pkg_Checker.Implementations
                     {                        
                         SCRReport report = Parser.ParseSCRReport(targetArea);
                         if (null != report)
-                            SCRReports.Add(report);
+                            SCRReportsFromPackage.Add(report);
                         // reset flags
                         isOpeningTargetArea = false;
                         isEndMarkFound = false;
@@ -845,7 +851,7 @@ namespace Pkg_Checker.Implementations
                     Defects.Add(@"According to the coversheet fillings, there is at least one defect, but the package is closed as "
                         + F_ReviewStatus);
 
-                foreach (var checkedInFile in CheckedInFiles)
+                foreach (var checkedInFile in CheckedInElements)
                 {
                     if (checkedInFile.CheckedInVer != checkedInFile.ApprovedVer)
                         Defects.Add(@"Review status is " + F_ReviewStatus
@@ -863,7 +869,7 @@ namespace Pkg_Checker.Implementations
                         + F_ReviewStatus);
                 
                 bool reworkFound = false;
-                foreach (var checkedInFile in CheckedInFiles)
+                foreach (var checkedInFile in CheckedInElements)
                 {
                     if (checkedInFile.CheckedInVer < checkedInFile.ApprovedVer)
                     {
@@ -960,41 +966,40 @@ namespace Pkg_Checker.Implementations
             #endregion Prerequisite Files
 
             #region ACM Info vs. Coversheet Info
-
             // Approved ver >= checked in ver has been checked inside Read() method
             // Now check Checked in ver == max ver in ACM, and take the files in coversheet as a standard.
-            foreach (var checkedInFile in CheckedInFiles)
-            {
-                SCRReport matchingSCRReport = SCRReports.FirstOrDefault(
-                    x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
-                if (null != matchingSCRReport)
-                {
-                    if (!"SEC".Equals(matchingSCRReport.Status))
-                        Defects.Add(String.Format(@"SCR report {0} is in {1} status; ecptcted SEC.", 
-                                                  matchingSCRReport.SCRNumber, matchingSCRReport.Status));
-
-                    IEnumerable<CheckedInFile> matchingFiles = null;
-                    if (null != matchingSCRReport.AffectedElements)
-                        matchingFiles =
-                            matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
-                    if (null != matchingFiles && matchingFiles.Count() > 0)
-                    {
-                        int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;
-                        if (maxACMver != checkedInFile.CheckedInVer)
-                            Defects.Add(@"The coversheet indicates that the checked in ver of file "
-                                + checkedInFile.FileName + " is " + checkedInFile.CheckedInVer
-                                + ", but the max ver in SCR report is " + maxACMver
-                                + ". SCR: " + checkedInFile.SCR);
-                    }
-                    else
-                        Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
-                            + " is not checked into SCR " + checkedInFile.SCR);
-                }
-                else
-                    Defects.Add("Missing report for SCR " + checkedInFile.SCR);
-            }
-
+            // foreach (var checkedInFile in CheckedInElements)
+            // {
+            //     SCRReport matchingSCRReport = SCRReportsFromPackage.FirstOrDefault(
+            //         x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
+            //     if (null != matchingSCRReport)
+            //     {
+            //         if (!"SEC".Equals(matchingSCRReport.Status))
+            //             Defects.Add(String.Format(@"SCR report {0} is in {1} status; ecptcted SEC.", 
+            //                                       matchingSCRReport.SCRNumber, matchingSCRReport.Status));
+            // 
+            //         IEnumerable<AffectedElement> matchingFiles = null;
+            //         if (null != matchingSCRReport.AffectedElements)
+            //             matchingFiles =
+            //                 matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
+            //         if (null != matchingFiles && matchingFiles.Count() > 0)
+            //         {
+            //             int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;
+            //             if (maxACMver != checkedInFile.CheckedInVer)
+            //                 Defects.Add(@"The coversheet indicates that the checked in ver of file "
+            //                     + checkedInFile.FileName + " is " + checkedInFile.CheckedInVer
+            //                     + ", but the max ver in SCR report is " + maxACMver
+            //                     + ". SCR: " + checkedInFile.SCR);
+            //         }
+            //         else
+            //             Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
+            //                 + " is not checked into SCR " + checkedInFile.SCR);
+            //     }
+            //     else
+            //         Defects.Add("Missing report for SCR " + checkedInFile.SCR);
+            // }
             #endregion ACM Info vs. Coversheet Info
+            CheckSCRReports(false);
         }
         
         public void CheckCheckList(CheckListType checkListType)
@@ -1077,74 +1082,62 @@ namespace Pkg_Checker.Implementations
         }
 
         public void CheckWithCM21(String EID, String password, String outputPath, int timeout)
-        {
-            String fileName;
+        {            
             String filePath;
-            List<float> SCRNumbers = new List<float>();
+            List<float> SCRsToFetch = new List<float>();
 
             if (String.IsNullOrWhiteSpace(EID) || String.IsNullOrWhiteSpace(outputPath) || !Directory.Exists(outputPath))
                 return;
 
             // avoid duplicate fetching
-            foreach(SCRReport report in SCRReports)
-            {
-                fileName = report.SCRNumber.ToString("0.00");
-                filePath = Path.Combine(outputPath, fileName);
+            foreach(var item in SCRs)
+            {                
+                filePath = Path.Combine(outputPath, item.ToString("0.00"));
                 if (!File.Exists(filePath))
-                    SCRNumbers.Add(report.SCRNumber);
+                    SCRsToFetch.Add(item);
             }
 
-            if (SCRNumbers.Count > 0)
+            // fetch SCR report
+            if (SCRsToFetch.Count > 0)
             {
                 try
                 {
                     CM21 cm21 = new CM21(EID, password, F_ACMProject, F_ACMSubProject, outputPath, timeout);
-                    cm21.FetchSCRReport(SCRNumbers, timeout);
+                    cm21.FetchSCRReport(SCRsToFetch, timeout);
                     cm21.Exit(timeout);
                 }
-                catch (FileLoadException ex)
+                catch (Exception ex)
                 {
-                    Defects.Add(ex.Message);
-                    return;
-                }
-                catch (ApplicationException ex)
-                {
-                    Defects.Add(ex.Message);
+                    Warnings.Add(ex.Message);
                     return;
                 }
             }
-
-            SCRReport reportFromCM21;            
+                    
+            // parse SCR report
+            SCRReportsFromCM21 = new List<SCRReport>();
             StreamReader sr;
-            foreach(SCRReport report in SCRReports)
-            {
-                fileName = report.SCRNumber.ToString("0.00");
-                filePath = Path.Combine(outputPath, fileName);
+            foreach(var item in SCRs)
+            {                
+                filePath = Path.Combine(outputPath, item.ToString("0.00"));
                 try
                 {
                     sr = new StreamReader(filePath);
                 }
                 catch(Exception ex)
                 {
-                    Defects.Add(String.Format("Cannot open SCR report {0} for reading: {1}", filePath, ex.Message));
+                    Warnings.Add(String.Format("Cannot open SCR report file {0} for reading: {1}", filePath, ex.Message));
                     continue;
                 }
 
-                reportFromCM21 = Parser.ParseSCRReport(sr.ReadToEnd());
+                SCRReport reportFromCM21 = Parser.ParseSCRReport(sr.ReadToEnd());
                 sr.Close();
                 if (null != reportFromCM21)
-                {
-                    if (!("VER".Equals(reportFromCM21.Status)))
-                        Defects.Add("SCR report " + fileName + " from CM21 is not in VER state.");
-
-                    foreach (var file in CheckedInFiles)
-                    {
-
-                    }
-                }
+                    SCRReportsFromCM21.Add(reportFromCM21);
                 else
-                    Defects.Add("Cannot parse SCR report " + filePath);
+                    Warnings.Add("Cannot parse SCR report file " + filePath);
             }
+
+            CheckSCRReports(true);
         }
 
         public List<String> GetDefects()
@@ -1152,38 +1145,67 @@ namespace Pkg_Checker.Implementations
             return Defects.Distinct().ToList();
         }
 
-        #region Refactored Methods
-        private void CheckWithSCRReport(bool isFromCM21)
+        public List<String> GetWarnings()
         {
-            foreach (var checkedInFile in CheckedInFiles)
+            return Warnings.Distinct().ToList();
+        }
+
+        #region Refactored Methods
+        private void CheckSCRReports(bool isFromCM21)
+        {
+            List<SCRReport> reports;
+            String expectedSCRStatus;
+            String SCRReportSource;
+            String comparedTo;
+            if (isFromCM21)
             {
-                SCRReport matchingSCRReport = SCRReports.FirstOrDefault(
+                reports = SCRReportsFromCM21;
+                expectedSCRStatus = "VER";
+                SCRReportSource = "from CM21";
+                comparedTo = "approved";
+            }
+            else
+            {
+                reports = SCRReportsFromPackage;
+                expectedSCRStatus = "SEC";
+                SCRReportSource = "in review package";
+                comparedTo = "checked in";
+            }
+
+            if (null == reports)
+                return;
+
+            foreach (var checkedInFile in CheckedInElements)
+            {                
+                SCRReport matchingSCRReport = reports.FirstOrDefault(
                     x => Math.Abs(x.SCRNumber - checkedInFile.SCR) < SCRTolerance);
                 if (null != matchingSCRReport)
                 {
-                    if (!"SEC".Equals(matchingSCRReport.Status))
-                        Defects.Add(String.Format(@"SCR report {0} is in {1} status; ecptcted SEC.",
-                                                  matchingSCRReport.SCRNumber, matchingSCRReport.Status));
+                    if (!expectedSCRStatus.Equals(matchingSCRReport.Status))
+                        Defects.Add(String.Format(@"The SCR report {0} {1} is in {2} status; ecptcted {3}.",
+                                                  matchingSCRReport.SCRNumber.ToString("0.00"), SCRReportSource,
+                                                  matchingSCRReport.Status, expectedSCRStatus));
 
-                    IEnumerable<CheckedInFile> matchingFiles = null;
+                    IEnumerable<AffectedElement> matchingFiles = null;
                     if (null != matchingSCRReport.AffectedElements)
-                        matchingFiles =
-                            matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
+                        matchingFiles = matchingSCRReport.AffectedElements.Where(x => x.FileName.Equals(checkedInFile.FileName));
                     if (null != matchingFiles && matchingFiles.Count() > 0)
                     {
-                        int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).FirstOrDefault().CheckedInVer;
-                        if (maxACMver != checkedInFile.CheckedInVer)
-                            Defects.Add(@"The coversheet indicates that the checked in ver of file "
-                                + checkedInFile.FileName + " is " + checkedInFile.CheckedInVer
-                                + ", but the max ver in SCR report is " + maxACMver
-                                + ". SCR: " + checkedInFile.SCR);
+                        // compare checked in version with SCR report in review package
+                        // compare approved version with SCR report from CM21
+                        int maxACMver = matchingFiles.OrderByDescending(x => x.CheckedInVer).First().CheckedInVer;
+                        int comparedVer = isFromCM21 ? checkedInFile.ApprovedVer : checkedInFile.CheckedInVer;                                                
+                        if (maxACMver != comparedVer)
+                            Defects.Add(String.Format(@"The review package coversheet indicates that the {0} version of file {1} is {2}, "
+                                + "but the max ver in SCR report {3} {4} is {5}.", comparedTo, checkedInFile.FileName,
+                                comparedVer, checkedInFile.SCR.ToString("0.00"), SCRReportSource, maxACMver));                        
                     }
                     else
-                        Defects.Add(@"The SCR report indicates that file " + checkedInFile.FileName
-                            + " is not checked into SCR " + checkedInFile.SCR);
+                        Defects.Add(String.Format(@"The SCR report {0} indicates that file {1} is not checked into SCR {2}.",
+                            SCRReportSource, checkedInFile.FileName, checkedInFile.SCR.ToString("0.00")));
                 }
                 else
-                    Defects.Add("Missing report for SCR " + checkedInFile.SCR);
+                    Defects.Add(String.Format("Missing report for SCR {0} {1}.", checkedInFile.SCR.ToString("0.00"), SCRReportSource));
             }
         }
         #endregion Refactored Methods

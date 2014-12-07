@@ -17,6 +17,6 @@ namespace Pkg_Checker.Entities
         public String AffectedArea { get; set; }
         public String TargetConfig { get; set; }
         public String ClosedConfig { get; set; }
-        public List<CheckedInFile> AffectedElements { get; set; }
+        public List<AffectedElement> AffectedElements { get; set; }
     }
 }

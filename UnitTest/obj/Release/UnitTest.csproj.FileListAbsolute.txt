@@ -6,3 +6,11 @@ D:\Github\Checker\UnitTest\bin\Release\ReviewPackageChecker.pdb
 D:\Github\Checker\UnitTest\obj\Release\UnitTest.csprojResolveAssemblyReference.cache
 D:\Github\Checker\UnitTest\obj\Release\UnitTest.dll
 D:\Github\Checker\UnitTest\obj\Release\UnitTest.pdb
+E:\Programming\Projects\Checker\UnitTest\obj\Release\UnitTest.csprojResolveAssemblyReference.cache
+E:\Programming\Projects\Checker\UnitTest\obj\Release\UnitTest.dll
+E:\Programming\Projects\Checker\UnitTest\bin\Release\UnitTest.dll
+E:\Programming\Projects\Checker\UnitTest\bin\Release\UnitTest.pdb
+E:\Programming\Projects\Checker\UnitTest\bin\Release\ReviewPackageChecker.exe
+E:\Programming\Projects\Checker\UnitTest\bin\Release\itextsharp.dll
+E:\Programming\Projects\Checker\UnitTest\bin\Release\ReviewPackageChecker.pdb
+E:\Programming\Projects\Checker\UnitTest\obj\Release\UnitTest.pdb

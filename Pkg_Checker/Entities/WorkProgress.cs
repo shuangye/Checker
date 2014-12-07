@@ -20,6 +20,7 @@ namespace Pkg_Checker.Entities
         /// </summary>
         public WorkType Type { get; set; }
         public String WorkName { get; set; }
-        public List<String> WorkResult { get; set; }
+        public List<String> Defects { get; set; }
+        public List<String> Warnings { get; set; }
     }
 }

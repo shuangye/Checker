@@ -73,11 +73,12 @@
   <ItemGroup>
     <Compile Include="Entities\AnnotGroup.cs" />
     <Compile Include="Helpers\ConsoleWorker.cs" />
-    <Compile Include="Entities\CheckedInFile.cs" />
+    <Compile Include="Entities\AffectedElement.cs" />
     <Compile Include="Entities\SCRReport.cs" />
     <Compile Include="Entities\WorkProgress.cs" />
     <Compile Include="Helpers\FSWalker.cs" />
     <Compile Include="Helpers\Parser.cs" />
+    <Compile Include="Helpers\Proc.cs" />
     <Compile Include="Helpers\RegistryOperator.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Helpers\Utilities.cs" />

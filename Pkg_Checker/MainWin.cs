@@ -85,7 +85,7 @@ namespace Pkg_Checker
                 catch (Exception ex)
                 {
                     progress.Type = WorkType.FatalError;
-                    progress.WorkResult = new List<String> { ex.Message + Environment.NewLine + Environment.NewLine
+                    progress.Warnings = new List<String> { ex.Message + Environment.NewLine + Environment.NewLine
                          + "Please try to put ITEXTSHARP.DLL at the same place with this executable." };
                     worker.ReportProgress(CheckedFileCount, progress);
                     // worker.CancelAsync();
@@ -110,11 +110,12 @@ namespace Pkg_Checker
 
                     // ++CheckedFileCount;
                     progress.Type = WorkType.End;
-                    progress.WorkResult = reader.GetDefects();
+                    progress.Defects = reader.GetDefects();
+                    progress.Warnings = reader.GetWarnings();
 
                     if (null != SW)
                     {
-                        foreach (var line in progress.WorkResult)
+                        foreach (var line in progress.Defects)
                             SW.WriteLine(CommonResource.DefectPrefix + line);
                         SW.WriteLine(@"Checked " + file);
                         SW.WriteLine(CommonResource.LineSeperator);
@@ -123,7 +124,7 @@ namespace Pkg_Checker
                 else
                 {
                     progress.Type = WorkType.ErrorOccurred;
-                    progress.WorkResult = new List<string> { file + " is not a valid review package." + Environment.NewLine };
+                    progress.Warnings = new List<string> { file + " is not a valid review package." + Environment.NewLine };
                 }
 
                 // output check result
@@ -149,19 +150,22 @@ namespace Pkg_Checker
                     break;
 
                 case WorkType.End:
-                    if (null != progress.WorkResult)
-                        foreach (var defect in progress.WorkResult)
+                    if (null != progress.Defects)
+                        foreach (var defect in progress.Defects)
                             tbOutput.AppendText(CommonResource.DefectPrefix + defect + Environment.NewLine);
+                    if (null != progress.Warnings)
+                        foreach (var warning in progress.Warnings)
+                            tbOutput.AppendText(CommonResource.WarningPrefix + warning + Environment.NewLine);
                     tbOutput.AppendText(@"Done checking " + progress.WorkName + Environment.NewLine
                         + CommonResource.LineSeperator + Environment.NewLine);
                     break;
 
                 case WorkType.ErrorOccurred:
-                    tbOutput.AppendText(progress.WorkResult[0]);
+                    tbOutput.AppendText(progress.Defects[0]);
                     break;
 
                 case WorkType.FatalError:
-                    MessageBox.Show(progress.WorkResult[0],
+                    MessageBox.Show(progress.Defects[0],
                          "Fatal Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
@@ -181,8 +185,7 @@ namespace Pkg_Checker
         }
 
         #endregion Background Task
-
-
+        
         //protected override void WndProc(ref Message m)
         //{
         //    FormWindowState previousWindowState = this.WindowState;
@@ -199,6 +202,7 @@ namespace Pkg_Checker
         private void menuEnableCm21_Click(object sender, EventArgs e)
         {
             // this.groupCM21.Visible = this.menuEnableCm21.Checked;
+            this.instructionsToolStripMenuItem.Enabled = this.menuEnableCm21.Checked;
             CheckWithCM21 = this.menuEnableCm21.Checked;
             if (CheckWithCM21)
             {
@@ -213,16 +217,25 @@ namespace Pkg_Checker
                 this.lblDrag, this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
         }
 
+        private void instructionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tbOutput.AppendText(@"This program uses the SCR reports cached in the SCR report download path to avoid duplicate fetching from CM21."
+                + Environment.NewLine + "The CM21 process may become stuck, so it will be killed after timeout." + Environment.NewLine
+                );            
+        }
+
         private void knownIssuesStripMenuItem_Click(object sender, EventArgs e)
         {
-            tbOutput.AppendText(@"Missing report for SCR XXX." + Environment.NewLine
+            tbOutput.AppendText(@"If some pdf pages cannot be read by the third party lib, this program will report:" + Environment.NewLine
+                + @"Missing report for SCR XXX." + Environment.NewLine
                 + @"XXX.TRT is not printed to the review package." + Environment.NewLine);
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
-                + @"Build Date: Dec 07, 2014." + Environment.NewLine);
+                + @"Build Date: Dec 07, 2014." + Environment.NewLine
+                + "Added CM21 integration." + Environment.NewLine);
         }
 
         #endregion Menus
@@ -245,12 +258,14 @@ namespace Pkg_Checker
 
                 try
                 {
-                    // Directory.Exists(txtSCRDownloadPath.Text);
+                    if (!Directory.Exists(txtSCRDownloadPath.Text))
+                        throw new DirectoryNotFoundException(String.Format("Specified directory {0} is not found.", txtSCRDownloadPath.Text));
+
                     Directory.GetAccessControl(txtSCRDownloadPath.Text);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    MessageBox.Show("Cannot write to the SCR report download path.",
+                    MessageBox.Show("Cannot write to the SCR report download path: " + ex.Message,
                         Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return false;
                 }
@@ -472,6 +487,6 @@ namespace Pkg_Checker
             }
         }
 
-        #endregion UI Elements Events                
+        #endregion UI Elements Events                        
     }
 }

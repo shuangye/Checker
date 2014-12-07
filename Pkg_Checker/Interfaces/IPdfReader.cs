@@ -18,6 +18,7 @@ namespace Pkg_Checker.Interfaces
         void CheckCheckList();
         void CheckWithCM21(String EID, String password, String cwd, int timeout);
         
-        List<String> GetDefects();        
+        List<String> GetDefects();
+        List<String> GetWarnings();        
     }
 }

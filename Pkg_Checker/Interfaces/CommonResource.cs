@@ -9,5 +9,6 @@ namespace Pkg_Checker.Interfaces
     {
         public const string LineSeperator = @"----------------------------------------------------------------------------";
         public const string DefectPrefix = @"[Defect] ";
+        public const string WarningPrefix = @"[Warning] ";        
     }
 }

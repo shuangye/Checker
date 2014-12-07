@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pkg_Checker.Helpers;
 using Pkg_Checker.Entities;
+using System.Collections.Generic;
 
 namespace UnitTest
 {
@@ -160,19 +161,19 @@ namespace UnitTest
                 AffectedArea = "TEST_PERF",
                 TargetConfig = "A350_CERT1_TST_X05",
                 ClosedConfig = "A350_CERT1_TST_X05",
-                AffectedElements = new System.Collections.Generic.List<CheckedInFile>()
+                AffectedElements = new List<AffectedElement>()
             };
-            report.AffectedElements.Add(new CheckedInFile { 
+            report.AffectedElements.Add(new AffectedElement { 
                 SCR = 9311.0f, CheckedInVer = 16,
                 FileName = "CTP_A350_PERF_CURMODE_PREDICT.ZIP"
             });
-            report.AffectedElements.Add(new CheckedInFile
+            report.AffectedElements.Add(new AffectedElement
             {
                 SCR = 9311.0f,
                 CheckedInVer = 17,
                 FileName = "CTP_A350_PERF_CURMODE_PREDICT.ZIP"
             });
-            report.AffectedElements.Add(new CheckedInFile
+            report.AffectedElements.Add(new AffectedElement
             {
                 SCR = 9311.0f,
                 CheckedInVer = 10,

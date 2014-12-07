@@ -1,4 +1,5 @@
 ﻿using Pkg_Checker.Entities;
+using Pkg_Checker.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,7 +21,8 @@ namespace Pkg_Checker.Integration
         [DefaultValue(@"C:\Program Files\honeywell_eng\cm21_v2_2b2\bin\cm21.exe")]
         public String CM21ExePath { get; set; }
         public Process CM21Process { get; set; }
-        public int ExitCode { get; set; }                
+        public int ExitCode { get; set; }
+        private String CM21DependedProcName = @"javaw.exe";
 
 #warning Search registry for installed apps.
         public CM21(String EID, String PWD, String proj, String subProj, String outputPath, int timeout)
@@ -45,7 +47,10 @@ namespace Pkg_Checker.Integration
             else
             {
                 if (!CM21Process.HasExited)
+                {
                     CM21Process.Kill();  // HasExited property will become true after calling Kill()
+                    Proc.Kill(CM21DependedProcName);
+                }
                 throw new ApplicationException("CM21 process is stuck or exited unexpectly.");
             }
         }
@@ -62,7 +67,10 @@ namespace Pkg_Checker.Integration
                    CM21Process.StartInfo.Arguments = String.Format("REPORT SCR/P1=\"{0}\"/OUTPUT={1}", scrNumber, scrNumber);
                    CM21Process.Start();
                    if (!CM21Process.WaitForExit(timeout))
+                   {
                        CM21Process.Kill();
+                       Proc.Kill(CM21DependedProcName);
+                   }
                }
            }            
         }
@@ -76,7 +84,10 @@ namespace Pkg_Checker.Integration
                 CM21Process.StartInfo.Arguments = "EXIT";
                 CM21Process.Start();
                 if (!CM21Process.WaitForExit(timeout))
+                {
                     CM21Process.Kill();
+                    Proc.Kill(CM21DependedProcName);
+                }
                 else
                     CM21Process.Close();
             }

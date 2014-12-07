@@ -63,7 +63,7 @@
             this.txtPWD = new System.Windows.Forms.TextBox();
             this.txtSCRDownloadPath = new System.Windows.Forms.TextBox();
             this.lblEID = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.instructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spinTimeout)).BeginInit();
@@ -181,6 +181,7 @@
             this.lnkResult.Name = "lnkResult";
             this.lnkResult.Size = new System.Drawing.Size(127, 20);
             this.lnkResult.TabIndex = 99;
+            this.lnkResult.TabStop = true;
             this.lnkResult.Text = "Open Result File";
             this.lnkResult.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkResult_LinkClicked);
             // 
@@ -198,7 +199,8 @@
             // cM21ToolStripMenuItem
             // 
             this.cM21ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuEnableCm21});
+            this.menuEnableCm21,
+            this.instructionsToolStripMenuItem});
             this.cM21ToolStripMenuItem.Name = "cM21ToolStripMenuItem";
             this.cM21ToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
             this.cM21ToolStripMenuItem.Text = "&CM21";
@@ -207,8 +209,8 @@
             // 
             this.menuEnableCm21.CheckOnClick = true;
             this.menuEnableCm21.Name = "menuEnableCm21";
-            this.menuEnableCm21.Size = new System.Drawing.Size(248, 22);
-            this.menuEnableCm21.Text = "Compare SCR Report from CM21";
+            this.menuEnableCm21.Size = new System.Drawing.Size(204, 22);
+            this.menuEnableCm21.Text = "&Enable CM21 Integration";
             this.menuEnableCm21.Click += new System.EventHandler(this.menuEnableCm21_Click);
             // 
             // helpToolStripMenuItem
@@ -223,15 +225,15 @@
             // knownIssuesStripMenuItem
             // 
             this.knownIssuesStripMenuItem.Name = "knownIssuesStripMenuItem";
-            this.knownIssuesStripMenuItem.Size = new System.Drawing.Size(145, 22);
-            this.knownIssuesStripMenuItem.Text = "Known Issues";
+            this.knownIssuesStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.knownIssuesStripMenuItem.Text = "Known &Issues";
             this.knownIssuesStripMenuItem.Click += new System.EventHandler(this.knownIssuesStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
-            this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // chkAppendOutput
@@ -314,7 +316,6 @@
             // 
             this.groupCM21.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupCM21.Controls.Add(this.label2);
             this.groupCM21.Controls.Add(this.label1);
             this.groupCM21.Controls.Add(this.btnSCRDownloadPath);
             this.groupCM21.Controls.Add(this.lblSCRDownloadPath);
@@ -338,9 +339,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(6, 54);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(179, 15);
+            this.label1.Size = new System.Drawing.Size(182, 15);
             this.label1.TabIndex = 105;
-            this.label1.Text = "Operation Timeout (in seconds)";
+            this.label1.Text = "Operation Timeout (in seconds):";
             // 
             // btnSCRDownloadPath
             // 
@@ -406,15 +407,13 @@
             this.lblEID.TabIndex = 16;
             this.lblEID.Text = "EID:";
             // 
-            // label2
+            // instructionsToolStripMenuItem
             // 
-            this.label2.AutoSize = true;
-            this.label2.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.label2.Location = new System.Drawing.Point(237, 54);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(272, 15);
-            this.label2.TabIndex = 106;
-            this.label2.Text = "(CM21 process will be kill after this time expires.)";
+            this.instructionsToolStripMenuItem.Enabled = false;
+            this.instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
+            this.instructionsToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.instructionsToolStripMenuItem.Text = "&Instructions";
+            this.instructionsToolStripMenuItem.Click += new System.EventHandler(this.instructionsToolStripMenuItem_Click);
             // 
             // MainWin
             // 
@@ -491,7 +490,7 @@
         private System.Windows.Forms.TextBox txtSCRDownloadPath;
         private System.Windows.Forms.Label lblEID;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ToolStripMenuItem instructionsToolStripMenuItem;
     }
 }
 
