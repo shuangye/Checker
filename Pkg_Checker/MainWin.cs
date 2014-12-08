@@ -166,7 +166,7 @@ namespace Pkg_Checker
 
                 case WorkType.FatalError:
                     MessageBox.Show(progress.Defects[0],
-                         "Fatal Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                         "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
 
                 default:
@@ -220,7 +220,7 @@ namespace Pkg_Checker
         private void instructionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This program uses the SCR reports cached in the SCR report download path to avoid duplicate fetching from CM21."
-                + Environment.NewLine + "The CM21 process may become stuck, so it will be killed after timeout." + Environment.NewLine
+                + Environment.NewLine + "CM21 process may become stuck, so it will be killed after timeout." + Environment.NewLine
                 );            
         }
 
@@ -234,7 +234,7 @@ namespace Pkg_Checker
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
-                + @"Build Date: Dec 07, 2014." + Environment.NewLine
+                + @"Build Date: Dec 08, 2014." + Environment.NewLine
                 + "Added CM21 integration." + Environment.NewLine);
         }
 
@@ -331,10 +331,6 @@ namespace Pkg_Checker
 
         private void btnCheck_Click(object sender, EventArgs e)
         {
-            // CM21 cm21 = new CM21(null, "E817739", "Work88888_", "FMS2000", "A350_A380", @"D:\");
-            // cm21.FetchSCRReport(new List<SCRReport> { new SCRReport { SCRNumber = 9499.00F } });
-            // cm21.Exit();
-
             if (!ValidateUserInput())
                 return;
 
@@ -404,76 +400,75 @@ namespace Pkg_Checker
         {
             this.lblDrag.Visible = !this.lblDrag.Visible;
         }
-
+                
         private void SlideControls(bool visible, int offset, params Control[] controls)
         {
+            if (null == controls || controls.Length <= 0)
+                return;
+
+            // avoid creating multiple objects to save memory
+            System.Drawing.Point point = new System.Drawing.Point();
             const int times = 20;
+            if (!visible)
+            {
+                offset = -offset;
+                // hiding goes before animation, thus to alleviate stuck
+                this.groupCM21.Visible = visible;
+            }
             int delta = offset / times;  // ensure offset / times is an integer
-            System.Drawing.Point point = new System.Drawing.Point();  // avoid creating multiple objects to save memory
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = 300;
+            Thread.Sleep(200);  // delay before the animation starts
+            
+            for (int i = 0; i < times; ++i)
+            {
+                foreach (Control control in controls)
+                {
+                    point.X = control.Location.X;
+                    point.Y = control.Location.Y + delta;
+                    control.Location = point;
+                }
+                this.tbOutput.Height += delta;
+                Thread.Sleep(3);
+            }
+            this.groupCM21.Visible = visible;
+        }
+
+        private void _SlideControls(bool visible, int offset, params Control[] controls)
+        {
+            if (null == controls || controls.Length <= 0)
+                return;
+
+            // avoid creating multiple objects to save memory
+            System.Drawing.Point point = new System.Drawing.Point();  
+            int tickCount = 0;
+            const int times = 40;  // how many pieces to divide the sliding            
+            if (!visible)
+            {
+                offset = -offset;
+                // hiding goes before animation, thus to alleviate stuck
+                this.groupCM21.Visible = visible;
+            }
+            int delta = offset / times;  // ensure offset / times is an integer            
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 2 };            
             timer.Tick += (sender, e) =>
             {
-                // place the condition outside the heavy loop to save CPU
-                if (visible)
+                if (tickCount >= times)
                 {
-                    for (int i = 0; i < times; ++i)
-                    {
-                        this.tbOutput.Height -= delta;
-                        foreach (var control in controls)
-                        {
-                            point.X = control.Location.X;
-                            point.Y = control.Location.Y + delta;
-                            control.Location = point;
-                        }
-                    }
-                    // hiding goes before animation, thus to alleviate stuck
+                    timer.Stop();
+                    timer.Dispose();
                     this.groupCM21.Visible = visible;
+                    return;
                 }
-                else
-                {
-                    // hiding goes before animation, thus to alleviate stuck
-                    this.groupCM21.Visible = visible;
-                    for (int i = 0; i < times; ++i)
-                    {
-                        this.tbOutput.Height += delta;
-                        foreach (var control in controls)
-                        {
-                            point.X = control.Location.X;
-                            point.Y = control.Location.Y - delta;
-                            control.Location = point;
-                        }
-                    }
-                }
-                timer.Stop();
-                timer.Dispose();
-                // this.groupCM21.Visible = visible;
-            };
-            timer.Start();            
 
-            #region with no animation
-            // if (visible)
-            // {
-            //     this.tbOutput.Height -= offset;
-            //     foreach (var control in controls)
-            //         control.Location = new System.Drawing.Point
-            //         {
-            //             X = control.Location.X,
-            //             Y = control.Location.Y + offset
-            //         };
-            // }
-            // else
-            // {
-            //     this.tbOutput.Height += offset;
-            //     foreach (var control in controls)
-            //         control.Location = new System.Drawing.Point
-            //         {
-            //             X = control.Location.X,
-            //             Y = control.Location.Y - offset
-            //         };
-            // }
-            // this.groupCM21.Visible = visible;
-            #endregion with no animation
+                ++tickCount;
+                foreach (Control control in controls)
+                {
+                    point.X = control.Location.X;
+                    point.Y = control.Location.Y + delta;
+                    control.Location = point;
+                }
+                this.tbOutput.Height += delta;            
+            };            
+            timer.Start();            
         }
         
         private void MainWin_FormClosing(object sender, FormClosingEventArgs e)

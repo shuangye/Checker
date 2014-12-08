@@ -22,7 +22,7 @@ namespace Pkg_Checker.Integration
         public String CM21ExePath { get; set; }
         public Process CM21Process { get; set; }
         public int ExitCode { get; set; }
-        private String CM21DependedProcName = @"javaw.exe";
+        private String CM21DependedProcName = @"javaw";
 
 #warning Search registry for installed apps.
         public CM21(String EID, String PWD, String proj, String subProj, String outputPath, int timeout)

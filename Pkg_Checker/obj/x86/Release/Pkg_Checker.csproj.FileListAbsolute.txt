@@ -47,9 +47,9 @@ D:\GitHub\Checker\Pkg_Checker\bin\Release\ReviewPackageChecker.exe.config
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\ReviewPackageChecker.exe
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\ReviewPackageChecker.pdb
 D:\GitHub\Checker\Pkg_Checker\bin\Release\ReviewPackageChecker.exe
-D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csprojResolveAssemblyReference.cache
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.MainWin.resources
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.Properties.Resources.resources
 D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csproj.GenerateResource.Cache
 D:\GitHub\Checker\Pkg_Checker\bin\Release\ReviewPackageChecker.pdb
 E:\Programming\Projects\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csprojResolveAssemblyReference.cache
+D:\GitHub\Checker\Pkg_Checker\obj\x86\Release\Pkg_Checker.csprojResolveAssemblyReference.cache

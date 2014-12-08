@@ -262,6 +262,8 @@ namespace Pkg_Checker.Implementations
             ExtFileNames = ExtFileNames.Distinct().ToList();
             BaseFileNames = BaseFileNames.Distinct().ToList();
             SCRs = SCRs.Distinct().ToList();
+            if (SCRs.Count() <= 0)
+                Defects.Add("Coversheet should contain at least one SCR number (in ####.## format).");
 
             #endregion Checked in Files
 
@@ -656,8 +658,11 @@ namespace Pkg_Checker.Implementations
                 #endregion Collect Prerequisite Files                                
             }
         }
-
-        // this method has been refactored to Parser.ParseComments
+                
+        /// <summary>
+        /// this method has been refactored to Parser.ParseComments
+        /// </summary>
+        /// <param name="page"></param>
         [Obsolete]
         private void CollectComments(int page)
         {
@@ -1081,8 +1086,16 @@ namespace Pkg_Checker.Implementations
                 CheckCheckList(CheckListType.Trace);            
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="EID"></param>
+        /// <param name="password"></param>
+        /// <param name="outputPath"></param>
+        /// <param name="timeout">in seconds</param>
         public void CheckWithCM21(String EID, String password, String outputPath, int timeout)
-        {            
+        {
+            timeout = timeout * 1000;
             String filePath;
             List<float> SCRsToFetch = new List<float>();
 
