@@ -44,6 +44,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.cM21ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEnableCm21 = new System.Windows.Forms.ToolStripMenuItem();
+            this.instructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.knownIssuesStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +64,7 @@
             this.txtPWD = new System.Windows.Forms.TextBox();
             this.txtSCRDownloadPath = new System.Windows.Forms.TextBox();
             this.lblEID = new System.Windows.Forms.Label();
-            this.instructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.howToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spinTimeout)).BeginInit();
@@ -213,9 +214,18 @@
             this.menuEnableCm21.Text = "&Enable CM21 Integration";
             this.menuEnableCm21.Click += new System.EventHandler(this.menuEnableCm21_Click);
             // 
+            // instructionsToolStripMenuItem
+            // 
+            this.instructionsToolStripMenuItem.Enabled = false;
+            this.instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
+            this.instructionsToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.instructionsToolStripMenuItem.Text = "&Instructions";
+            this.instructionsToolStripMenuItem.Click += new System.EventHandler(this.instructionsToolStripMenuItem_Click);
+            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.howToToolStripMenuItem,
             this.knownIssuesStripMenuItem,
             this.aboutToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
@@ -407,13 +417,12 @@
             this.lblEID.TabIndex = 16;
             this.lblEID.Text = "EID:";
             // 
-            // instructionsToolStripMenuItem
+            // howToToolStripMenuItem
             // 
-            this.instructionsToolStripMenuItem.Enabled = false;
-            this.instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
-            this.instructionsToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.instructionsToolStripMenuItem.Text = "&Instructions";
-            this.instructionsToolStripMenuItem.Click += new System.EventHandler(this.instructionsToolStripMenuItem_Click);
+            this.howToToolStripMenuItem.Name = "howToToolStripMenuItem";
+            this.howToToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.howToToolStripMenuItem.Text = "&How to...";
+            this.howToToolStripMenuItem.Click += new System.EventHandler(this.howToToolStripMenuItem_Click);
             // 
             // MainWin
             // 
@@ -491,6 +500,7 @@
         private System.Windows.Forms.Label lblEID;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem instructionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem howToToolStripMenuItem;
     }
 }
 

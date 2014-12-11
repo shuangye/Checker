@@ -31,17 +31,14 @@ namespace Pkg_Checker
         private String SCRReportDownloadPath { get; set; }
         private int Timeout { get; set; }
 
-        public MainWin()
+        public MainWin(string[] args)
         {
             InitializeComponent();
 
-            this.ActiveControl = this.tbLocation;
-            statusTotalProgress.Value = 0;
-            FilesToCheck = new List<String>();
-            CheckWithCM21 = false;
-            SlideControls(CheckWithCM21, this.groupCM21.Height, this.btnCheck, this.lblDrag,
-                this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
+            bool fireTask = false;
+            bool isCM21InfoPresent = false;
 
+            FilesToCheck = new List<String>();
             worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
             worker.WorkerSupportsCancellation = true;
@@ -49,8 +46,61 @@ namespace Pkg_Checker
             worker.ProgressChanged += new ProgressChangedEventHandler(UpdateUI);
             worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(WorkDone);
 
+            if (null != args)
+            {
+                switch (args.Length)
+                {
+                    case 3:
+                        // app reviewPackagePath resultPath
+                        this.tbLocation.Text = args[1];
+                        outputFilePath = args[2];
+                        fireTask = true;
+                        break;
+                    case 6:
+                        // app reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath
+                        this.tbLocation.Text = args[1];
+                        outputFilePath = args[2];
+                        this.txtEID.Text = args[3];
+                        this.txtPWD.Text = args[4];
+                        this.txtSCRDownloadPath.Text = args[5];
+                        isCM21InfoPresent = true;
+                        fireTask = true;
+                        break;
+                    case 7:
+                        // app reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath timeout
+                        this.tbLocation.Text = args[1];
+                        outputFilePath = args[2];
+                        this.txtEID.Text = args[3];
+                        this.txtPWD.Text = args[4];
+                        this.txtSCRDownloadPath.Text = args[5];
+                        Match match = Regex.Match(args[6], @"\d+");
+                        if (match.Success)
+                            this.spinTimeout.Value = int.Parse(match.Value);
+                        isCM21InfoPresent = true;
+                        fireTask = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // UI elements
+            this.statusTotalProgress.Value = 0;
+            this.ActiveControl = this.tbLocation;
+            CheckWithCM21 = false;
+            SlideControls(CheckWithCM21, this.groupCM21.Height, this.btnCheck, this.lblDrag,
+                this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
             this.timer1.Interval = 1500;
             this.timer1.Start();
+
+            this.Load += (sender, e) =>
+            {
+                // simulate UI operations 
+                if (isCM21InfoPresent)
+                    this.menuEnableCm21.PerformClick();
+                if (fireTask)
+                    this.btnCheck.PerformClick();
+            };
         }
 
         #region Background Task
@@ -161,7 +211,10 @@ namespace Pkg_Checker
                     break;
 
                 case WorkType.ErrorOccurred:
-                    tbOutput.AppendText(progress.Defects[0]);
+                    if (null != progress.Defects)
+                        tbOutput.AppendText(progress.Defects[0]);
+                    else if (null != progress.Warnings)
+                        tbOutput.AppendText(progress.Warnings[0]);
                     break;
 
                 case WorkType.FatalError:
@@ -175,10 +228,10 @@ namespace Pkg_Checker
         }
 
         private void WorkDone(object sender, RunWorkerCompletedEventArgs e)
-        {
+        {            
+            statusCurrentObj.Text = String.Format(@"Done! Checked {0} of {1} file(s).", CheckedFileCount, FilesToCheck.Count);
             CheckedFileCount = 0;
             FilesToCheck.Clear();
-            statusCurrentObj.Text = String.Format(@"Done! Checked {0} of {1} file(s).", CheckedFileCount, FilesToCheck.Count);
             this.btnCheck.Enabled = true;
             // this.chkCM21.Enabled = true;
             this.timer1.Start();
@@ -224,6 +277,15 @@ namespace Pkg_Checker
                 );            
         }
 
+        private void howToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tbOutput.AppendText(@"Ho to start from CLI and execute immediately:" + Environment.NewLine
+                + @"Start without CM21 integration: thisApp reviewPackagePath resultPath" + Environment.NewLine
+                + @"Start with CM21 integration: thisApp reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath" + Environment.NewLine
+                + @"Start with CM21 integration and a timeout value (in seconds): thisApp reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath timeout" + Environment.NewLine
+                );
+        }
+
         private void knownIssuesStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"If some pdf pages cannot be read by the third party lib, this program will report:" + Environment.NewLine
@@ -234,8 +296,7 @@ namespace Pkg_Checker
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
-                + @"Build Date: Dec 08, 2014." + Environment.NewLine
-                + "Added CM21 integration." + Environment.NewLine);
+                + @"Build Date: Dec 11, 2014." + Environment.NewLine);
         }
 
         #endregion Menus
@@ -270,7 +331,7 @@ namespace Pkg_Checker
                     return false;
                 }
 
-                EID = this.txtEID.Text.Trim();
+                EID = this.txtEID.Text.Trim().ToUpper();
                 CM21Password = this.txtPWD.Text;
                 Timeout = Convert.ToInt32(this.spinTimeout.Value);
                 SCRReportDownloadPath = this.txtSCRDownloadPath.Text;
@@ -406,8 +467,6 @@ namespace Pkg_Checker
             if (null == controls || controls.Length <= 0)
                 return;
 
-            // avoid creating multiple objects to save memory
-            System.Drawing.Point point = new System.Drawing.Point();
             const int times = 20;
             if (!visible)
             {
@@ -420,25 +479,21 @@ namespace Pkg_Checker
             
             for (int i = 0; i < times; ++i)
             {
-                foreach (Control control in controls)
-                {
-                    point.X = control.Location.X;
-                    point.Y = control.Location.Y + delta;
-                    control.Location = point;
-                }
+                foreach (Control control in controls)                
+                    control.Top += delta;
+                
                 this.tbOutput.Height += delta;
                 Thread.Sleep(3);
             }
             this.groupCM21.Visible = visible;
         }
 
+        // another implementation
         private void _SlideControls(bool visible, int offset, params Control[] controls)
         {
             if (null == controls || controls.Length <= 0)
                 return;
-
-            // avoid creating multiple objects to save memory
-            System.Drawing.Point point = new System.Drawing.Point();  
+            
             int tickCount = 0;
             const int times = 40;  // how many pieces to divide the sliding            
             if (!visible)
@@ -460,12 +515,9 @@ namespace Pkg_Checker
                 }
 
                 ++tickCount;
-                foreach (Control control in controls)
-                {
-                    point.X = control.Location.X;
-                    point.Y = control.Location.Y + delta;
-                    control.Location = point;
-                }
+                foreach (Control control in controls)                                    
+                    control.Top += delta;
+                
                 this.tbOutput.Height += delta;            
             };            
             timer.Start();            
@@ -483,5 +535,7 @@ namespace Pkg_Checker
         }
 
         #endregion UI Elements Events                        
+
+        
     }
 }

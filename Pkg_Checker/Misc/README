@@ -1,16 +1,15 @@
-This utility reports the (potential) defects in eReview packages. It can run both in GUI mode and cmd line mode.
+This utility reports the (potential) defects in eReview packages.
 Files:
 -- ReviewPackageChecker.exe (main program)
 -- itextsharp.dll           (depends lib)
 -- README.txt
 
-GUI Mode
-If you double-click ReviewPackageChecker.exe, or start it from the cmd line without any args, it will run in GUI mode.
-It is quite intuitive under GUI mode, just drag any files/folders to the window, and it will do the rest for you. Alternatively, you can also specify the path to the review packages via the text box or "Browse" button.
+Ho to start from CLI and execute immediately:
+Start without CM21 integration: thisApp reviewPackagePath resultPath
+Start with CM21 integration: thisApp reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath
+Start with CM21 integration and a timeout value (in seconds): thisApp reviewPackagePath resultPath EID CM21Password SCRReportDownloadPath timeout
 
-cmd line Mode
-If you run ReviewPackageChecker.exe with at lease one arg, it will start in cmd line mode without GUI. The valid args are:
-    ReviewPackageChecker.exe pdf_path output_file_path
+
     
 Known Issues:
 *) Sometimes it will report a ***.TRT file not printed to the package, or missing SCR report, which actually did. This is a bug from the third-party lib.

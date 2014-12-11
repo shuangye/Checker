@@ -870,7 +870,7 @@ namespace Pkg_Checker.Implementations
                 FormFields.F_ReviewStatus_Val_Rereview.Equals(F_ReviewStatus))
             {
                 if (0 == filledDefect)
-                    Defects.Add(@"According to the coversheet fillings, there are no defects, but the package is closed as"
+                    Defects.Add(@"According to the coversheet fillings, there are no defects, but the package is closed as "
                         + F_ReviewStatus);
                 
                 bool reworkFound = false;

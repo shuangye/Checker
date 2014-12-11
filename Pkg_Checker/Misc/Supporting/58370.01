@@ -1,0 +1,127 @@
+FMS2000 : A3XX - SYSTEM CHANGE REQUEST                              Page 1 of 3
+
+ Change Category: PROBLEM                                   SCR No.: P 58370.01
+ SCR Status: VER   SCR Status Date: 20-NOV-2014
+ Originator: O'Connor, Michael                   Date Originated:  20-OCT-2014
+ Affected Area: TESTS                            Customer No.:                
+ Assignee: Jin, Gawain                           Priority:  3                 
+ Verification Assignee: Qian, Cuiyu                       
+ Found in Configuration: A380_2009_CR2_0         Hardcopy Attachment: None    
+ Target Configuration: A3240_REL2_TST_X02
+
+ Planned Impact: Test
+ Found During: SYS SPEC DEV/REVIEW
+ Aircraft Affected: A340
+ Task: N/A
+ CR1-F41 Type: 
+
+SCR Copied To:             < None Entered >
+
+SCR Copied From:             < None Entered >
+
+SCR Reissued To:             < None Entered >
+
+SCR Reissued From:             < None Entered >
+
+ Title: ETP location on MFD and ND do not match
+
+ Description:
+
+ From ATP squawk 1806: The ETP on ETP MFD page is MARTA/-67.3 and it does not
+ correspond to ND display. ETP is at QUV on the ND and MARTA/-67.2 on ETP page.
+ See pictures AD2_check_3 and AD2_check_3a.  Fpln is available in printer file
+ AD2_SPP.txt.
+ Entries of VIA and TO performed From PPG :
+ Via UN855
+ Via UN870 to QUV
+ Via UM601
+ VIA UT608 to POLOS
+ To MARTA
+ VIA UN856
+ VIA UH300
+ Insert airways.
+ Thus, effectively, there is a disco after XUH300.
+ ---------------------------------------------------
+ From ATP squawk 1843: New occurence of wrong ETP computationafter a dir to
+ performed to a fix and a disco is strung after. See 3 pictures in S2
+ Attachments folder (USroute-wrong ETP*.bmp). This happened during Action 29 of
+ ATP_A380_US_ROUTE.DOC.
+ 
+ 
+ 
+ 
+ 
+
+ SRB Reviewed By: O'Connor, Michael                    Date: 21-OCT-2014
+
+ Analysis/Solution:
+
+ <Oct-23-2014><E872867>
+ Updated CTP_A340S1A_PERF_BKGND_PUT_BK_DATA for A340 STEP2 CR2 on build ST2099
+
+              < Solution field continued >     SCR No. 58370.01    Page 2 of 3
+
+ and executed in ITE mode.
+ 1. TDF(Gen=4)
+ 1)Updated the SDD/SRD generation as following:
+ 11_3_3.SRD                  ; 68-->73
+ 11_2_1_1_7.SRD              ; 78-->85
+ PERF_BACKGROUND_EXEC.SDD    ; 350-->371
+ PERF_OBJECT_MAN.SDD         ; 128-->133
+ PERF_UTILITIES.SDD          ; 117-->126
+ 2)Updated breakpoints as build changed.
+ 3)Updated TC 35 to verify PERF_SDD_3155_INT completely.
+ 2. ZIP(Gen=5)
+ 1) New Rst, Rpt file.
+ 2) Updated DSP file.
+ 3) Updated STB files.
+ -------------------------------------------------------
+ <Nov-20-2014><E872867>
+ Reworked CTP_A340S1A_PERF_BKGND_PUT_BK_DATA after HTSC review on build ST2099
+ and executed in ITE mode.
+ 1. TDF(Gen=5)
+ 1) Updated MODIFICATION HISTORY of 3 on Oct 11.
+ 2) Updated TCs 35, 36 to verify PERF_SDD_3155_INT completely.
+ 2. ZIP(Gen=6)
+ 1) New Rst, Rpt file.
+ 2) Updated DSP file.
+ ---------------------------------------------------------
+ <Nov-21-2014><E872867>
+ Reworked CTP_A340S1A_PERF_BKGND_PUT_BK_DATA after self review on build ST2099
+ and executed in ITE mode.
+ 1. TDF(Gen=6)
+ 1) Updated SUT_VARS list.
+ 2. ZIP(Gen=7)
+ 1) New Rst, Rpt file.
+
+ Elements Affected:
+
+   Doc.      Element                                       Generation
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.TDF        4                   
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.TDF        5                   
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.TDF        6                   
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.ZIP        5                   
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.ZIP        6                   
+   TEST      CTP_A340S1A_PERF_BKGND_PUT_BK_DATA.ZIP        7                   
+
+             ASSIGNEE: Jin, Gawain                            Date: 21-NOV-2014
+             VERIFIER: Qian, Cuiyu                            Date: 21-NOV-2014
+      CCB COORDINATOR:                                        Date:            
+
+ Closure Category: Fixed/Added           Duplicate SCR No.: 00000.00
+ Project Status: Done
+ Addendum: 
+ Visual Review Info: FMS2000_A3XX_58370_01_Review_Packet.PDF
+ Cert Concern: 
+ Cust Notification: 
+ Inservice Incident: 
+ FDE Distraction: 
+ Pilot Input: 
+ Workload Wrkaround: 
+ Must Fix: 
+
+         < Score/Comment field continued >     SCR No. 58370.01    Page 3 of 3
+
+ Score/Comment: 
+ Cause: N/A
+Closed in Config.: A3240_REL2_TST_X02

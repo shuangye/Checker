@@ -1,0 +1,103 @@
+B7E7 : B7E7FMS - SYSTEM CHANGE REQUEST                              Page 1 of 2
+
+ Change Category: PROBLEM                                   SCR No.: P 15655.04
+ SCR Status: CLO   SCR Status Date: 22-JUL-2014
+ Originator: Patrick Caulfield                   Date Originated:  13-AUG-2013
+ Affected Area: PERF                             Customer No.:                
+ Assignee: Chen, YongBing                        Priority:  3                 
+ Verification Assignee: Liu, Mingyang                     
+ Found in Configuration: CERT2_LD_5              Hardcopy Attachment: None    
+ Target Configuration: BP3_TST_REV_X03   
+
+ Planned Impact: Test
+ Found During: CUSTOMER ACTIVITY
+ TcSE Assignee: 
+ TcSE Verifier: 
+ Uses TsCE: No
+ Task: 
+
+SCR Copied To:             < None Entered >
+
+SCR Copied From:             < None Entered >
+
+SCR Reissued To:             < None Entered >
+
+SCR Reissued From:             < None Entered >
+
+ Title: Step Location Toggling with RTA While On Ground
+
+ Description:
+
+ In BP2 load 3, Perf SCR 11939 made corrections to the step
+ stability logic that applies when an RTA is active.  This logic
+ works to keep the step position stable, since RTA speed changes
+ tend to make the step move, which impacts the RTA solution, causing
+ feedback.  A scenario has been found in which the fix made for
+ that SCR is failing, however.  The scenario:
+ ENG RATING: TRENT 1000-A FMS OPS: HNP2D-CL11-506G Model: 787-8
+ On the ground at KBFI.  ORIGIN: KBFI  DEST: KSFO PERF: Fuel 75,
+ ZFW 300, RES 5, FL330, CI 100.  RTE: KBFI.13R.LACKR1.ORTIN,
+ Dir To ALDER, J1 to RBL, J126 to SACE, Dir to UPEND, Dir to NORMM,
+ KSFO.RNV10L.  Close any discons on LEGS page.  WINDS entered on
+ LACKR: FL410 086/80, FL280 086/100, 11000 086/60, 0500 086/15.
+ RTA PROGRESS page: RTA FIX = RBL, MAX SPD = .900, T/O Time = 1825
+ (15 minute ahead of current time), ETA at RBL prior to Entering RTA
+ = 1924.6; RTA at RBL = 1923.0.  Observation: On VNAV RTA CRZ page,
+ Step to FL370 is toggling between NONE and at a time displayed 2R
+ VSD is displaying the toggling step climb.  This was observed first
+ by Boeing (Jay Koszola and Mark Wisted) and reproduced by me using
+ build 2099 (BP2 RL5).  The step is toggling between being taken
+ 30nm or so after top of climb, to not being taken at all.  Also,
+ UNABLE RTA is toggling, since when you don't take the step the RTA
+ cannot be met.
+
+ SRB Reviewed By: Colaiacovo, John                     Date: 13-AUG-2013
+
+ Analysis/Solution:
+
+ 27-Dec-2013-Akhil J-HTSB- This scr needs to be retarget to load 2
+ (BP3_TST_REV_X02) as problem scr is target to load 2.
+ =================================================================
+
+              < Solution field continued >     SCR No. 15655.04    Page 2 of 2
+
+ 4/28/14 (K. Do): Retargeted Test split to BP3 Load 3 since parent and other
+ splits were moved to Load 3.
+ -----------------------------
+ <2-Jul-2014><HTSC-E803143-Chen Yongbing> Updated CTP_B787_PERF_CRZINITE
+ (TDF:6,ZIP:8,TRT:3)for B787 BP3 Load3 on Build SBC2415_93C
+ and executed in simics mode.
+ TDF:-
+ 1. Updated SRD generation:
+ FMF_PERF_PREDS_CRZ_PHASE.SRD; 22 ->
+ FMF_PERF_PREDS_CRZ_PHASE_SRD.DOCX; 23.
+ 2. Updated breakpoints as per SCR 15655.03.
+ 3. Updated TCs 1,6 for newly added PERF_SRD_B_00413 as per SCR 15655.01.
+ ZIP:- Modified STUB,GPR,BAT,DSP,VER and RPT file.
+ TRT:- Added anchor PERF_SRD_B_00413 as per SCR 15655.01.
+
+ Elements Affected:
+
+   Doc.      Element                                       Generation
+   TRACE     CTP_B787_PERF_CRZINITE.TRT                    3                   
+   TST       CTP_B787_PERF_CRZINITE.TDF                    6                   
+   TST       CTP_B787_PERF_CRZINITE.ZIP                    8                   
+
+             ASSIGNEE: Chen, YongBing                         Date: 17-JUL-2014
+             VERIFIER: Liu, Mingyang                          Date: 17-JUL-2014
+      CCB COORDINATOR: O'Connor, Michael                      Date: 22-JUL-2014
+
+ Closure Category: Fixed/Added           Duplicate SCR No.: 00000.00
+ Project Status: Done
+ Addendum/Trgt_Date: 
+ Review Info: B7E7_B7E7FMS_15655_04_Review_Packet.pdf
+ Cert/Sys Concern: 0    - CC1/S1 None/Level 1
+ Cust Notification: 0    - CN1 None
+ Expected Inservice: 0    - I1 Not expected to occur in-service
+ Flight Deck Effect: 0    - FD1 None
+ Non Customer Input: 0    - P1 None
+ Workload Wrkaround: 0    - W1 No Workaround Necessary
+ Must Fix: 0    - MF1 Use Score
+ Score/Meeting: 
+ Score Comment: 
+Closed in Config.: BP3_TST_REV_X03
