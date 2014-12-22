@@ -46,6 +46,7 @@
             this.menuEnableCm21 = new System.Windows.Forms.ToolStripMenuItem();
             this.instructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.howToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.knownIssuesStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chkAppendOutput = new System.Windows.Forms.CheckBox();
@@ -64,7 +65,6 @@
             this.txtPWD = new System.Windows.Forms.TextBox();
             this.txtSCRDownloadPath = new System.Windows.Forms.TextBox();
             this.lblEID = new System.Windows.Forms.Label();
-            this.howToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spinTimeout)).BeginInit();
@@ -127,7 +127,7 @@
             this.tbOutput.Multiline = true;
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
-            this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbOutput.Size = new System.Drawing.Size(773, 330);
             this.tbOutput.TabIndex = 100;
             // 
@@ -231,6 +231,13 @@
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
+            // 
+            // howToToolStripMenuItem
+            // 
+            this.howToToolStripMenuItem.Name = "howToToolStripMenuItem";
+            this.howToToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.howToToolStripMenuItem.Text = "&How to...";
+            this.howToToolStripMenuItem.Click += new System.EventHandler(this.howToToolStripMenuItem_Click);
             // 
             // knownIssuesStripMenuItem
             // 
@@ -416,13 +423,6 @@
             this.lblEID.Size = new System.Drawing.Size(30, 15);
             this.lblEID.TabIndex = 16;
             this.lblEID.Text = "EID:";
-            // 
-            // howToToolStripMenuItem
-            // 
-            this.howToToolStripMenuItem.Name = "howToToolStripMenuItem";
-            this.howToToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.howToToolStripMenuItem.Text = "&How to...";
-            this.howToToolStripMenuItem.Click += new System.EventHandler(this.howToToolStripMenuItem_Click);
             // 
             // MainWin
             // 

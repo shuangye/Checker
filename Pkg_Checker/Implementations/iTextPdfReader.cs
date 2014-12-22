@@ -267,7 +267,8 @@ namespace Pkg_Checker.Implementations
 
             #endregion Checked in Files
 
-            String targetArea = "";            
+            String targetArea = "";
+            CommentCheckResult commentCheckResult = 0;
             bool isEndMarkFound = false;
             bool isOpeningTargetArea = false;
             for (int page = 1; page <= Reader.NumberOfPages; ++page)
@@ -275,17 +276,18 @@ namespace Pkg_Checker.Implementations
                 // sticky notes does not depend on page text, so put it before pageText checking
                 #region Collect Comments
                 // CollectComments(page);
-                switch (Parser.ParseComments(Reader, page, AnnotGroups))
+                
+                // test bits
+                commentCheckResult = Parser.ParseComments(Reader, page, AnnotGroups);
+                if (commentCheckResult != CommentCheckResult.COMMENT_OK)
                 {
-                    case 1:
+                    if (0 != (commentCheckResult & CommentCheckResult.COMMENT_STICKYNOTE_EMPTY))
                         Defects.Add(String.Format("The comment on page {0} is empty.", page));
-                        break;
-                    case 2:
+                    if (0 != (commentCheckResult & CommentCheckResult.COMMENT_REPLYTO_STICKYNOTE_EMPTY))
                         Defects.Add(String.Format("The comment on page {0} has no reply.", page));
-                        break;
-                    default:
-                        break;
-                }
+                    if (1 == page && 0 != (commentCheckResult & CommentCheckResult.COMMENT_NO_MODERATOR_STAMP))
+                        Defects.Add("Moderator stamp not found.");
+                }                
 
 #if COMMENT_COLLECTION_METHOD_1
                 #region method 1
@@ -824,7 +826,7 @@ namespace Pkg_Checker.Implementations
 
             // Moderator stamp
             if (String.IsNullOrWhiteSpace(F_ModStamp) || !"Yes".Equals(F_ModStamp))
-                Defects.Add(@"Moderator did not stamp on the package.");
+                Defects.Add(@"Moderator did not check the Moderator Closure box.");
 
             // Review participants
             int revParticipants = 0;
@@ -1062,8 +1064,8 @@ namespace Pkg_Checker.Implementations
             }
 
             // List<int> notDisposedItems = ParseJustifications(justification, itemsNoOrNA, checkListType);
-            List<int> notDisposedItems = Parser.ParseJustifications(justification, itemsNoOrNA, checkListType);
-            if (null != notDisposedItems && notDisposedItems.Count > 0)
+            IEnumerable<int> notDisposedItems = Parser.ParseJustifications(justification, itemsNoOrNA, checkListType);
+            if (null != notDisposedItems && notDisposedItems.Count() > 0)
             {
                 String items = "";
                 foreach (var i in notDisposedItems)

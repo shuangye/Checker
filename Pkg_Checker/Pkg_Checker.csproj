@@ -87,6 +87,7 @@
     <Compile Include="Interfaces\CommonResource.cs" />
     <Compile Include="Interfaces\FormFields.cs" />
     <Compile Include="Interfaces\IPdfReader.cs" />
+    <Compile Include="Interfaces\PredefinedValues.cs" />
     <Compile Include="MainWin.cs">
       <SubType>Form</SubType>
     </Compile>

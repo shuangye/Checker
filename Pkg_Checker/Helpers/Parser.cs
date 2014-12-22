@@ -19,9 +19,9 @@ namespace Pkg_Checker.Helpers
         /// <param name="justifications">Justifications to be parsed</param>
         /// <param name="itemsNoOrNA">A list of NO or N/A items</param>
         /// <returns>A list of not disposed items</returns>
-        public static List<int> ParseJustifications(String justifications, List<int> itemsNoOrNA, CheckListType checkListType)
+        public static IEnumerable<int> ParseJustifications(String justifications, IEnumerable<int> itemsNoOrNA, CheckListType checkListType)
         {
-            if (String.IsNullOrWhiteSpace(justifications) || itemsNoOrNA.Count < 1)
+            if (String.IsNullOrWhiteSpace(justifications) || null == itemsNoOrNA || itemsNoOrNA.Count() <= 0)
                 return itemsNoOrNA;
 
             const int SpecialSLTPItemNumber = 5;  // SLTP check list item 5 displays as 4.1
@@ -86,6 +86,14 @@ namespace Pkg_Checker.Helpers
             return notDisposedItems;
         }
 
+        public static IEnumerable<int> ParseJustifications(String justifications, IEnumerable<int> itemsNoOrNA, CheckListType checkListType, IEnumerable<int> redundantJustifications)
+        {
+            if (String.IsNullOrWhiteSpace(justifications) || null == itemsNoOrNA || itemsNoOrNA.Count() <= 0)
+                return itemsNoOrNA;
+
+            return null;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -93,7 +101,7 @@ namespace Pkg_Checker.Helpers
         /// <param name="page"></param>
         /// <param name="annotGroups">manipulate parsed comment here</param>
         /// <returns>status: negatives mean error; 0 means OK; positives mean defect types</returns>
-        public static int ParseComments(PdfReader reader, int page, List<AnnotGroup> annotGroups)
+        public static CommentCheckResult ParseComments(PdfReader reader, int page, List<AnnotGroup> annotGroups)
         {
             #region Annotation state model
 
@@ -174,27 +182,40 @@ namespace Pkg_Checker.Helpers
 
             #endregion Annotation state model
 
+            bool isModeratorStampFound = false;
+
             // Returning an integer, rather than a list that directly contains the defects. 
-            // This can alleviate memory usage and improve performance.
-            int result = 0;  // 0: OK; 1: the sticky note on this page is empty; 2: the REPLY to this reply is empty.
+            // This can alleviate memory usage and improve performance.            
+            CommentCheckResult result = CommentCheckResult.COMMENT_OK;  
 
             if (null == reader || null == annotGroups)
-                return -1;
+                return CommentCheckResult.COMMENT_OK;
 
             PdfObject pageObj = reader.GetPageN(page).Get(PdfName.ANNOTS);
             if (null == pageObj)
-                return 0;
+                return CommentCheckResult.COMMENT_OK;
 
             PdfArray annotArray = (PdfArray)PdfReader.GetPdfObject(pageObj);
             if (null == annotArray)
-                return 0;
+                return CommentCheckResult.COMMENT_OK;
 
             foreach (PdfIndirectReference annot in annotArray.ArrayList)
             {
                 PdfDictionary annotDict = (PdfDictionary)PdfReader.GetPdfObject(annot);
+                PdfName _annotSubtype = (PdfName)annotDict.Get(PdfName.SUBTYPE);
 
-                if (PdfName.TEXT != (PdfName)annotDict.Get(PdfName.SUBTYPE))
-                    continue; // early filter: sticky notes and their attributes are all of subtype TEXT
+                // find moderator stamp on page 1
+                if (1 == page && PdfName.STAMP == _annotSubtype)
+                {
+                    // the author of this annotation
+                    PdfObject _annotT = annotDict.Get(PdfName.T);
+                    if (null != _annotT && "Moderator Stamp".Equals(_annotT.ToString()))
+                        isModeratorStampFound = true;
+                }
+
+                // early filter: sticky notes and their attributes are all of subtype TEXT
+                if (PdfName.TEXT != _annotSubtype)
+                     continue; 
 
                 PdfIndirectReference _annotP = (PdfIndirectReference)annotDict.Get(PdfName.P);  // possibly means Place
                 PdfIndirectReference _annotIRT = (PdfIndirectReference)annotDict.Get(PdfName.IRT);  // IRT: In Reply To
@@ -205,7 +226,7 @@ namespace Pkg_Checker.Helpers
                 PdfString _annotState = (PdfString)annotDict.Get(PdfName.STATE);
 
                 // "MigrationStatus", "DefectType", "Is Defect State", "Resolution Status", "DefectSeverity"
-                PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));
+                PdfString _annotStateModel = ((PdfString)annotDict.Get(new PdfName("StateModel")));                                
 
 #if DEBUG_VERBOSE
                 PdfObject _annotSubtype = annotDict.Get(PdfName.SUBTYPE);
@@ -272,7 +293,7 @@ namespace Pkg_Checker.Helpers
                         annotGroups.Add(annotGroup);
                         if (isEmptyContent)
                             // defects.Add(String.Format("The comment on page {0} is empty.", page));
-                            result = 1;
+                            result |= CommentCheckResult.COMMENT_STICKYNOTE_EMPTY;
                     }
                     else  // the REPLY to this sticky note
                     {
@@ -281,7 +302,7 @@ namespace Pkg_Checker.Helpers
                             annotGroup.Numbers.Add(annot.Number);
                         if (isEmptyContent)
                             // defects.Add(String.Format("The comment on page {0} has no reply.", page));
-                            result = 2;
+                            result |= CommentCheckResult.COMMENT_REPLYTO_STICKYNOTE_EMPTY;
                     }
                 }
                 else  // sticky note's associated attributes
@@ -310,6 +331,10 @@ namespace Pkg_Checker.Helpers
                 }
                 #endregion Parse annotation info
             }
+
+            if (!isModeratorStampFound)
+                result |= CommentCheckResult.COMMENT_NO_MODERATOR_STAMP;
+
             return result;
         }
 

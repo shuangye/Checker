@@ -10,8 +10,6 @@ using System.Threading;
 using System.ComponentModel;
 using System.Text;
 using System.Text.RegularExpressions;
-using Pkg_Checker.Integration;
-using Microsoft.Win32;
 
 namespace Pkg_Checker
 {
@@ -45,7 +43,7 @@ namespace Pkg_Checker
             worker.DoWork += new DoWorkEventHandler(DoWork);
             worker.ProgressChanged += new ProgressChangedEventHandler(UpdateUI);
             worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(WorkDone);
-
+            
             if (null != args)
             {
                 switch (args.Length)
@@ -85,13 +83,13 @@ namespace Pkg_Checker
             }
 
             // UI elements
-            this.statusTotalProgress.Value = 0;
-            this.ActiveControl = this.tbLocation;
             CheckWithCM21 = false;
             SlideControls(CheckWithCM21, this.groupCM21.Height, this.btnCheck, this.lblDrag,
                 this.chkAppendOutput, this.lnkResult, this.btnClr, this.tbOutput);
+            this.statusTotalProgress.Value = 0;
+            this.ActiveControl = this.tbLocation;            
             this.timer1.Interval = 1500;
-            this.timer1.Start();
+            this.timer1.Start();            
 
             this.Load += (sender, e) =>
             {
@@ -261,8 +259,10 @@ namespace Pkg_Checker
             {
                 string eid, pwd;
                 RegistryOperator.ReadRegistry(Program.AppName, registryKeyNameEID, out eid, registryKeyNamePWD, out pwd);
-                this.txtEID.Text = eid;
-                this.txtPWD.Text = pwd;
+                if (String.IsNullOrWhiteSpace(this.txtEID.Text))
+                    this.txtEID.Text = eid;
+                if (String.IsNullOrWhiteSpace(this.txtPWD.Text))
+                    this.txtPWD.Text = pwd;
                 this.chkSave.Checked = CheckWithCM21;
             }
 
@@ -296,7 +296,7 @@ namespace Pkg_Checker
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
-                + @"Build Date: Dec 11, 2014." + Environment.NewLine);
+                + @"Build Date: Dec 12, 2014." + Environment.NewLine);
         }
 
         #endregion Menus
@@ -475,17 +475,18 @@ namespace Pkg_Checker
                 this.groupCM21.Visible = visible;
             }
             int delta = offset / times;  // ensure offset / times is an integer
-            Thread.Sleep(200);  // delay before the animation starts
+            Thread.Sleep(200);  // delay before the animation starts            
             
             for (int i = 0; i < times; ++i)
             {
                 foreach (Control control in controls)                
                     control.Top += delta;
-                
                 this.tbOutput.Height += delta;
+                this.UpdateBounds();
                 Thread.Sleep(3);
             }
-            this.groupCM21.Visible = visible;
+            
+            this.groupCM21.Visible = visible;            
         }
 
         // another implementation
@@ -517,8 +518,7 @@ namespace Pkg_Checker
                 ++tickCount;
                 foreach (Control control in controls)                                    
                     control.Top += delta;
-                
-                this.tbOutput.Height += delta;            
+                UpdateBounds();
             };            
             timer.Start();            
         }
