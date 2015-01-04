@@ -296,7 +296,7 @@ namespace Pkg_Checker
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             tbOutput.AppendText(@"This tool checks the potential defects in CTP/SLTP review packages." + Environment.NewLine
-                + @"Build Date: Dec 12, 2014." + Environment.NewLine);
+                + @"Build Date: Dec 23, 2014." + Environment.NewLine);
         }
 
         #endregion Menus

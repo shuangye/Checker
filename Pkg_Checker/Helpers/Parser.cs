@@ -388,7 +388,7 @@ namespace Pkg_Checker.Helpers
                     // Having located the "Affected Elements" area, it is time now to parse info therein
                     // match lines like "TEST CTP_A350_FMCI_EVENT_HANDLER.ZIP 4"                    
                     MatchCollection matches = Regex.Matches(targetArea,
-                                                            @"^\s*(\w+)\s+(\w{5,}\.\w{3,})\s+(\d+)\s*$",
+                                                            @"(\w+)\s+(\w{5,}\.\w{3,})\s+(\d+)",
                                                             RegexOptions.Multiline);
                     if (matches.Count > 0)
                     {

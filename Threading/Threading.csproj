@@ -50,6 +50,27 @@
     <Compile Include="BgWorker.Designer.cs">
       <DependentUpon>BgWorker.cs</DependentUpon>
     </Compile>
+    <Compile Include="LinkUp\ILinkUp.cs" />
+    <Compile Include="LinkUp\LinkUp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LinkUp\LinkUp.Designer.cs">
+      <DependentUpon>LinkUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LinkUp\LinkUpModel.cs" />
+    <Compile Include="LinkUp\LinkUpTile.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LinkUp\Res.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Res.resx</DependentUpon>
+    </Compile>
+    <Compile Include="LinkUp\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,6 +81,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BgWorker.resx">
       <DependentUpon>BgWorker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LinkUp\LinkUp.resx">
+      <DependentUpon>LinkUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LinkUp\Res.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Res.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -73,6 +101,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="LinkUp\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

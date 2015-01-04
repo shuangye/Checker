@@ -124,7 +124,7 @@ namespace Pkg_Checker.Implementations
             AnnotGroups = new List<AnnotGroup>();            
             const int maxFileCount = 40;            
             Match match;            
-            String val = "";
+            String val = String.Empty;
 
             #region Parse Info from Review Package Name
             match = Regex.Match(ReviewPackageName, @"_(" + FormFields.PATTERN_SCR_NUMBER_2 + ")_");
@@ -524,7 +524,7 @@ namespace Pkg_Checker.Implementations
                         // reset flags
                         isOpeningTargetArea = false;
                         isEndMarkFound = false;
-                        targetArea = "";
+                        targetArea = String.Empty;
                     }
                 }
                 #endregion
@@ -1152,7 +1152,7 @@ namespace Pkg_Checker.Implementations
                     Warnings.Add("Cannot parse SCR report file " + filePath);
             }
 
-            CheckSCRReports(true);
+            CheckSCRReports(true);            
         }
 
         public List<String> GetDefects()
@@ -1197,7 +1197,7 @@ namespace Pkg_Checker.Implementations
                 if (null != matchingSCRReport)
                 {
                     if (!expectedSCRStatus.Equals(matchingSCRReport.Status))
-                        Defects.Add(String.Format(@"The SCR report {0} {1} is in {2} status; ecptcted {3}.",
+                        Defects.Add(String.Format(@"The SCR report {0} {1} is in {2} status; expected {3}.",
                                                   matchingSCRReport.SCRNumber.ToString("0.00"), SCRReportSource,
                                                   matchingSCRReport.Status, expectedSCRStatus));
 

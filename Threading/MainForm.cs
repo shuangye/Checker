@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Threading.LinkUp;
 
 namespace Threading
 {
@@ -59,6 +60,12 @@ namespace Threading
         {
             BgWorker bgWorker = new BgWorker();
             bgWorker.Show();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            LinkUpForm linkUp = new LinkUpForm();
+            linkUp.Show();
         }
 
         
