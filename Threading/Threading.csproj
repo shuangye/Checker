@@ -50,15 +50,16 @@
     <Compile Include="BgWorker.Designer.cs">
       <DependentUpon>BgWorker.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ArrayExtensions.cs" />
     <Compile Include="LinkUp\ILinkUp.cs" />
-    <Compile Include="LinkUp\LinkUp.cs">
+    <Compile Include="LinkUp\LinkUpForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LinkUp\LinkUp.Designer.cs">
-      <DependentUpon>LinkUp.cs</DependentUpon>
+    <Compile Include="LinkUp\LinkUpForm.Designer.cs">
+      <DependentUpon>LinkUpForm.cs</DependentUpon>
     </Compile>
     <Compile Include="LinkUp\LinkUpModel.cs" />
-    <Compile Include="LinkUp\LinkUpTile.cs">
+    <Compile Include="LinkUp\View\ButtonTile.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="LinkUp\Res.Designer.cs">
@@ -71,6 +72,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="LinkUp\View\ITile.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,8 +84,8 @@
     <EmbeddedResource Include="BgWorker.resx">
       <DependentUpon>BgWorker.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LinkUp\LinkUp.resx">
-      <DependentUpon>LinkUp.cs</DependentUpon>
+    <EmbeddedResource Include="LinkUp\LinkUpForm.resx">
+      <DependentUpon>LinkUpForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LinkUp\Res.resx">
       <Generator>ResXFileCodeGenerator</Generator>
