@@ -24,16 +24,19 @@ namespace Threading.LinkUp
 
             this.Load += (sender, e) =>
             {
-                Score = 0;
-
                 try
                 {
-                    Model = new LinkUpModel<ButtonTile>(16, 10, 4);
+                    Model = new LinkUpModel<ButtonTile>(14, 8, 28);
                     Model.SetupInitTiles();
                 }
                 catch (ArgumentException)
                 {
                     MessageBox.Show("Invalid dimension.", "Link Up", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Close();
+                }
+                catch (NotImplementedException ex)
+                {
+                    MessageBox.Show(ex.Message, "Link Up", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.Close();
                 }
 
@@ -50,6 +53,8 @@ namespace Threading.LinkUp
                     tile.ParentWindow = this;
                     this.Controls.Add(tile);
                 }
+
+                Score = 0;
             };
         }
 
@@ -61,10 +66,7 @@ namespace Threading.LinkUp
             List<int> path;
             PrevTile = CurrentTile;
             CurrentTile = sender;
-            this.lblStatus.Text = String.Format("Prev: {0}, Current: {1}", null == PrevTile ? "null" : PrevTile.Index.ToString(), CurrentTile.Index);
-
-            if (null == PrevTile || null == CurrentTile || !PrevTile.Visible || !CurrentTile.Visible)
-                return;
+            this.lblStatus.Text = String.Format("Prev: {0}, Current: {1}", null == PrevTile ? "null" : PrevTile.Index.ToString(), CurrentTile.Index);                        
 
             if (Model.CanClear(PrevTile, CurrentTile, out path))
             {
@@ -109,8 +111,7 @@ namespace Threading.LinkUp
                 this.lblScore.Text = String.Format("Score: {0}", Score);
             }
         }
-
-        // how about an auto play function?
+                
         private void btnHint_Click(object sender, EventArgs e)
         {
             var tiles = Model.Tiles.Where(x => x.Visible == true);
@@ -126,6 +127,20 @@ namespace Threading.LinkUp
                     }
         }
 
+        private void btnAutoPlay_Click(object sender, EventArgs e)
+        {
+            while (Model.Tiles.Where(x => x.Visible == true).Count() >= 2)
+            {
+                var tiles = Model.Tiles.Where(x => x.Visible == true);
+                foreach (var tileA in tiles)
+                    foreach (var tileB in tiles.Where(x => x.Index != tileA.Index))
+                    {
+                        tileA.PerformClick();
+                        tileB.PerformClick();
+                    }
+            }
+        }
+
         #endregion Event Handling
 
 
@@ -134,8 +149,7 @@ namespace Threading.LinkUp
         [Obsolete]
         private void setupTiles()
         {
-            Score = 0;
-            // int part = Model.maxTotalTileCount / pieces;
+            Score = 0;            
             int textureKind = Model.TextureKind;
             int[] textureMap = new int[textureKind];  // textures for one part 这种方式中图案只在该部分随机，而不是全局随机
 
@@ -147,15 +161,15 @@ namespace Threading.LinkUp
 
             for (int index = 0, texture = 0; index < Model.MaxTotalTileCount; ++index)
             {
-                int x = index % Model.DimensionX;
-                int y = index / Model.DimensionX;
+                int x = index % Model.TotalDimensionX;
+                int y = index / Model.TotalDimensionX;
                 int value;
 
                 if (texture > 0 && texture % textureKind == 0)
                     // textureMap = textureMap.OrderBy(_ => random.Next(0, textureKind)).ToArray();
                     textureMap = textureMap.Shuffle<int>();
 
-                if (isEdgeTile(x, y))
+                if (isFringeTile(x, y))
                     value = -1;
                 else
                 {
@@ -178,7 +192,7 @@ namespace Threading.LinkUp
             MessageBox.Show(Model.Tiles.Count().ToString() + Model.Tiles.Count(x => x.Value != -1).ToString() + Environment.NewLine + counter);
 #endif
 
-            //    for (int pass = 0; pass < pieces; ++pass)
+            //    for (int pass = 0; pass < partCount; ++pass)
             //    {
             //        textureMaps = textureMaps.OrderBy(x => random.Next()).ToArray();
             //        int texture = 0;
@@ -188,8 +202,8 @@ namespace Threading.LinkUp
             //            int x = index % Model.dimensionX;
             //            int y = index / Model.dimensionX;
             //            int value;
-            //            if (isEdgeTile(x, y))
-            //                value = edgeTileValue;
+            //            if (isFringeTile(x, y))
+            //                value = fringeTileValue;
             //            else
             //            {
             //                value = textureMaps[texture];
@@ -205,9 +219,9 @@ namespace Threading.LinkUp
         }
 
         [Obsolete]
-        private bool isEdgeTile(int x, int y)
+        private bool isFringeTile(int x, int y)
         {
-            return x * y == 0 || x + 1 == Model.DimensionX || y + 1 == Model.DimensionY;
+            return x * y == 0 || x + 1 == Model.TotalDimensionX || y + 1 == Model.TotalDimensionY;
         }
 
         #endregion Obsolete Methods

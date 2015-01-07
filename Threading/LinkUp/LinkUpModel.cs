@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Threading.LinkUp.View;
+using Threading.Helpers;
 
 namespace Threading.LinkUp
 {
@@ -11,13 +12,14 @@ namespace Threading.LinkUp
     {
         #region Properties
 
-        public static int EdgeTileValue { get { return -1; } }
-        public int DimensionX { get; private set; }
-        public int DimensionY { get; private set; }
-        public int Pieces { get; private set; }        
-        public int MaxTotalTileCount { get { return DimensionX * DimensionY; } }
-        public int MaxVisibleTileCount { get { return (DimensionX - 2) * (DimensionY - 2); } }  // the outer tiles are invisible        
-        public int TextureKind { get { return MaxVisibleTileCount / Pieces; } }
+        public static int FringeTileValue { get { return 0; } }        
+        public int VisibleDimensionX { get; private set; }
+        public int VisibleDimensionY { get; private set; }
+        public int TotalDimensionX { get { return VisibleDimensionX + 2; } }
+        public int TotalDimensionY { get { return VisibleDimensionY + 2; } }        
+        public int MaxTotalTileCount { get { return TotalDimensionX * TotalDimensionY; } }
+        public int MaxVisibleTileCount { get { return VisibleDimensionX * VisibleDimensionY; } }  // the outer tiles are invisible                
+        public int TextureKind { get; private set; }
         public static char[] TextureMap
         {
             get
@@ -36,22 +38,26 @@ namespace Threading.LinkUp
         /// Construct a model.
         /// Every texture shall appear even times.
         /// </summary>
-        /// <param name="dimensionX"></param>
-        /// <param name="dimensionY"></param>
-        /// <param name="pieces"></param>
-        public LinkUpModel(int dimensionX, int dimensionY, int pieces)
+        /// <param name="visibleDimensionX">The visible dimension X</param>
+        /// <param name="visibleDimensionY">The visible dimension Y</param>
+        /// <param name="textureKind">How many kind of textures</param>
+        public LinkUpModel(int visibleDimensionX, int visibleDimensionY, int textureKind)
         {
-            if (dimensionX <= 0 || dimensionY <= 0 || pieces <= 0 || dimensionX * dimensionY % 2 != 0)
+            VisibleDimensionX = visibleDimensionX;
+            VisibleDimensionY = visibleDimensionY;
+            TextureKind = textureKind;
+                                    
+            if (VisibleDimensionX < 2 || VisibleDimensionY < 2 ||              // at least 4 tiles
+                TextureKind <= 0 || TextureKind > MaxVisibleTileCount / 2 ||   // valid range [1, MaxVisibleTileCount / 2]
+                MaxVisibleTileCount % 2 != 0)                                  // ensure every texture appearing even times
                 throw new ArgumentException();
 
-            DimensionX = dimensionX;
-            DimensionY = dimensionY;
-            Pieces = pieces;
+            // 求 MaxVisibleTileCount 的所有质数因子
 
-            if (MaxVisibleTileCount % pieces != 0)
-                throw new ArgumentException();
+            if (TextureMap.Length < TextureKind)
+                throw new NotImplementedException("Insufficient textures for specified texture kind.");
 
-            Tiles = new T[DimensionX * DimensionY];
+            Tiles = new T[TotalDimensionX * TotalDimensionY];
         }
 
         /// <summary>
@@ -59,30 +65,31 @@ namespace Threading.LinkUp
         /// </summary>
         public void SetupInitTiles()
         {
-            int[] textureMap = new int[TextureKind];  // textures for one part 这种方式中图案只在该部分随机，而不是全局随机
+            int middleVisible = MaxVisibleTileCount / 2;             // split visible tiles to 2 parts
+            int[] textureValues = new int[middleVisible];            // for visible tiles
             Random random = new Random(Environment.TickCount);
-            for (int i = 0; i < TextureKind; ++i)
+            for (int i = 0; i < middleVisible; ++i)
             {
-                textureMap[i] = random.Next(0, TextureKind);
+                textureValues[i] = random.Next(1, TextureKind + 1);  // [1, TextureKind]
             }
 
-            for (int index = 0, texture = 0; index < MaxTotalTileCount; ++index)
+            for (int index = 0, textureIndex = 0; index < MaxTotalTileCount; ++index)
             {
-                int x = index % DimensionX;
-                int y = index / DimensionX;
+                int x = index % TotalDimensionX;
+                int y = index / TotalDimensionX;
                 int value;
 
-                // randomize the texture map just before starting another piece
-                if (texture > 0 && texture % TextureKind == 0)
-                    textureMap = textureMap.OrderBy(_ => random.Next(0, TextureKind)).ToArray();
-                    // textureMap = textureMap.Shuffle<int>();
+                // randomize just before starting the 2nd part
+                if (textureIndex == middleVisible)
+                    // visibleTextureValues = visibleTextureValues.OrderBy(_ => random.Next(0, TextureKind)).ToArray();
+                    textureValues = textureValues.Shuffle<int>();
 
-                if (isEdgeTile(x, y))
-                    value = EdgeTileValue;
+                if (isFringeTile(x, y))
+                    value = FringeTileValue;
                 else
                 {
-                    value = textureMap[texture % TextureKind];
-                    ++texture;
+                    value = textureValues[textureIndex % middleVisible];                    
+                    ++textureIndex;
                 }
 
                 // create an instance of generic type                
@@ -102,7 +109,7 @@ namespace Threading.LinkUp
 
         public T TileAtCoordinate(int x, int y)
         {
-            return TileAtIndex(y * DimensionX + x);
+            return TileAtIndex(y * TotalDimensionX + x);
         }
 
 
@@ -116,7 +123,10 @@ namespace Threading.LinkUp
         /// <returns></returns>
         public bool CanClear(T tileA, T tileB)
         {
-            if (null == tileA || null == tileB || tileA.Index == tileB.Index || tileA.Value != tileB.Value)
+            if (null == tileA || null == tileB ||
+                !tileA.Visible || !tileB.Visible ||  // blank tiles
+                tileA.Index == tileB.Index ||        // the same tile
+                tileA.Value != tileB.Value)          // texture not match                
                 return false;
 
             return DirectTiles(tileA).Where(x => x.Index == tileB.Index && x.Visible == true).Count() > 0 ||
@@ -128,7 +138,10 @@ namespace Threading.LinkUp
         {
             path = new List<int>();  // path from tileA to tileB (contains turns only, tileA and tileB not included)
 
-            if (null == tileA || null == tileB || tileA.Index == tileB.Index || tileA.Value != tileB.Value)
+            if (null == tileA || null == tileB ||
+                !tileA.Visible || !tileB.Visible ||  // blank tiles
+                tileA.Index == tileB.Index ||        // the same tile
+                tileA.Value != tileB.Value)          // texture not match                
                 return false;
 
             // tileA and tileB can be directly connected
@@ -212,7 +225,7 @@ namespace Threading.LinkUp
         {
             List<T> result = new List<T>();
             for (int x = targetTile.CoordinateX + deltaX, y = targetTile.CoordinateY + deltaY;
-                x >= 0 && x < DimensionX && y >= 0 && y < DimensionY;
+                x >= 0 && x < TotalDimensionX && y >= 0 && y < TotalDimensionY;
                 x += deltaX, y += deltaY)
             {
                 T tile = TileAtCoordinate(x, y);
@@ -227,9 +240,9 @@ namespace Threading.LinkUp
             return result;
         }
 
-        private bool isEdgeTile(int x, int y)
+        private bool isFringeTile(int x, int y)
         {
-            return x * y == 0 || x + 1 == DimensionX || y + 1 == DimensionY;
+            return x * y == 0 || x + 1 == TotalDimensionX || y + 1 == TotalDimensionY;
         }
 
         #endregion Logics
@@ -241,7 +254,7 @@ namespace Threading.LinkUp
         private List<T> Horizontal(T targetTile, int delta)
         {
             List<T> result = new List<T>();
-            for (int i = targetTile.CoordinateX + delta; i >= 0 && i < DimensionX; i += delta)
+            for (int i = targetTile.CoordinateX + delta; i >= 0 && i < TotalDimensionX; i += delta)
             {
                 T tile = TileAtCoordinate(i, targetTile.CoordinateY);
                 if (null != tile)
@@ -259,7 +272,7 @@ namespace Threading.LinkUp
         private List<T> Vertical(T targetTile, int delta)
         {
             List<T> result = new List<T>();
-            for (int i = targetTile.CoordinateY + delta; i >= 0 && i < DimensionY; i += delta)
+            for (int i = targetTile.CoordinateY + delta; i >= 0 && i < TotalDimensionY; i += delta)
             {
                 T tile = TileAtCoordinate(targetTile.CoordinateX, i);
                 if (null != tile)

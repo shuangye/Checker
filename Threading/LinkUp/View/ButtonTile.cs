@@ -32,12 +32,12 @@ namespace Threading.LinkUp.View
             CoordinateX = x;
             CoordinateY = y;                 
  
-            this.Visible = LinkUpModel<ButtonTile>.EdgeTileValue != Value;  // is a edge tile?                        
+            this.Visible = LinkUpModel<ButtonTile>.FringeTileValue != Value;  // is a fringe tile?                        
             if (this.Visible)
             {
                 this.Font = TextFont;
                 this.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-                this.Text = LinkUpModel<ButtonTile>.TextureMap[Value].ToString();
+                this.Text = LinkUpModel<ButtonTile>.TextureMap[Value - 1].ToString();
                 // this.Text = Value.ToString();
             }            
 

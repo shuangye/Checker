@@ -20,5 +20,12 @@ namespace Threading.Helpers
             }
             return array;
         }
+
+        public static int[] Negative(this int[] array)
+        {
+            for (int i = 0; i < array.Length; ++i)
+                array[i] = -array[i];
+            return array;
+        }
     }
 }

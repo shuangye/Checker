@@ -31,6 +31,7 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblScore = new System.Windows.Forms.Label();
             this.btnHint = new System.Windows.Forms.Button();
+            this.btnAutoPlay = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblStatus
@@ -61,11 +62,22 @@
             this.btnHint.UseVisualStyleBackColor = true;
             this.btnHint.Click += new System.EventHandler(this.btnHint_Click);
             // 
+            // btnAutoPlay
+            // 
+            this.btnAutoPlay.Location = new System.Drawing.Point(929, 9);
+            this.btnAutoPlay.Name = "btnAutoPlay";
+            this.btnAutoPlay.Size = new System.Drawing.Size(75, 23);
+            this.btnAutoPlay.TabIndex = 3;
+            this.btnAutoPlay.Text = "Auto Play";
+            this.btnAutoPlay.UseVisualStyleBackColor = true;
+            this.btnAutoPlay.Click += new System.EventHandler(this.btnAutoPlay_Click);
+            // 
             // LinkUpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1097, 611);
+            this.Controls.Add(this.btnAutoPlay);
             this.Controls.Add(this.btnHint);
             this.Controls.Add(this.lblScore);
             this.Controls.Add(this.lblStatus);
@@ -81,5 +93,6 @@
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Label lblScore;
         private System.Windows.Forms.Button btnHint;
+        private System.Windows.Forms.Button btnAutoPlay;
     }
 }
