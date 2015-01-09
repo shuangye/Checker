@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Threading</RootNamespace>
     <AssemblyName>Threading</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +31,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,6 +55,14 @@
       <DependentUpon>BgWorker.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ArrayExtensions.cs" />
+    <Compile Include="Helpers\TileEqualityComparer.cs" />
+    <Compile Include="LinkUp\About.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LinkUp\About.Designer.cs">
+      <DependentUpon>About.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LinkUp\CommonDef.cs" />
     <Compile Include="LinkUp\ILinkUp.cs" />
     <Compile Include="LinkUp\LinkUpForm.cs">
       <SubType>Form</SubType>
@@ -62,16 +74,7 @@
     <Compile Include="LinkUp\View\ButtonTile.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="LinkUp\Res.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Res.resx</DependentUpon>
-    </Compile>
-    <Compile Include="LinkUp\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
+    <Compile Include="LinkUp\View\ImageButtonTile.cs" />
     <Compile Include="LinkUp\View\ITile.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -84,12 +87,11 @@
     <EmbeddedResource Include="BgWorker.resx">
       <DependentUpon>BgWorker.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="LinkUp\About.resx">
+      <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LinkUp\LinkUpForm.resx">
       <DependentUpon>LinkUpForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="LinkUp\Res.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Res.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -102,11 +104,8 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="LinkUp\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -119,6 +118,45 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Banana.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Bone.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cat.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Chicken.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Dog.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Goat.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Grass.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Monkey.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Mouse.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ox.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Rice.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Wolf.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

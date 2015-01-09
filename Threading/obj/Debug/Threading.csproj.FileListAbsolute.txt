@@ -29,4 +29,4 @@ D:\GitHub\Checker\Threading\obj\Debug\Threading.csproj.GenerateResource.Cache
 D:\GitHub\Checker\Threading\obj\Debug\Threading.exe
 D:\GitHub\Checker\Threading\obj\Debug\Threading.pdb
 D:\Github\Checker\Threading\obj\Debug\Threading.LinkUp.LinkUpForm.resources
-D:\Github\Checker\Threading\obj\Debug\Threading.LinkUp.Res.resources
+D:\Github\Checker\Threading\obj\Debug\Threading.LinkUp.About.resources

@@ -1,49 +1,45 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Threading.LinkUp.View
 {
-    public class ButtonTile: Button, ITile
+    public class ButtonTile : Button, ITile
     {
         public int Index { get; set; }
         public int Value { get; set; }
         public int CoordinateX { get; set; }
         public int CoordinateY { get; set; }
         public int PathLength { get; set; }
+        public Point Center { get { return new Point(this.Location.X + Width / 2, this.Location.Y + Height / 2); } }
         // the Visible property is implemented in Button?
-
-        // All tiles should have the same size, so make these properties static
-        public static new int Padding { get { return 10; } }  // the "new" keyword hides the property of same name from parent
-        public static int Side { get { return 50; } }        
-        public static Font TextFont { get { return new Font("微软雅黑", 20, FontStyle.Regular); } }
-        public static Point StartPoint { get { return new Point(10, 10); } }        
-        public LinkUpForm ParentWindow { get; set; }
         
+        public LinkUpForm ParentWindow { get; set; }
 
+        public override string Text
+        {
+            // Making the Text property be computed from the Value property allows Text property changes at any time 
+            // when the Value property changes, instead of chaning only at constructing time.
+            get
+            {
+                // return Value.ToString();
+                if (LinkUpModel<ButtonTile>.SameValueClear)
+                    return CommonDef.Textures[Value - 1].ToString();
+                else
+                    // return Value > 0 ? CommonDef.PredatorTextures[Value - 1].ToString() : CommonDef.PreyTextures[-Value - 1].ToString();
+                    return String.Empty;
+            }            
+        }
+
+                
         public ButtonTile(int index, int x, int y, int value)
         {
             Index = index;
-            Value = value;  
+            Value = value;
             CoordinateX = x;
-            CoordinateY = y;                 
- 
-            this.Visible = LinkUpModel<ButtonTile>.FringeTileValue != Value;  // is a fringe tile?                        
-            if (this.Visible)
-            {
-                this.Font = TextFont;
-                this.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-                this.Text = LinkUpModel<ButtonTile>.TextureMap[Value - 1].ToString();
-                // this.Text = Value.ToString();
-            }            
-
-            this.Size = new Size(Side, Side);
-            this.Location = new Point(StartPoint.X + x * (Side + Padding), StartPoint.Y + y * (Side + Padding));
-
+            CoordinateY = y;                       
+            this.Visible =  CommonDef.FringeTileValue != Value;  // is a fringe tile?            
+            
             this.Click += (sender, e) =>
             {
                 if (null != ParentWindow)
