@@ -7,16 +7,20 @@ using System.Resources;
 using System.Threading;
 using System.Windows.Forms;
 using Threading.Helpers;
+using Threading.LinkUp.Model;
 using Threading.LinkUp.View;
 
 namespace Threading.LinkUp
 {
     public partial class LinkUpForm : Form
     {
-        public int DimensionX { get { return 14; } }
-        public int DimensionY { get { return 8; } }
+        public int VisibleDimensionX { get { return 14; } }
+        public int VisibleDimensionY { get { return 8; } }
+        public int TotalDimensionX { get { return VisibleDimensionX + 2; } }
+        public int TotalDimensionY { get { return VisibleDimensionY + 2; } }
         public int Difficulty { get { return trackBarDifficulty.Value; } }
         public int TilePadding { get { return 10; } }
+        public ButtonTile[] Tiles { get; set; }
         private Size UsableAreaSize
         {
             get
@@ -25,14 +29,14 @@ namespace Threading.LinkUp
                     this.ClientSize.Height - TilePadding * 2 - this.menuStrip1.Height - this.trackBarDifficulty.Height);
             }
         }
-        public int TileSide { get { return Math.Min(UsableAreaSize.Width / (DimensionX + 1) - TilePadding, UsableAreaSize.Height / (DimensionY + 1) - TilePadding); } }
+        public int TileSide { get { return Math.Min(UsableAreaSize.Width / (VisibleDimensionX + 1) - TilePadding, UsableAreaSize.Height / (VisibleDimensionY + 1) - TilePadding); } }
         public Point TileStartPoint { get { return new Point(-TileSide / 2, -TileSide / 2); } }  // relative to the parent container.        
         public GameMode GameMode { get; set; }
-        public LinkUpModel<ButtonTile> Model { get; set; }
+        public LinkUpModel Model { get; set; }
         public ButtonTile PrevTile { get; set; }
         public ButtonTile CurrentTile { get; set; }
-        public Pen Pen { get { return new Pen(Color.Green, 5); } }
-        public Graphics ContextGraphics { get { return tilesPanel.CreateGraphics(); } }
+        public Pen Pen { get { return new Pen(Color.Green, 3); } }
+        public Graphics ContextGraphics { get { return tilesPanel.CreateGraphics(); } }        
         public int Score { get; set; }
 
         public LinkUpForm()
@@ -46,7 +50,7 @@ namespace Threading.LinkUp
                 lblStatus.Visible = false;
                 this.tilesPanel.BorderStyle = BorderStyle.None;
 #endif
-                trackBarDifficulty.Maximum = DimensionX * DimensionY / 2;
+                trackBarDifficulty.Maximum = VisibleDimensionX * VisibleDimensionY / 2;
                 trackBarDifficulty.Value = trackBarDifficulty.Maximum / 2;
 
                 this.SizeChanged += (sender, e) => { ArrangeTilesSize(); };
@@ -63,21 +67,35 @@ namespace Threading.LinkUp
 
         public void tileClicked(ButtonTile sender, EventArgs e)
         {
-            List<ButtonTile> turns;
+            List<int> turns;
             PrevTile = CurrentTile;
             CurrentTile = sender;
             this.lblStatus.Text = String.Format("State: Prev {0}, Current {1}", null == PrevTile ? "none" : PrevTile.Index.ToString(), CurrentTile.Index);
 
-            if (Model.CanClear(PrevTile, CurrentTile, out turns))
-                ClearTwoTiles(PrevTile, CurrentTile, turns);
+            if (null != PrevTile && null != CurrentTile)
+            {
+                if (Model.CanClear(Model.TileAtIndex(PrevTile.Index), Model.TileAtIndex(CurrentTile.Index), out turns))
+                    ClearTwoTiles(PrevTile, CurrentTile, turns);
+            }
         }
 
         private void btnHint_Click(object sender, EventArgs e)
         {
-            List<ButtonTile> turns;
-            List<ButtonTile> tiles = Model.FindClearableTiles(out turns);
+            List<int> turns;
+            var tiles = Model.FindClearableTiles(out turns);
             if (null != tiles)
-                DrawCues(tiles[0], tiles[1], turns);
+            {
+                DrawCues(TileAtIndex(tiles[0].Index), TileAtIndex(tiles[1].Index), turns);                
+
+                System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 500 };
+                timer.Tick += (_sender, _e) =>
+                {
+                    if (null != ContextGraphics)
+                        ContextGraphics.Clear(this.BackColor);
+                    timer.Stop();
+                };
+                timer.Start();
+            }
             else if (Model.Tiles.Where(x => x.Visible).Count() > 0)  // dead lock
             {
                 if (System.Windows.Forms.DialogResult.Yes ==
@@ -107,11 +125,11 @@ namespace Threading.LinkUp
         [Obsolete]
         private void _btnAutoPlay_Click(object sender, EventArgs e)
         {
-            List<ButtonTile> turns;
-            List<ButtonTile> tiles = Model.FindClearableTiles(out turns);
+            List<int> turns;
+            var tiles = Model.FindClearableTiles(out turns);
             while (null != tiles)
             {
-                ClearTwoTiles(tiles[0], tiles[1], turns);
+                ClearTwoTiles(TileAtIndex(tiles[0].Index), TileAtIndex(tiles[1].Index), turns);
                 tiles = Model.FindClearableTiles(out turns);
             }
 
@@ -130,21 +148,20 @@ namespace Threading.LinkUp
         /// <param name="e"></param>
         private void btnAutoPlay_Click(object sender, EventArgs e)
         {
-            List<ButtonTile> turns;
-            List<ButtonTile> tiles;
             btnAutoPlay.BackColor = Color.Red;
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 1000 };
             timer.Tick += (_sender, _e) =>
             {
+                List<int> turns;
                 btnAutoPlay.Visible = !btnAutoPlay.Visible;
-                tiles = Model.FindClearableTiles(out turns);
+                var tiles = Model.FindClearableTiles(out turns);
                 if (null != tiles)
-                    ClearTwoTiles(tiles[0], tiles[1], turns);
+                    ClearTwoTiles(TileAtIndex(tiles[0].Index), TileAtIndex(tiles[1].Index), turns);
                 else  // all tiles are cleared, or dead lock
                 {
                     timer.Stop();
                     timer.Dispose();
-                    btnAutoPlay.BackColor = Color.Empty;
+                    btnAutoPlay.BackColor = btnRefresh.BackColor;
                     btnAutoPlay.Visible = true;
 
                     if (Model.Tiles.Where(x => x.Visible).Count() > 0)  // dead lock
@@ -162,12 +179,22 @@ namespace Threading.LinkUp
 
         #region Refactored Methods
 
+        private ButtonTile TileAtIndex(int index)
+        {
+            return Tiles.Where(x => x.Index == index).FirstOrDefault();
+        }
+
+        private ButtonTile TileAtCoordinate(int x, int y)
+        {
+            return TileAtIndex(y * TotalDimensionX * x);
+        }
+
 #warning every init accompanies creating a larget data structure: Model.
         private void StartOver()
         {
             try
             {
-                Model = new LinkUpModel<ButtonTile>(this.DimensionX, this.DimensionY, Difficulty, GameMode == GameMode.Classical);
+                Model = new LinkUpModel(this.VisibleDimensionX, this.VisibleDimensionY, Difficulty, GameMode == GameMode.Classical);
             }
             catch (ArgumentException)
             {
@@ -181,43 +208,46 @@ namespace Threading.LinkUp
             }
 
             Model.SetupInitTiles();
-
-            // UI
+            Tiles = new ButtonTile[TotalDimensionX * TotalDimensionY];  // memory leak :) GC
             tilesPanel.Controls.Clear();
-            foreach (var tile in Model.Tiles)
+            foreach (var modelTile in Model.Tiles)
             {
-                tile.ParentWindow = this;
-                tilesPanel.Controls.Add(tile);
+                // create UI elements basing on the model entity info
+                ButtonTile uiTile = new ButtonTile(modelTile.Index, modelTile.CoordinateX, modelTile.CoordinateY, modelTile.Value, modelTile.Visible);
+                uiTile.ParentWindow = this;
+                Tiles[uiTile.Index] = uiTile;
+                tilesPanel.Controls.Add(uiTile);
             }
             ArrangeTilesSize();
 
             Score = 0;
         }
 
-        private void DrawCues(ButtonTile startTile, ButtonTile endTile, List<ButtonTile> turns)
+        private void DrawCues(ButtonTile startTile, ButtonTile endTile, List<int> turns)
         {
             if (null == startTile || null == endTile || null == turns || null == Pen || null == ContextGraphics)
                 return;
 
-            switch (turns.Count)
+            List<ButtonTile> turnTiles = new List<ButtonTile>();
+            foreach (var turn in turns)
+                turnTiles.Add(TileAtIndex(turn));
+            switch (turnTiles.Count)
             {
                 case 0:
                     ContextGraphics.DrawLine(Pen, startTile.Center, endTile.Center);
                     break;
                 case 1:
-                    ContextGraphics.DrawLine(Pen, startTile.Center, turns[0].Center);
-                    ContextGraphics.DrawLine(Pen, turns[0].Center, endTile.Center);
+                    ContextGraphics.DrawLine(Pen, startTile.Center, turnTiles[0].Center);
+                    ContextGraphics.DrawLine(Pen, turnTiles[0].Center, endTile.Center);
                     break;
                 case 2:
-                    ContextGraphics.DrawLine(Pen, startTile.Center, turns[0].Center);
-                    ContextGraphics.DrawLine(Pen, turns[0].Center, turns[1].Center);
-                    ContextGraphics.DrawLine(Pen, turns[1].Center, endTile.Center);
+                    ContextGraphics.DrawLine(Pen, startTile.Center, turnTiles[0].Center);
+                    ContextGraphics.DrawLine(Pen, turnTiles[0].Center, turnTiles[1].Center);
+                    ContextGraphics.DrawLine(Pen, turnTiles[1].Center, endTile.Center);
                     break;
                 default:
                     break;
             }
-            Thread.Sleep(300);
-            ContextGraphics.Clear(this.BackColor);
         }
 
         /// <summary>
@@ -226,20 +256,34 @@ namespace Threading.LinkUp
         /// <param name="startTile"></param>
         /// <param name="endTile"></param>
         /// <param name="turns"></param>
-        private void ClearTwoTiles(ButtonTile startTile, ButtonTile endTile, List<ButtonTile> turns)
+        private void ClearTwoTiles(ButtonTile startTile, ButtonTile endTile, List<int> turns)
         {
             DrawCues(startTile, endTile, turns);
 
-            // Update UI, and BTW, Model (because ITile is passed by ref)
-            startTile.Visible = false;
-            endTile.Visible = false;
-            // do NOT remove tiles from the Controls set, because they blank tiles
-            // act as ways to non-blank tiles
-            // this.Controls.Remove(PrevTile);
-            // this.Controls.Remove(CurrentTile);
+            // consider moving this timer to global to avoid creating a timer object every time.            
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 250 };
+            timer.Tick += (sender, e) =>
+            {
+                if (null != ContextGraphics)
+                    ContextGraphics.Clear(this.BackColor);
 
-            startTile = null;
-            endTile = null;
+                startTile.Visible = false;
+                endTile.Visible = false;
+                // do NOT remove tiles from the Controls set, because they blank tiles
+                // act as ways to non-blank tiles
+                // this.Controls.Remove(PrevTile);
+                // this.Controls.Remove(CurrentTile);
+
+                // Update model
+                Model.TileAtIndex(startTile.Index).Visible = startTile.Visible;
+                Model.TileAtIndex(endTile.Index).Visible = endTile.Visible;
+
+                startTile = null;
+                endTile = null;
+
+                timer.Stop();
+            };
+            timer.Start();
 
             this.lblScore.Text = String.Format("Score: {0}", Score += Difficulty);  // score with weight
 #if DEBUG
@@ -251,7 +295,7 @@ namespace Threading.LinkUp
 
         private void ArrangeTilesSize()
         {
-            tilesPanel.Size = new Size((DimensionX + 1) * (TileSide + TilePadding) + TilePadding, (DimensionY + 1) * (TileSide + TilePadding) + TilePadding);
+            tilesPanel.Size = new Size((VisibleDimensionX + 1) * (TileSide + TilePadding) + TilePadding, (VisibleDimensionY + 1) * (TileSide + TilePadding) + TilePadding);
             tilesPanel.Location = new Point((UsableAreaSize.Width - tilesPanel.Size.Width) / 2 + TilePadding,
                 (UsableAreaSize.Height - tilesPanel.Size.Height) / 2 + this.menuStrip1.Height + this.trackBarDifficulty.Height + TilePadding);
             tilesPanel.Anchor = AnchorStyles.None;
@@ -264,15 +308,18 @@ namespace Threading.LinkUp
                     tile.Location = new Point(TileStartPoint.X + tile.CoordinateX * (TileSide + TilePadding),
                         TileStartPoint.Y + tile.CoordinateY * (TileSide + TilePadding));
                     tile.Font = new Font("微软雅黑", TileSide / 2, GraphicsUnit.Pixel);
-                    tile.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;                    
+                    tile.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
-                    if (!LinkUpModel<ButtonTile>.SameValueClear && tile.Visible)
+                    // Model value may be updated, so retrieve this info from model
+                    tile.Value = Model.TileAtIndex(tile.Index).Value;
+
+                    if (!LinkUpModel.SameValueClear && tile.Visible)
                     {
                         // this.Image = (Image)CommonDef.PredatorPreyTextures.SingleOrDefault(item => item.Key == this.Value).Value;
 #warning try caching mechanism to lower memory footprint
                         String fileName = (String)CommonDef.PredatorPreyTextures.SingleOrDefault(item => item.Key == tile.Value).Value;
                         try
-                        {                            
+                        {
                             tile.Image = new Bitmap(Image.FromFile(Path.Combine(@".\Resources", fileName)), tile.Size);
                         }
                         catch
@@ -291,90 +338,6 @@ namespace Threading.LinkUp
         }
 
         #endregion Refactored Methods
-
-
-        #region Obsolete Methods
-
-        [Obsolete]
-        private void setupTiles()
-        {
-            Score = 0;
-            int textureKind = Model.TextureKind;
-            int[] textureMap = new int[textureKind];  // textures for one part 这种方式中图案只在该部分随机，而不是全局随机
-
-            Random random = new Random(Environment.TickCount);
-            for (int i = 0; i < textureKind; ++i)
-            {
-                textureMap[i] = random.Next(0, textureKind);
-            }
-
-            for (int index = 0, texture = 0; index < Model.MaxTotalTileCount; ++index)
-            {
-                int x = index % Model.TotalDimensionX;
-                int y = index / Model.TotalDimensionX;
-                int value;
-
-                if (texture > 0 && texture % textureKind == 0)
-                    // textureMap = textureMap.OrderBy(_ => random.Next(0, textureKind)).ToArray();
-                    textureMap = textureMap.Shuffle<int>();
-
-                if (isFringeTile(x, y))
-                    value = -1;
-                else
-                {
-                    value = textureMap[texture % textureKind];
-                    ++texture;
-                }
-
-                ButtonTile tile = new ButtonTile(index, x, y, value);
-                tile.ParentWindow = this;
-                Model.Tiles[index] = tile;
-                this.Controls.Add(tile);
-            }
-
-#if DEBUG
-            String counter = String.Empty;
-            foreach (var item in textureMap)
-            {
-                counter += String.Format("{0}: {1}" + Environment.NewLine, item, Model.Tiles.Count(x => x.Value == item));
-            }
-            MessageBox.Show(Model.Tiles.Count().ToString() + Model.Tiles.Count(x => x.Value != -1).ToString() + Environment.NewLine + counter);
-#endif
-
-            //    for (int pass = 0; pass < partCount; ++pass)
-            //    {
-            //        textureMaps = textureMaps.OrderBy(x => random.Next()).ToArray();
-            //        int texture = 0;
-            //        for (int i = 0; i < part; ++i)
-            //        {
-            //            int index = pass * part + i;
-            //            int x = index % Model.dimensionX;
-            //            int y = index / Model.dimensionX;
-            //            int value;
-            //            if (isFringeTile(x, y))
-            //                value = fringeTileValue;
-            //            else
-            //            {
-            //                value = textureMaps[texture];
-            //                ++texture;
-            //            }
-            //
-            //            LinkUpTile tile = new LinkUpTile(index, x, y, value);
-            //            tile.ParentWindow = this;
-            //            Model.Tiles[index] = tile;
-            //            this.Controls.Add(tile);
-            //        }
-            //    }
-        }
-
-        [Obsolete]
-        private bool isFringeTile(int x, int y)
-        {
-            return x * y == 0 || x + 1 == Model.TotalDimensionX || y + 1 == Model.TotalDimensionY;
-        }
-
-        #endregion Obsolete Methods
-
 
         #region Menu Items
 

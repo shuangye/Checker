@@ -106,11 +106,11 @@
             this.trackBarDifficulty.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBarDifficulty.LargeChange = 3;
-            this.trackBarDifficulty.Location = new System.Drawing.Point(129, 30);
+            this.trackBarDifficulty.Location = new System.Drawing.Point(158, 30);
             this.trackBarDifficulty.Maximum = 5;
             this.trackBarDifficulty.Minimum = 2;
             this.trackBarDifficulty.Name = "trackBarDifficulty";
-            this.trackBarDifficulty.Size = new System.Drawing.Size(581, 45);
+            this.trackBarDifficulty.Size = new System.Drawing.Size(590, 45);
             this.trackBarDifficulty.TabIndex = 5;
             this.trackBarDifficulty.Value = 2;
             // 
@@ -210,7 +210,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(97, 35);
+            this.label1.Location = new System.Drawing.Point(129, 35);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(36, 13);
             this.label1.TabIndex = 9;

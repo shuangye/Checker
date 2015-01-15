@@ -55,7 +55,6 @@
       <DependentUpon>BgWorker.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ArrayExtensions.cs" />
-    <Compile Include="Helpers\TileEqualityComparer.cs" />
     <Compile Include="LinkUp\About.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,19 +62,19 @@
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
     <Compile Include="LinkUp\CommonDef.cs" />
-    <Compile Include="LinkUp\ILinkUp.cs" />
+    <Compile Include="LinkUp\Model\ImageCache.cs" />
     <Compile Include="LinkUp\LinkUpForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="LinkUp\LinkUpForm.Designer.cs">
       <DependentUpon>LinkUpForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LinkUp\LinkUpModel.cs" />
+    <Compile Include="LinkUp\Model\LinkUpModel.cs" />
     <Compile Include="LinkUp\View\ButtonTile.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="LinkUp\View\ImageButtonTile.cs" />
-    <Compile Include="LinkUp\View\ITile.cs" />
+    <Compile Include="LinkUp\Model\Tile.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +105,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Docs\Linkup Design.docx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -158,6 +158,7 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

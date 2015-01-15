@@ -16,21 +16,21 @@ using System.Threading.Tasks;
 using Threading.LinkUp.View;
 using Threading.Helpers;
 
-namespace Threading.LinkUp
+namespace Threading.LinkUp.Model
 {
-    public class LinkUpModel<T> where T : class, ITile
+    public class LinkUpModel
     {
         #region Properties
-
+                
+        public static bool SameValueClear { get; private set; } 
         public int VisibleDimensionX { get; private set; }
         public int VisibleDimensionY { get; private set; }
         public int TotalDimensionX { get { return VisibleDimensionX + 2; } }
         public int TotalDimensionY { get { return VisibleDimensionY + 2; } }
         public int MaxTotalTileCount { get { return TotalDimensionX * TotalDimensionY; } }
         public int MaxVisibleTileCount { get { return VisibleDimensionX * VisibleDimensionY; } }  // the outer tiles are invisible                
-        public int TextureKind { get; private set; }        
-        public static bool SameValueClear { get; private set; }       
-        public T[] Tiles { get; set; }
+        public int TextureKind { get; private set; }
+        public Tile[] Tiles { get; set; }
 
         #endregion Properties
 
@@ -57,9 +57,9 @@ namespace Threading.LinkUp
             // 求 MaxVisibleTileCount 的所有质数因子
 
             if (SameValueClear ? CommonDef.Textures.Length < TextureKind : CommonDef.PredatorTextures.Length < TextureKind || CommonDef.PreyTextures.Length < TextureKind)
-                throw new NotImplementedException("Currently these is only 6 pairs of textures. Please select lower levels.");
+                throw new NotImplementedException("Currently these are only 6 pairs of textures. Please select lower levels.");
 
-            Tiles = new T[TotalDimensionX * TotalDimensionY];
+            Tiles = new Tile[TotalDimensionX * TotalDimensionY];
         }
 
         /// <summary>
@@ -104,23 +104,30 @@ namespace Threading.LinkUp
             {
                 int x = index % TotalDimensionX;
                 int y = index / TotalDimensionX;
+#if false
+                // don't try to create UI elements in model.
                 Tiles[index] = (T)Activator.CreateInstance(typeof(T),
                     new object[] { index, x, y, isFringeTile(x, y) ? CommonDef.FringeTileValue : wholeTextureValues[textureIndex++] });
                 // textureIndex won't be out of range because of shortcut logical evaluation
+#endif
+                // create a model entity instead:
+                Tiles[index] = new Tile(index, x, y, isFringeTile(x, y) ? CommonDef.FringeTileValue : wholeTextureValues[textureIndex++]);
             }
 
 #endif // SAME_VALUE_CLEAR
         }
         
-        public T TileAtIndex(int index)
+        public Tile TileAtIndex(int index)
         {
-            T result = null;
-            if (index >= 0 && index < MaxTotalTileCount)
-                result = Tiles[index];
-            return result;
+            // Tile result = null;
+            // if (index >= 0 && index < MaxTotalTileCount)
+            //     result = Tiles[index];
+            // return result;
+
+            return Tiles.Where(x => x.Index == index).FirstOrDefault();
         }
 
-        public T TileAtCoordinate(int x, int y)
+        public Tile TileAtCoordinate(int x, int y)
         {
             return TileAtIndex(y * TotalDimensionX + x);
         }
@@ -142,14 +149,14 @@ namespace Threading.LinkUp
             }
         }
 
-        public List<T> FindClearableTiles(out List<T> turns)
+        public List<Tile> FindClearableTiles(out List<int> turns)
         {
             turns = null;
             var tiles = Tiles.Where(x => x.Visible);
             foreach (var tileA in tiles)
                 foreach (var tileB in tiles)
                     if (CanClear(tileA, tileB, out turns))
-                        return new List<T> { tileA, tileB };
+                        return new List<Tile> { tileA, tileB };
             return null;
         }
 
@@ -159,7 +166,7 @@ namespace Threading.LinkUp
         /// <param name="tileA"></param>
         /// <param name="tileB"></param>
         /// <returns></returns>
-        public bool CanClear(T tileA, T tileB)
+        public bool CanClear(Tile tileA, Tile tileB)
         {
             if (null == tileA || null == tileB ||
                 !tileA.Visible || !tileB.Visible ||              // blank tiles
@@ -172,9 +179,9 @@ namespace Threading.LinkUp
                 TwoTurnTiles(tileA).Where(x => x.Index == tileB.Index && x.Visible).Count() > 0;
         }
 
-        public bool CanClear(T tileA, T tileB, out List<T> turns)
+        public bool CanClear(Tile tileA, Tile tileB, out List<int> turns)
         {
-            turns = new List<T>();  // path from tileA to tileB (contains turns only, tileA and tileB not included)
+            turns = new List<int>();  // path from tileA to tileB (contains turns only, tileA and tileB not included)
 
             if (null == tileA || null == tileB ||
                 !tileA.Visible || !tileB.Visible ||              // blank tiles
@@ -191,7 +198,7 @@ namespace Threading.LinkUp
             {
                 if (DirectTiles(tile).Where(x => x.Index == tileB.Index && x.Visible == true).Count() > 0)
                 {
-                    turns.Add(tile);
+                    turns.Add(tile.Index);
                     return true;
                 }
             }
@@ -202,8 +209,8 @@ namespace Threading.LinkUp
                 foreach (var tile2 in DirectTiles(tile1).Where(x => x.Visible == false))
                     if (DirectTiles(tile2).Where(x => x.Index == tileB.Index && x.Visible == true).Count() > 0)
                     {
-                        turns.Add(tile1);
-                        turns.Add(tile2);
+                        turns.Add(tile1.Index);
+                        turns.Add(tile2.Index);
                         return true;
                     }
             }
@@ -217,9 +224,9 @@ namespace Threading.LinkUp
         /// </summary>
         /// <param name="targetTile"></param>
         /// <returns></returns>
-        List<T> DirectTiles(T targetTile)
+        List<Tile> DirectTiles(Tile targetTile)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             if (null != targetTile)
             {
                 // result.AddRange(Horizontal(targetTile, -1));  // left
@@ -234,17 +241,17 @@ namespace Threading.LinkUp
             return result;
         }
 
-        List<T> OneTurnTiles(T targetTile)
+        List<Tile> OneTurnTiles(Tile targetTile)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             foreach (var item in DirectTiles(targetTile).Where(x => !x.Visible))
                 result.AddRange(DirectTiles(item));
             return result;
         }
 
-        List<T> TwoTurnTiles(T targetTile)
+        List<Tile> TwoTurnTiles(Tile targetTile)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             foreach (var item in OneTurnTiles(targetTile).Where(x => !x.Visible))
                 result.AddRange(DirectTiles(item));
             return result;
@@ -259,14 +266,14 @@ namespace Threading.LinkUp
         /// <param name="deltaX"></param>
         /// <param name="deltaY"></param>
         /// <returns></returns>
-        private List<T> DirectTilesOnOneDirection(T targetTile, int deltaX, int deltaY)
+        private List<Tile> DirectTilesOnOneDirection(Tile targetTile, int deltaX, int deltaY)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             for (int x = targetTile.CoordinateX + deltaX, y = targetTile.CoordinateY + deltaY;
                 x >= 0 && x < TotalDimensionX && y >= 0 && y < TotalDimensionY;
                 x += deltaX, y += deltaY)
             {
-                T tile = TileAtCoordinate(x, y);
+                Tile tile = TileAtCoordinate(x, y);
                 if (null != tile)
                 {
                     tile.PathLength = Math.Abs(x - targetTile.CoordinateX) + Math.Abs(y - targetTile.CoordinateY);
@@ -297,12 +304,12 @@ namespace Threading.LinkUp
         #region Obsolete Methods
 
         [Obsolete]
-        private List<T> Horizontal(T targetTile, int delta)
+        private List<Tile> Horizontal(Tile targetTile, int delta)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             for (int i = targetTile.CoordinateX + delta; i >= 0 && i < TotalDimensionX; i += delta)
             {
-                T tile = TileAtCoordinate(i, targetTile.CoordinateY);
+                Tile tile = TileAtCoordinate(i, targetTile.CoordinateY);
                 if (null != tile)
                 {
                     tile.PathLength = Math.Abs(i - targetTile.CoordinateX);
@@ -315,12 +322,12 @@ namespace Threading.LinkUp
         }
 
         [Obsolete]
-        private List<T> Vertical(T targetTile, int delta)
+        private List<Tile> Vertical(Tile targetTile, int delta)
         {
-            List<T> result = new List<T>();
+            List<Tile> result = new List<Tile>();
             for (int i = targetTile.CoordinateY + delta; i >= 0 && i < TotalDimensionY; i += delta)
             {
-                T tile = TileAtCoordinate(targetTile.CoordinateX, i);
+                Tile tile = TileAtCoordinate(targetTile.CoordinateX, i);
                 if (null != tile)
                 {
                     tile.PathLength = Math.Abs(i - targetTile.CoordinateY);

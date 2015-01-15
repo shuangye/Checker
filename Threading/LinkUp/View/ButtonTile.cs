@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Threading.LinkUp.Model;
 
 namespace Threading.LinkUp.View
 {
-    public class ButtonTile : Button, ITile
+    public class ButtonTile : Button
     {
         public int Index { get; set; }
         public int Value { get; set; }
         public int CoordinateX { get; set; }
         public int CoordinateY { get; set; }
-        public int PathLength { get; set; }
         public Point Center { get { return new Point(this.Location.X + Width / 2, this.Location.Y + Height / 2); } }
         // the Visible property is implemented in Button?
         
@@ -23,7 +23,7 @@ namespace Threading.LinkUp.View
             get
             {
                 // return Value.ToString();
-                if (LinkUpModel<ButtonTile>.SameValueClear)
+                if (this.Visible && LinkUpModel.SameValueClear)
                     return CommonDef.Textures[Value - 1].ToString();
                 else
                     // return Value > 0 ? CommonDef.PredatorTextures[Value - 1].ToString() : CommonDef.PreyTextures[-Value - 1].ToString();
@@ -32,13 +32,13 @@ namespace Threading.LinkUp.View
         }
 
                 
-        public ButtonTile(int index, int x, int y, int value)
+        public ButtonTile(int index, int x, int y, int value, bool visible)
         {
             Index = index;
             Value = value;
             CoordinateX = x;
-            CoordinateY = y;                       
-            this.Visible =  CommonDef.FringeTileValue != Value;  // is a fringe tile?            
+            CoordinateY = y;
+            this.Visible = visible;            
             
             this.Click += (sender, e) =>
             {

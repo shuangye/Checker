@@ -30,3 +30,5 @@ D:\GitHub\Checker\Threading\obj\Debug\Threading.exe
 D:\GitHub\Checker\Threading\obj\Debug\Threading.pdb
 D:\Github\Checker\Threading\obj\Debug\Threading.LinkUp.LinkUpForm.resources
 D:\Github\Checker\Threading\obj\Debug\Threading.LinkUp.About.resources
+D:\Github\Checker\Threading\bin\Debug\Threading.exe.CodeAnalysisLog.xml
+D:\Github\Checker\Threading\bin\Debug\Threading.exe.lastcodeanalysissucceeded
