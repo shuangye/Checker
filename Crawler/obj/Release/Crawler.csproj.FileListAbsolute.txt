@@ -1,0 +1,13 @@
+D:\Github\Checker\Crawler\bin\Release\Crawler.exe.config
+D:\Github\Checker\Crawler\bin\Release\Crawler.exe
+D:\Github\Checker\Crawler\bin\Release\Crawler.pdb
+D:\Github\Checker\Crawler\obj\Release\Crawler.csprojResolveAssemblyReference.cache
+D:\Github\Checker\Crawler\obj\Release\MainWindow.baml
+D:\Github\Checker\Crawler\obj\Release\MainWindow.g.cs
+D:\Github\Checker\Crawler\obj\Release\App.g.cs
+D:\Github\Checker\Crawler\obj\Release\Crawler_MarkupCompile.cache
+D:\Github\Checker\Crawler\obj\Release\Crawler.g.resources
+D:\Github\Checker\Crawler\obj\Release\Crawler.Properties.Resources.resources
+D:\Github\Checker\Crawler\obj\Release\Crawler.csproj.GenerateResource.Cache
+D:\Github\Checker\Crawler\obj\Release\Crawler.exe
+D:\Github\Checker\Crawler\obj\Release\Crawler.pdb

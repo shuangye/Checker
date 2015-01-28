@@ -1,0 +1,6 @@
+D:\Github\Checker\Console\bin\Release\Console.exe.config
+D:\Github\Checker\Console\bin\Release\Console.exe
+D:\Github\Checker\Console\bin\Release\Console.pdb
+D:\Github\Checker\Console\obj\Release\Console.csprojResolveAssemblyReference.cache
+D:\Github\Checker\Console\obj\Release\Console.exe
+D:\Github\Checker\Console\obj\Release\Console.pdb
